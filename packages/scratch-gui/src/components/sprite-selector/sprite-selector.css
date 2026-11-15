@@ -3,7 +3,12 @@
 @import '../../css/z-index.css';
 
 .sprite-selector {
+  display: flex;
+  flex-direction: column;
   flex-grow: 1;
+  min-height: 0;
+  /* Room for the absolute add-sprite button below the sprite info bar. */
+  padding-bottom: 3.25rem;
   position: relative;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   /* margin-right: calc($space / 2); disable*/
@@ -52,7 +57,8 @@
               also introduces a new bug in Chrome when vertically resizing window down,
               then back up, introduces white space in the outside the page container.
     */
-  height: calc(100% - $sprite-info-height);
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
 }
 

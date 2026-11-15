@@ -336,6 +336,13 @@ class Runtime extends EventEmitter {
     this.turboMode = false;
 
     /**
+     * Whether the runtime is paused. While paused, threads are not stepped,
+     * but their state is preserved so the project can resume where it left off.
+     * @type {Boolean}
+     */
+    this.paused = false;
+
+    /**
      * tw: Responsible for managing the VM's many timers.
      */
     this.frameLoop = new FrameLoop(this);
@@ -741,6 +748,22 @@ class Runtime extends EventEmitter {
    */
   static get PROJECT_RUN_STOP() {
     return 'PROJECT_RUN_STOP';
+  }
+
+  /**
+   * Event name when the runtime is paused.
+   * @const {string}
+   */
+  static get PROJECT_PAUSED() {
+    return 'PROJECT_PAUSED';
+  }
+
+  /**
+   * Event name when the runtime is resumed.
+   * @const {string}
+   */
+  static get PROJECT_RESUMED() {
+    return 'PROJECT_RESUMED';
   }
 
   /**
@@ -2545,9 +2568,32 @@ class Runtime extends EventEmitter {
   }
 
   /**
+   * Pause or resume the project. Threads are kept intact so the project
+   * continues from the same point after resuming.
+   * @param {boolean} paused Whether the project should be paused.
+   */
+  setPaused(paused) {
+    const next = !!paused;
+    if (this.paused === next) return;
+    this.paused = next;
+    this.emit(next ? Runtime.PROJECT_PAUSED : Runtime.PROJECT_RESUMED);
+  }
+
+  /**
+   * Toggle the paused state of the project.
+   * @returns {boolean} The new paused state.
+   */
+  togglePause() {
+    this.setPaused(!this.paused);
+    return this.paused;
+  }
+
+  /**
    * Start all threads that start with the green flag.
    */
   greenFlag() {
+    // Starting the project always leaves the paused state.
+    this.setPaused(false);
     this.stopAll();
     this.emit(Runtime.PROJECT_START);
     this.updateCurrentMSecs();
@@ -2564,6 +2610,8 @@ class Runtime extends EventEmitter {
    * Stop "everything."
    */
   stopAll() {
+    // Stopping everything also leaves the paused state.
+    this.setPaused(false);
     // Emit stop event to allow blocks to clean up any state.
     this.emit(Runtime.PROJECT_STOP_ALL);
 
@@ -2616,6 +2664,12 @@ class Runtime extends EventEmitter {
    * inactive threads after each iteration.
    */
   _step() {
+    // While paused, keep the current frame on screen but don't advance any threads.
+    if (this.paused) {
+      this.redrawRequested = false;
+      return;
+    }
+
     if (this.interpolationEnabled) {
       interpolate.setupInitialState(this);
     }

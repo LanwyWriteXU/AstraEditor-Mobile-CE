@@ -1,0 +1,172 @@
+@import '../../css/units.css';
+@import '../../css/colors.css';
+
+/* Right-hand vertical toolbar: the only chrome the editor has on mobile. */
+
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: $ae-toolbar-width;
+  height: 100%;
+  padding: 4px;
+  gap: 4px;
+  overflow-y: auto;
+  background-color: $ui-tertiary;
+  border-left: 1px solid $ui-black-transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.top-group {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+.spacer {
+  flex-grow: 1;
+  flex-shrink: 1;
+  min-height: 0;
+}
+
+.tool-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 100%;
+  height: 36px;
+  padding: 8px;
+  border: 1px solid $ui-black-transparent;
+  border-radius: 10px;
+  background-color: $ui-white;
+  color: $text-primary;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.tool-button:active {
+  background-color: $ui-secondary;
+}
+
+.tool-button.is-active {
+  border-color: $looks-secondary;
+  background-color: $looks-transparent;
+}
+
+.icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.glyph {
+  width: 100%;
+  height: 100%;
+  color: $text-primary;
+  pointer-events: none;
+}
+
+.switch-wrapper {
+  position: relative;
+}
+
+.switch-popup {
+  position: absolute;
+  top: 0;
+  right: calc(100% + 8px);
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  gap: 4px;
+  min-width: 132px;
+  border: 1px solid $ui-black-transparent;
+  border-radius: 12px;
+  background-color: $ui-white;
+  box-shadow: 0 4px 16px $shadow;
+}
+
+.switch-option {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  gap: 10px;
+  border: none;
+  border-radius: 8px;
+  background-color: transparent;
+  color: $text-primary;
+  font-family: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.switch-option:active {
+  background-color: $ui-secondary;
+}
+
+.switch-option.is-active {
+  background-color: $looks-transparent;
+  color: $looks-secondary;
+}
+
+.switch-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.play-controls {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+.play-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 34px;
+  padding: 6px;
+  border: 1px solid $ui-black-transparent;
+  border-radius: 10px;
+  background-color: $ui-white;
+  color: $text-primary;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.play-button:active {
+  background-color: $ui-secondary;
+}
+
+.play-button.is-active {
+  border-color: $looks-secondary;
+  background-color: $looks-transparent;
+}
+
+.play-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* Full screen stage: the toolbar floats over the stage so the buttons keep their place. */
+.toolbar.is-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 860;
+  background-color: transparent;
+  border-left: none;
+}

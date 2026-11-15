@@ -284,6 +284,35 @@ class VirtualMachine extends EventEmitter {
   }
 
   /**
+   * Pause the project without destroying its threads.
+   */
+  pause() {
+    this.runtime.setPaused(true);
+  }
+
+  /**
+   * Resume a paused project.
+   */
+  resume() {
+    this.runtime.setPaused(false);
+  }
+
+  /**
+   * Toggle between paused and running.
+   * @returns {boolean} Whether the VM is paused after toggling.
+   */
+  togglePause() {
+    return this.runtime.togglePause();
+  }
+
+  /**
+   * @returns {boolean} Whether the project is currently paused.
+   */
+  get isPaused() {
+    return this.runtime.paused;
+  }
+
+  /**
    * Set whether the VM is in "turbo mode."
    * When true, loops don't yield to redraw.
    * @param {boolean} turboModeOn Whether turbo mode should be set.

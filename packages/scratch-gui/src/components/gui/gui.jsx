@@ -1,17 +1,12 @@
 import classNames from 'classnames';
-import omit from 'lodash.omit';
 import PropTypes from 'prop-types';
 import React, { useLayoutEffect, useState, useEffect, useRef } from 'react';
-import { defineMessages, FormattedMessage, injectIntl, intlShape } from 'react-intl';
-import { connect, dispatch } from 'react-redux';
-import MediaQuery from 'react-responsive';
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-import tabStyles from 'react-tabs/style/react-tabs.css';
+import { FormattedMessage, injectIntl, intlShape } from 'react-intl';
+import { connect } from 'react-redux';
 import VM from 'scratch-vm';
 
 import Blocks from '../../containers/blocks.jsx';
 import CostumeTab from '../../containers/costume-tab.jsx';
-import TargetPane from '../../containers/target-pane.jsx';
 import SoundTab from '../../containers/sound-tab.jsx';
 import StageWrapper from '../../containers/stage-wrapper.jsx';
 import Loader from '../loader/loader.jsx';
@@ -19,9 +14,15 @@ import Box from '../box/box.jsx';
 import MenuBar from '../menu-bar/menu-bar.jsx';
 import CostumeLibrary from '../../containers/costume-library.jsx';
 import BackdropLibrary from '../../containers/backdrop-library.jsx';
-import Watermark from '../../containers/watermark.jsx';
-import MonacoEditor from '../../containers/monaco-editor.jsx';
-
+import SpriteLibrary from '../../containers/sprite-library.jsx';
+import MobileToolbar from '../ae-mobile/mobile-toolbar.jsx';
+import MobileSpritePanel from '../ae-mobile/mobile-sprite-panel.jsx';
+import MobileMorePanel from '../ae-mobile/mobile-more-panel.jsx';
+import MobileScreen from '../ae-mobile/mobile-screen.jsx';
+import LanguageMenu from '../menu-bar/language-menu.jsx';
+import TWGuiThemeMenu from '../menu-bar/tw-theme-gui.jsx';
+import TWBlocksThemeMenu from '../menu-bar/tw-theme-blocks.jsx';
+import TWAccentThemeMenu from '../menu-bar/tw-theme-accent.jsx';
 import Backpack from '../../containers/backpack.jsx';
 import BrowserModal from '../browser-modal/browser-modal.jsx';
 import TipsLibrary from '../../containers/tips-library.jsx';
@@ -50,36 +51,24 @@ import { openAeFeaturesModal } from '../../reducers/modals.js';
 import ExtensionManager from '../extension-chooser/extension-chooser.jsx';
 import PreviewExt from '../../containers/ae-preview-ext.jsx';
 
-import { STAGE_SIZE_MODES, FIXED_WIDTH, UNCONSTRAINED_NON_STAGE_WIDTH } from '../../lib/layout-constants';
-import { getStageDimensions, resolveStageSize } from '../../lib/screen-utils';
+import { closeSpriteLibrary, openReadme, openSettingsModal, openSpriteLibrary } from '../../reducers/modals.js';
+import { BLOCKS_TAB_INDEX, COSTUMES_TAB_INDEX, SOUNDS_TAB_INDEX } from '../../reducers/editor-tab';
+import { setFullScreen } from '../../reducers/mode';
+
+import { STAGE_SIZE_MODES } from '../../lib/layout-constants';
+import { resolveStageSize } from '../../lib/screen-utils';
 import { Theme } from '../../lib/themes';
-import { MONACO_EDITOR_TAB_INDEX } from '../../reducers/editor-tab';
 
 import { isRendererSupported, isBrowserSupported } from '../../lib/tw-environment-support-prober';
 
 import styles from './gui.css';
 import addExtensionIcon from './icon--extensions.svg';
-import codeIcon from '!../../lib/tw-recolor/build!./icon--code.svg';
-import costumesIcon from '!../../lib/tw-recolor/build!./icon--costumes.svg';
-import soundsIcon from '!../../lib/tw-recolor/build!./icon--sounds.svg';
-import monacoIcon from '!../../lib/tw-recolor/build!./icon--monaco.svg';
-import readmeIcon from '!../../lib/tw-recolor/build!./readme.svg';
-import { openReadme } from '../../reducers/modals.js';
-
 import { get, reset, STORAGE_KEY } from '../../lib/settings.js';
 /* 检测设置 */
 
 if (localStorage.getItem(STORAGE_KEY) === 'undefined' || localStorage.getItem(STORAGE_KEY) === undefined) {
   reset();
 }
-const storedSettings = localStorage.getItem(STORAGE_KEY);
-let vscodeLayoutRef = false;
-try {
-  vscodeLayoutRef = JSON.parse(storedSettings).EnableVSCodeLayout;
-} catch (e) {
-  vscodeLayoutRef = false;
-}
-
 const getFullscreenBackgroundColor = () => {
   const params = new URLSearchParams(location.search);
   if (params.has('fullscreen-background')) {
@@ -123,6 +112,7 @@ const GUIComponent = (props) => {
     costumeLibraryVisible,
     costumesTabVisible,
     customStageSize,
+    editingTarget,
     enableCommunity,
     intl,
     isCreating,
@@ -174,6 +164,10 @@ const GUIComponent = (props) => {
     showOpenFilePicker,
     showSaveFilePicker,
     soundsTabVisible,
+    spriteLibraryVisible,
+    sprites,
+    stage,
+    projectTitle,
     stageSizeMode,
     targetIsStage,
     telemetryModalVisible,
@@ -196,7 +190,7 @@ const GUIComponent = (props) => {
     dispatch,
     aeFeaturesModalVisible,
     ...componentProps
-  } = omit(props, '');
+  } = props;
   const updateCanShowReadme = () => {
     if (!vm.editingTarget || !vm.editingTarget.comments) {
       setCanShowReadme(false);
@@ -216,6 +210,30 @@ const GUIComponent = (props) => {
     updateCanShowReadme;
   });
   const [loaderExiting, setLoaderExiting] = useState(false);
+  const [spritePanelOpen, setSpritePanelOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [morePage, setMorePage] = useState(null);
+  const [isPaused, setIsPaused] = useState(() => Boolean(vm && vm.runtime && vm.runtime.paused));
+
+  // The editor only works in landscape; ask the platform to lock it when possible.
+  useEffect(() => {
+    const orientation = window.screen && window.screen.orientation;
+    if (orientation && typeof orientation.lock === 'function') {
+      orientation.lock('landscape').catch(() => {});
+    }
+  }, []);
+
+  // Keep the pause button in sync when the runtime is paused by something else (e.g. an addon).
+  useEffect(() => {
+    if (!vm || !vm.runtime) return undefined;
+    const handlePauseChange = () => setIsPaused(Boolean(vm.runtime.paused));
+    vm.runtime.on('PROJECT_PAUSED', handlePauseChange);
+    vm.runtime.on('PROJECT_RESUMED', handlePauseChange);
+    return () => {
+      vm.runtime.off('PROJECT_PAUSED', handlePauseChange);
+      vm.runtime.off('PROJECT_RESUMED', handlePauseChange);
+    };
+  }, [vm]);
   useEffect(() => {
     if (!vm) return;
 
@@ -302,314 +320,335 @@ const GUIComponent = (props) => {
       }
     }
   }, []);
-  const tabClassNames = {
-    tabs: styles.tabs,
-    tab: classNames(tabStyles.reactTabsTab, styles.tab),
-    tabList: classNames(tabStyles.reactTabsTabList, styles.tabList),
-    tabPanel: classNames(tabStyles.reactTabsTabPanel, styles.tabPanel),
-    tabPanelSelected: classNames(tabStyles.reactTabsTabPanelSelected, styles.isSelected),
-    tabSelected: classNames(tabStyles.reactTabsTabSelected, styles.isSelected),
-    vscode: styles.vscode,
-    vscodeList: styles.vscodeList
+  const stageSize = resolveStageSize(stageSizeMode, true);
+  const activeScreen =
+    activeTabIndex === COSTUMES_TAB_INDEX ? 'costumes' : activeTabIndex === SOUNDS_TAB_INDEX ? 'sounds' : 'code';
+
+  const handleSwitchScreen = (screen) => {
+    dispatch(setFullScreen(false));
+    if (screen === 'costumes') {
+      onActivateTab(COSTUMES_TAB_INDEX);
+    } else if (screen === 'sounds') {
+      onActivateTab(SOUNDS_TAB_INDEX);
+    } else {
+      onActivateTab(BLOCKS_TAB_INDEX);
+    }
   };
 
-  const unconstrainedWidth =
-    UNCONSTRAINED_NON_STAGE_WIDTH + FIXED_WIDTH + Math.max(0, customStageSize.width - FIXED_WIDTH);
+  const handleStart = () => {
+    vm.start();
+    vm.greenFlag();
+    setIsPaused(false);
+  };
+
+  const handleStop = () => {
+    vm.stopAll();
+    setIsPaused(false);
+  };
+
+  const handlePause = () => {
+    setIsPaused(Boolean(vm.togglePause()));
+  };
+
+  const handleMoreEntry = (entry) => {
+    if (entry === 'addons') {
+      setMoreOpen(false);
+      if (onClickAddonSettings) onClickAddonSettings();
+      return;
+    }
+    if (entry === 'settings') {
+      setMoreOpen(false);
+      dispatch(openSettingsModal());
+      return;
+    }
+    setMorePage(entry);
+  };
+
+  const alwaysEnabledModals = (
+    <React.Fragment>
+      <TWSecurityManager securityManager={securityManager} />
+      <TWRestorePointManager />
+      {usernameModalVisible && <TWUsernameModal />}
+      {settingsModalVisible && <TWSettingsModal />}
+      {customExtensionModalVisible && <TWCustomExtensionModal />}
+      {fontsModalVisible && <TWFontsModal />}
+      {unknownPlatformModalVisible && <TWUnknownPlatformModal />}
+      {invalidProjectModalVisible && <TWInvalidProjectModal />}
+      {customThemeVisible && <CustomThemeModal />}
+      {readmeModalVisible && <AEReadMe />}
+      {extensionManagerVisible && (
+        <ExtensionManager
+          vm={vm}
+          onRequestClose={onRequestCloseExtensionManager}
+          onOpenExtensionLibrary={onOpenExtensionLibrary}
+          onOpenCodeLibrary={onOpenExtensionEditor}
+          onOpenCustomExtensionModal={onOpenCustomExtensionModal}
+          dispatch={dispatch}
+        />
+      )}
+      {previewExtVisible && <PreviewExt />}
+      {aeFeaturesModalVisible && <AeFeaturesModal />}
+    </React.Fragment>
+  );
+
+  const menuBar = (
+    <MenuBar
+      accountNavOpen={accountNavOpen}
+      authorId={authorId}
+      authorThumbnailUrl={authorThumbnailUrl}
+      authorUsername={authorUsername}
+      canChangeLanguage={canChangeLanguage}
+      canChangeTheme={canChangeTheme}
+      canCreateCopy={canCreateCopy}
+      canCreateNew={canCreateNew}
+      canEditTitle={canEditTitle}
+      canManageFiles={canManageFiles}
+      canRemix={canRemix}
+      canSave={canSave}
+      canShare={canShare}
+      enableCommunity={enableCommunity}
+      isShared={isShared}
+      isTotallyNormal={isTotallyNormal}
+      logo={logo}
+      renderLogin={renderLogin}
+      showComingSoon={showComingSoon}
+      showOpenFilePicker={showOpenFilePicker}
+      showSaveFilePicker={showSaveFilePicker}
+      onClickAbout={onClickAbout}
+      onClickAccountNav={onClickAccountNav}
+      onClickAddonSettings={onClickAddonSettings}
+      onClickDesktopSettings={onClickDesktopSettings}
+      onClickMinimize={onClickMinimize}
+      onClickMaximize={onClickMaximize}
+      isMaximize={isMaximize}
+      onClickClose={onClickClose}
+      onClickNewWindow={onClickNewWindow}
+      onClickPackager={onClickPackager}
+      onClickLogo={onClickLogo}
+      onCloseAccountNav={onCloseAccountNav}
+      onLogOut={onLogOut}
+      onOpenRegistration={onOpenRegistration}
+      onProjectTelemetryEvent={onProjectTelemetryEvent}
+      onSeeCommunity={onSeeCommunity}
+      onShare={onShare}
+      onStartSelectingFileUpload={onStartSelectingFileUpload}
+      onToggleLoginOpen={onToggleLoginOpen}
+      onOpenExtensionEditor={onOpenExtensionEditor}
+    />
+  );
+
+  const viewportMenu = (
+    <div className={styles.viewportMenu}>
+      {canChangeLanguage ? <LanguageMenu onRequestCloseSettings={() => {}} /> : null}
+      {canChangeTheme ? (
+        <React.Fragment>
+          <TWGuiThemeMenu />
+          <TWBlocksThemeMenu />
+          <TWAccentThemeMenu />
+        </React.Fragment>
+      ) : null}
+    </div>
+  );
+
+  const morePageContent =
+    morePage === 'file' ? (
+      <div className={styles.filePageMenuBar}>{menuBar}</div>
+    ) : morePage === 'viewport' ? (
+      viewportMenu
+    ) : null;
 
   return (
-    <MediaQuery minWidth={unconstrainedWidth}>
-      {(isUnconstrained) => {
-        const stageSize = resolveStageSize(stageSizeMode, isUnconstrained);
-        const stageDimensions = getStageDimensions(stageSize, customStageSize, false);
-        const stageColumnWidth = stageDimensions.width + 2;
+    <Box className={styles.pageWrapper} dir={isRtl ? 'rtl' : 'ltr'}>
+      {alwaysEnabledModals}
+      {telemetryModalVisible ? (
+        <TelemetryModal
+          isRtl={isRtl}
+          isTelemetryEnabled={isTelemetryEnabled}
+          onCancel={onTelemetryModalCancel}
+          onOptIn={onTelemetryModalOptIn}
+          onOptOut={onTelemetryModalOptOut}
+          onRequestClose={onRequestCloseTelemetryModal}
+          onShowPrivacyPolicy={onShowPrivacyPolicy}
+        />
+      ) : null}
+      {loading || loaderExiting ? (
+        <Loader isFullScreen isExiting={loaderExiting} />
+      ) : isCreating ? (
+        <Loader isFullScreen messageId="gui.loader.creating" />
+      ) : null}
+      {isBrowserSupported() ? null : <BrowserModal isRtl={isRtl} onClickDesktopSettings={onClickDesktopSettings} />}
+      {tipsLibraryVisible ? <TipsLibrary /> : null}
+      {cardsVisible ? <Cards /> : null}
+      {alertsVisible ? <Alerts className={styles.alertsContainer} /> : null}
+      {connectionModalVisible ? <ConnectionModal vm={vm} /> : null}
+      {costumeLibraryVisible ? <CostumeLibrary vm={vm} onRequestClose={onRequestCloseCostumeLibrary} /> : null}
+      {backdropLibraryVisible ? <BackdropLibrary vm={vm} onRequestClose={onRequestCloseBackdropLibrary} /> : null}
+      {spriteLibraryVisible ? (
+        <SpriteLibrary
+          vm={vm}
+          onActivateBlocksTab={() => onActivateTab(BLOCKS_TAB_INDEX)}
+          onRequestClose={() => dispatch(closeSpriteLibrary())}
+        />
+      ) : null}
 
-        const alwaysEnabledModals = (
-          <React.Fragment>
-            <TWSecurityManager securityManager={securityManager} />
-            <TWRestorePointManager />
-            {usernameModalVisible && <TWUsernameModal />}
-            {settingsModalVisible && <TWSettingsModal />}
-            {customExtensionModalVisible && <TWCustomExtensionModal />}
-            {fontsModalVisible && <TWFontsModal />}
-            {unknownPlatformModalVisible && <TWUnknownPlatformModal />}
-            {invalidProjectModalVisible && <TWInvalidProjectModal />}
-            {customThemeVisible && <CustomThemeModal />}
-            {readmeModalVisible && <AEReadMe />}
-            {extensionManagerVisible && (
-              <ExtensionManager
-                vm={vm}
-                onRequestClose={onRequestCloseExtensionManager}
-                onOpenExtensionLibrary={onOpenExtensionLibrary}
-                onOpenCodeLibrary={onOpenExtensionEditor}
-                onOpenCustomExtensionModal={onOpenCustomExtensionModal}
-                dispatch={dispatch}
-              />
-            )}
-            {previewExtVisible && <PreviewExt />}
-            {aeFeaturesModalVisible && <AeFeaturesModal />}
-          </React.Fragment>
-        );
-
-        return isPlayerOnly ? (
-          <React.Fragment>
-            {/* TW: When the window is fullscreen, use an element to display the background color */}
-            {/* The default color for transparency is inconsistent between browsers and there isn't an existing */}
-            {/* element for us to style that fills the entire screen. */}
-            {isWindowFullScreen ? (
-              <div
-                className={styles.fullscreenBackground}
-                style={{
-                  backgroundColor: fullscreenBackgroundColor
-                }}
-              />
-            ) : null}
-            <StageWrapper
-              isFullScreen={isFullScreen}
-              isEmbedded={isEmbedded}
-              isRendererSupported={isRendererSupported()}
-              isRtl={isRtl}
-              loading={loading}
-              stageSize={STAGE_SIZE_MODES.full}
-              vm={vm}
-            >
-              {alertsVisible ? <Alerts className={styles.alertsContainer} /> : null}
-            </StageWrapper>
-            {alwaysEnabledModals}
-          </React.Fragment>
-        ) : (
-          <Box
-            className={styles.pageWrapper}
-            dir={isRtl ? 'rtl' : 'ltr'}
-            style={{
-              minWidth: 1024 + Math.max(0, customStageSize.width - 480),
-              minHeight: 640 + Math.max(0, customStageSize.height - 360)
-            }}
-            {...componentProps}
-          >
-            {alwaysEnabledModals}
-            {telemetryModalVisible ? (
-              <TelemetryModal
-                isRtl={isRtl}
-                isTelemetryEnabled={isTelemetryEnabled}
-                onCancel={onTelemetryModalCancel}
-                onOptIn={onTelemetryModalOptIn}
-                onOptOut={onTelemetryModalOptOut}
-                onRequestClose={onRequestCloseTelemetryModal}
-                onShowPrivacyPolicy={onShowPrivacyPolicy}
-              />
-            ) : null}
-            {loading || loaderExiting ? (
-              <Loader isFullScreen isExiting={loaderExiting} />
-            ) : isCreating ? (
-              <Loader isFullScreen messageId="gui.loader.creating" />
-            ) : null}
-            {isBrowserSupported() ? null : (
-              <BrowserModal isRtl={isRtl} onClickDesktopSettings={onClickDesktopSettings} />
-            )}
-            {tipsLibraryVisible ? <TipsLibrary /> : null}
-            {cardsVisible ? <Cards /> : null}
-            {alertsVisible ? <Alerts className={styles.alertsContainer} /> : null}
-            {connectionModalVisible ? <ConnectionModal vm={vm} /> : null}
-            {costumeLibraryVisible ? <CostumeLibrary vm={vm} onRequestClose={onRequestCloseCostumeLibrary} /> : null}
-            {backdropLibraryVisible ? <BackdropLibrary vm={vm} onRequestClose={onRequestCloseBackdropLibrary} /> : null}
-            <MenuBar
-              accountNavOpen={accountNavOpen}
-              authorId={authorId}
-              authorThumbnailUrl={authorThumbnailUrl}
-              authorUsername={authorUsername}
-              canChangeLanguage={canChangeLanguage}
-              canChangeTheme={canChangeTheme}
-              canCreateCopy={canCreateCopy}
-              canCreateNew={canCreateNew}
-              canEditTitle={canEditTitle}
-              canManageFiles={canManageFiles}
-              canRemix={canRemix}
-              canSave={canSave}
-              canShare={canShare}
-              className={styles.menuBarPosition}
-              enableCommunity={enableCommunity}
-              isShared={isShared}
-              isTotallyNormal={isTotallyNormal}
-              logo={logo}
-              renderLogin={renderLogin}
-              showComingSoon={showComingSoon}
-              showOpenFilePicker={showOpenFilePicker}
-              showSaveFilePicker={showSaveFilePicker}
-              onClickAbout={onClickAbout}
-              onClickAccountNav={onClickAccountNav}
-              onClickAddonSettings={onClickAddonSettings}
-              onClickDesktopSettings={onClickDesktopSettings}
-              onClickMinimize={onClickMinimize}
-              onClickMaximize={onClickMaximize}
-              isMaximize={isMaximize}
-              onClickClose={onClickClose}
-              onClickNewWindow={onClickNewWindow}
-              onClickPackager={onClickPackager}
-              onClickLogo={onClickLogo}
-              onCloseAccountNav={onCloseAccountNav}
-              onLogOut={onLogOut}
-              onOpenRegistration={onOpenRegistration}
-              onProjectTelemetryEvent={onProjectTelemetryEvent}
-              onSeeCommunity={onSeeCommunity}
-              onShare={onShare}
-              onStartSelectingFileUpload={onStartSelectingFileUpload}
-              onToggleLoginOpen={onToggleLoginOpen}
-              onOpenExtensionEditor={onOpenExtensionEditor}
+      {isPlayerOnly ? (
+        <React.Fragment>
+          {isWindowFullScreen ? (
+            <div
+              className={styles.fullscreenBackground}
+              style={{
+                backgroundColor: fullscreenBackgroundColor
+              }}
             />
-            <Box className={styles.bodyWrapper}>
-              <Box
-                className={styles.flexWrapper}
-                style={
-                  get('EnableMobileLayout')
-                    ? {
-                        flexDirection: 'column-reverse'
-                      }
-                    : {
-                        flexDirection: 'row'
-                      }
-                }
-              >
-                <Box className={styles.editorWrapper}>
-                  <Tabs
-                    forceRenderTabPanel
-                    className={
-                      vscodeLayoutRef ? `${tabClassNames.tabs} ${tabClassNames.vscodeList}` : tabClassNames.tabs
-                    }
-                    selectedIndex={activeTabIndex}
-                    selectedTabClassName={tabClassNames.tabSelected}
-                    selectedTabPanelClassName={tabClassNames.tabPanelSelected}
-                    onSelect={onActivateTab}
-                  >
-                    <TabList
-                      className={
-                        vscodeLayoutRef ? `${tabClassNames.tabList} ${tabClassNames.vscode}` : tabClassNames.tabList
-                      }
-                    >
-                      <Tab className={tabClassNames.tab}>
-                        <img draggable={false} src={codeIcon()} />
-                        <FormattedMessage
-                          defaultMessage="Code"
-                          description="Button to get to the code panel"
-                          id="gui.gui.codeTab"
-                        />
-                      </Tab>
-                      <Tab className={tabClassNames.tab}>
-                        <img draggable={false} src={costumesIcon()} />
-                        {targetIsStage ? (
-                          <FormattedMessage
-                            defaultMessage="Backdrops"
-                            description="Button to get to the backdrops panel"
-                            id="gui.gui.backdropsTab"
-                          />
-                        ) : (
-                          <FormattedMessage
-                            defaultMessage="Costumes"
-                            description="Button to get to the costumes panel"
-                            id="gui.gui.costumesTab"
-                          />
-                        )}
-                      </Tab>
-                      <Tab className={tabClassNames.tab}>
-                        <img draggable={false} src={soundsIcon()} />
-                        <FormattedMessage
-                          defaultMessage="Sounds"
-                          description="Button to get to the sounds panel"
-                          id="gui.gui.soundsTab"
-                        />
-                      </Tab>
-                      <Tab className={tabClassNames.tab}>
-                        <img draggable={false} src={monacoIcon()} />
-                        <FormattedMessage
-                          defaultMessage="Editor"
-                          description="Button to get to the monaco editor panel"
-                          id="gui.gui.monacoEditorTab"
-                        />
-                      </Tab>
-                      {canShowReadme && (
-                        <button className={styles.readmeButton} data-sa-readme-tab onClick={onOpenReadme}>
-                          {vscodeLayoutRef ? (
-                            <img
-                              src={readmeIcon()}
-                              draggable={false}
-                              alt="readme"
-                              style={{
-                                width: '24px'
-                              }}
-                            />
-                          ) : (
-                            'README'
-                          )}
-                        </button>
-                      )}
-                    </TabList>
-                    <TabPanel className={tabClassNames.tabPanel}>
-                      <Box className={styles.blocksWrapper}>
-                        <Blocks
-                          key={`${blocksId}/${theme.id}`}
-                          canUseCloud={canUseCloud}
-                          grow={1}
-                          isVisible={blocksTabVisible}
-                          options={{
-                            media: `${basePath}static/${theme.getBlocksMediaFolder()}/`
-                          }}
-                          stageSize={stageSize}
-                          onOpenCustomExtensionModal={onOpenCustomExtensionModal}
-                          theme={theme}
-                          vm={vm}
-                        />
-                      </Box>
-                      <Box className={styles.extensionButtonContainer}>
-                        <button className={styles.extensionButton} onClick={onExtensionButtonClick}>
-                          <img className={styles.extensionButtonIcon} draggable={false} src={addExtensionIcon} />
-                        </button>
-                      </Box>
-                      <Box className={styles.watermark}>
-                        <Watermark />
-                      </Box>
-                    </TabPanel>
-                    <TabPanel className={tabClassNames.tabPanel}>
-                      {costumesTabVisible ? <CostumeTab vm={vm} /> : null}
-                    </TabPanel>
-                    <TabPanel className={tabClassNames.tabPanel}>
-                      {soundsTabVisible ? <SoundTab vm={vm} /> : null}
-                    </TabPanel>
-                    <TabPanel className={tabClassNames.tabPanel}>
-                      <Box className={styles.monacoEditorWrapper}>
-                        <MonacoEditor vm={vm} />
-                      </Box>
-                    </TabPanel>
-                  </Tabs>
-                  {backpackVisible ? <Backpack host={backpackHost} /> : null}
-                </Box>
-
-                <Box
-                  className={classNames(styles.stageAndTargetWrapper, styles[stageSize])}
-                  style={
-                    activeTabIndex === MONACO_EDITOR_TAB_INDEX
-                      ? {
-                          display: 'none'
-                        }
-                      : {}
+          ) : null}
+          <StageWrapper
+            isFullScreen={isFullScreen}
+            isEmbedded={isEmbedded}
+            isRendererSupported={isRendererSupported()}
+            isRtl={isRtl}
+            loading={loading}
+            stageSize={STAGE_SIZE_MODES.full}
+            vm={vm}
+          />
+        </React.Fragment>
+      ) : (
+        <Box className={styles.mobileBody}>
+          {isFullScreen ? (
+            <Box className={styles.mobileFullStage}>
+              <StageWrapper
+                hideStageHeader
+                isFullScreen
+                isRendererSupported={isRendererSupported()}
+                isRtl={isRtl}
+                stageSize={STAGE_SIZE_MODES.full}
+                vm={vm}
+              />
+            </Box>
+          ) : (
+            <Box className={styles.mobileMain}>
+              {activeScreen === 'costumes' ? (
+                <MobileScreen
+                  title={
+                    targetIsStage ? (
+                      <FormattedMessage
+                        defaultMessage="Backdrops"
+                        description="Title of the backdrop editor page"
+                        id="gui.gui.backdropsTab"
+                      />
+                    ) : (
+                      <FormattedMessage
+                        defaultMessage="Costumes"
+                        description="Title of the costume editor page"
+                        id="gui.gui.costumesTab"
+                      />
+                    )
                   }
+                  onBack={() => onActivateTab(BLOCKS_TAB_INDEX)}
                 >
-                  <StageWrapper
-                    isFullScreen={isFullScreen}
-                    isRendererSupported={isRendererSupported()}
-                    isRtl={isRtl}
+                  {costumesTabVisible ? <CostumeTab vm={vm} /> : null}
+                </MobileScreen>
+              ) : null}
+
+              {activeScreen === 'sounds' ? (
+                <MobileScreen
+                  title={
+                    <FormattedMessage
+                      defaultMessage="Sounds"
+                      description="Title of the sound editor page"
+                      id="gui.gui.soundsTab"
+                    />
+                  }
+                  onBack={() => onActivateTab(BLOCKS_TAB_INDEX)}
+                >
+                  {soundsTabVisible ? <SoundTab vm={vm} /> : null}
+                </MobileScreen>
+              ) : null}
+
+              {/* Kept mounted so switching between code/costumes doesn't rebuild the Blockly workspace. */}
+              <Box
+                className={classNames(styles.workspaceArea, {
+                  [styles.isHidden]: activeScreen !== 'code'
+                })}
+              >
+                <Box className={styles.blocksWrapper}>
+                  <Blocks
+                    key={`${blocksId}/${theme.id}`}
+                    canUseCloud={canUseCloud}
+                    grow={1}
+                    isVisible={blocksTabVisible && activeScreen === 'code'}
+                    options={{
+                      media: `${basePath}static/${theme.getBlocksMediaFolder()}/`
+                    }}
                     stageSize={stageSize}
+                    onOpenCustomExtensionModal={onOpenCustomExtensionModal}
+                    theme={theme}
                     vm={vm}
                   />
-                  <Box className={styles.targetWrapper}>
-                    <TargetPane stageSize={stageSize} vm={vm} />
-                  </Box>
+                </Box>
+                <Box className={styles.extensionButtonContainer}>
+                  <button className={styles.extensionButton} onClick={onExtensionButtonClick}>
+                    <img className={styles.extensionButtonIcon} draggable={false} src={addExtensionIcon} />
+                  </button>
                 </Box>
               </Box>
+
+              {backpackVisible ? <Backpack host={backpackHost} /> : null}
+
+              {spritePanelOpen ? <MobileSpritePanel vm={vm} onClose={() => setSpritePanelOpen(false)} /> : null}
+
+              {moreOpen ? (
+                <MobileMorePanel
+                  page={morePage}
+                  projectTitle={projectTitle}
+                  vm={vm}
+                  onClose={() => {
+                    setMoreOpen(false);
+                    setMorePage(null);
+                  }}
+                  onSelectEntry={handleMoreEntry}
+                >
+                  {morePageContent}
+                </MobileMorePanel>
+              ) : null}
             </Box>
-            <DragLayer />
-          </Box>
-        );
-      }}
-    </MediaQuery>
+          )}
+
+          <MobileToolbar
+            activeScreen={activeScreen}
+            isPaused={isPaused}
+            isStageOpen={isFullScreen}
+            onAddSprite={() => {
+              setSpritePanelOpen(false);
+              setMoreOpen(false);
+              dispatch(openSpriteLibrary());
+            }}
+            onMore={() => {
+              setSpritePanelOpen(false);
+              if (moreOpen) {
+                setMorePage(null);
+              }
+              setMoreOpen(!moreOpen);
+            }}
+            onPause={handlePause}
+            onSprites={() => {
+              setMoreOpen(false);
+              setMorePage(null);
+              setSpritePanelOpen(!spritePanelOpen);
+            }}
+            onStage={() => dispatch(setFullScreen(!isFullScreen))}
+            onStart={handleStart}
+            onStop={handleStop}
+            onSwitchScreen={handleSwitchScreen}
+          />
+        </Box>
+      )}
+
+      <DragLayer />
+
+      <div className={styles.rotateHint}>
+        <span className={styles.rotateHintText}>请将设备横屏使用</span>
+      </div>
+    </Box>
   );
 };
 const mapDispatchToProps = (dispatch) => ({
@@ -695,6 +734,7 @@ GUIComponent.propTypes = {
   showOpenFilePicker: PropTypes.func,
   showSaveFilePicker: PropTypes.func,
   soundsTabVisible: PropTypes.bool,
+  spriteLibraryVisible: PropTypes.bool,
   stageSizeMode: PropTypes.oneOf(Object.keys(STAGE_SIZE_MODES)),
   targetIsStage: PropTypes.bool,
   telemetryModalVisible: PropTypes.bool,
@@ -750,7 +790,12 @@ const mapStateToProps = (state) => ({
   customThemeVisible: state.scratchGui.modals.customtheme,
   readmeModalVisible: state.scratchGui.modals.readme,
   previewExtVisible: state.scratchGui.modals.previewExt,
-  aeFeaturesModalVisible: state.scratchGui.modals.aeFeaturesModal
+  aeFeaturesModalVisible: state.scratchGui.modals.aeFeaturesModal,
+  editingTarget: state.scratchGui.targets.editingTarget,
+  sprites: state.scratchGui.targets.sprites,
+  stage: state.scratchGui.targets.stage,
+  spriteLibraryVisible: state.scratchGui.modals.spriteLibrary,
+  projectTitle: state.scratchGui.projectTitle
 });
 
 export default injectIntl(connect(mapStateToProps, mapDispatchToProps)(GUIComponent));

@@ -93,7 +93,7 @@ const base = {
     host: '0.0.0.0',
     allowedHosts: 'all',
     compress: true,
-    port: process.env.PORT || 8601,
+    port: process.env.PORT || 1145,
     // allows ROUTING_STYLE=wildcard to work properly
     historyApiFallback: {
       rewrites: [

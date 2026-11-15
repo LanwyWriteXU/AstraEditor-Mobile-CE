@@ -479,3 +479,149 @@ $fade-out-distance: 15px;
   /* overridden by JS; this will be used if the browser can't understand that color */
   background-color: white;
 }
+
+/* Mobile landscape layout */
+
+.mobile-body {
+  display: flex;
+  flex-grow: 1;
+  flex-shrink: 1;
+  min-height: 0;
+  overflow: hidden;
+  background-color: $ui-primary;
+}
+
+.mobile-main {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.workspace-area {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-height: 0;
+  background-color: $ui-white;
+}
+
+.viewport-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Blocks the editor until the device is rotated back to landscape. */
+.rotate-hint {
+  display: none;
+}
+
+@media (orientation: portrait) {
+  .rotate-hint {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: $ui-modal-overlay;
+  }
+
+  .rotate-hint-text {
+    padding: 16px 24px;
+    border-radius: 12px;
+    background-color: $ui-modal-background;
+    color: $text-primary;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 16px;
+  }
+}
+
+/* The desktop menu bar becomes a vertical accordion inside the more panel. */
+.file-page-menu-bar {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.file-page-menu-bar [class*='menu-bar_menu-bar'] {
+  flex-direction: column;
+  align-items: stretch;
+  height: auto;
+  gap: 0;
+  background: transparent;
+}
+
+.file-page-menu-bar [class*='menu-bar_main-menu'] {
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  gap: 0;
+}
+
+.file-page-menu-bar [class*='menu-bar_menu-group'],
+.file-page-menu-bar [class*='menu-bar_file-group'] {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+
+.file-page-menu-bar [class*='menu-bar_menu-bar-item'] {
+  width: 100%;
+  height: auto;
+  min-height: 44px;
+  justify-content: flex-start;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.file-page-menu-bar [class*='menu-bar_menu-bar-menu'] {
+  position: static;
+  width: 100%;
+  margin-top: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Only the menus matter here; hide the account / share / feedback block. */
+.file-page-menu-bar [class*='menu-bar_control-bar-inner'],
+.file-page-menu-bar [class*='menu-bar_account-info-group'],
+.file-page-menu-bar [class*='menu-bar_menu-bar-button'] {
+  display: none;
+}
+
+.is-hidden {
+  display: none;
+}
+
+/* Full screen stage: the stage covers the whole viewport and the toolbar floats on top. */
+.mobile-full-stage {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 800;
+  background-color: $fullscreen-background;
+}
+
+.mobile-full-stage [class*='stage-wrapper_stage-wrapper'] {
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  height: 100% !important;
+  padding: 0 !important;
+  justify-content: center;
+  background-color: $fullscreen-background;
+}

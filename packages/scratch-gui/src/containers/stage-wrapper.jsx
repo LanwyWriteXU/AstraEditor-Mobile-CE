@@ -7,7 +7,10 @@ import StageWrapperComponent from '../components/stage-wrapper/stage-wrapper.jsx
 const StageWrapper = (props) => <StageWrapperComponent {...props} />;
 
 StageWrapper.propTypes = {
+  hideStageHeader: PropTypes.bool,
+  isFullScreen: PropTypes.bool,
   isRendererSupported: PropTypes.bool.isRequired,
+  isRtl: PropTypes.bool,
   stageSize: PropTypes.oneOf(Object.keys(STAGE_DISPLAY_SIZES)).isRequired,
   vm: PropTypes.instanceOf(VM).isRequired
 };

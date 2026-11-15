@@ -19,6 +19,7 @@ import styles from './target-pane.css';
 const TargetPane = ({
   editingTarget,
   fileInputRef,
+  hideSpriteLibrary,
   hoveredTarget,
   spriteLibraryVisible,
   onActivateBlocksTab,
@@ -85,7 +86,7 @@ const TargetPane = ({
         />
       )}
       <div>
-        {spriteLibraryVisible ? (
+        {!hideSpriteLibrary && spriteLibraryVisible ? (
           <SpriteLibrary
             vm={vm}
             onActivateBlocksTab={onActivateBlocksTab}
@@ -123,6 +124,7 @@ const spriteShape = PropTypes.shape({
 TargetPane.propTypes = {
   editingTarget: PropTypes.string,
   extensionLibraryVisible: PropTypes.bool,
+  hideSpriteLibrary: PropTypes.bool,
   fileInputRef: PropTypes.func,
   hoveredTarget: PropTypes.shape({
     hoveredSprite: PropTypes.string,
