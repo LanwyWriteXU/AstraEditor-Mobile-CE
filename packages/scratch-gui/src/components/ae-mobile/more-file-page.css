@@ -1,6 +1,17 @@
 @import '../../css/units.css';
 @import '../../css/colors.css';
 
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.with-divider {
+  margin-top: 4px;
+  border-top: 1px solid $ui-black-transparent;
+}
+
 .list {
   display: flex;
   flex-direction: column;

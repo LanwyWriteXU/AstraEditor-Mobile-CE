@@ -9,6 +9,7 @@ import soundsIcon from '../gui/icon--sounds.svg';
 import monacoIcon from '../gui/icon--monaco.svg';
 import spriteIcon from '../action-menu/icon--sprite.svg';
 import fullscreenIcon from '../stage-header/icon--fullscreen.svg';
+import unfullscreenIcon from '../stage-header/icon--unfullscreen.svg';
 import stopIcon from '../stop-all/icon--stop-all.svg';
 import greenFlagIcon from '../green-flag/icon--green-flag.svg';
 import pauseIcon from './icon--pause.svg';
@@ -99,6 +100,7 @@ const MobileToolbar = ({
   intl,
   isMoreOpen,
   isPaused,
+  isRunning,
   isSpritePanelOpen,
   isStageOpen,
   onMore,
@@ -186,7 +188,7 @@ const MobileToolbar = ({
           title={intl.formatMessage(messages.stage)}
           onClick={onStage}
         >
-          <img className={styles.icon} draggable={false} src={fullscreenIcon} alt="" />
+          <img className={styles.icon} draggable={false} src={isStageOpen ? unfullscreenIcon : fullscreenIcon} alt="" />
         </button>
         <button
           aria-label={intl.formatMessage(messages.stop)}
@@ -206,7 +208,7 @@ const MobileToolbar = ({
         </button>
         <button
           aria-label={intl.formatMessage(messages.start)}
-          className={classNames(styles.playButton, 'green-flag')}
+          className={classNames(styles.playButton, 'green-flag', { [styles.isActive]: isRunning })}
           title={intl.formatMessage(messages.start)}
           onClick={onStart}
         >
@@ -222,6 +224,7 @@ MobileToolbar.propTypes = {
   intl: intlShape.isRequired,
   isMoreOpen: PropTypes.bool,
   isPaused: PropTypes.bool,
+  isRunning: PropTypes.bool,
   isSpritePanelOpen: PropTypes.bool,
   isStageOpen: PropTypes.bool,
   onMore: PropTypes.func,

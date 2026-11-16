@@ -538,35 +538,37 @@ const SettingsModalComponent = (props) => {
   };
   const body = (
     <React.Fragment>
-      <div
-        className={styles.Modaltab}
-        style={{
-          margin: '0'
-        }}
-      >
-        <button
-          className={settingsTab === 'settings' ? styles.tabButtonEnable : styles.tabButtonUnable}
+      {props.inline ? null : (
+        <div
+          className={styles.Modaltab}
           style={{
-            display: 'inline-block',
-            width: `50%`,
-            height: '100%'
+            margin: '0'
           }}
-          onClick={() => setSettingsTab('settings')}
         >
-          <FormattedMessage defaultMessage="Project" description="Settings modal tab" id="tw.settingsModal.project" />
-        </button>
-        <button
-          className={settingsTab === 'ae' ? styles.tabButtonEnable : styles.tabButtonUnable}
-          style={{
-            display: 'inline-block',
-            width: `50%`,
-            height: '100%'
-          }}
-          onClick={() => setSettingsTab('ae')}
-        >
-          AstraEditor
-        </button>
-      </div>
+          <button
+            className={settingsTab === 'settings' ? styles.tabButtonEnable : styles.tabButtonUnable}
+            style={{
+              display: 'inline-block',
+              width: `50%`,
+              height: '100%'
+            }}
+            onClick={() => setSettingsTab('settings')}
+          >
+            <FormattedMessage defaultMessage="Project" description="Settings modal tab" id="tw.settingsModal.project" />
+          </button>
+          <button
+            className={settingsTab === 'ae' ? styles.tabButtonEnable : styles.tabButtonUnable}
+            style={{
+              display: 'inline-block',
+              width: `50%`,
+              height: '100%'
+            }}
+            onClick={() => setSettingsTab('ae')}
+          >
+            AstraEditor
+          </button>
+        </div>
+      )}
 
       <Box className={styles.body}>
         {settingsTab === 'settings' && (

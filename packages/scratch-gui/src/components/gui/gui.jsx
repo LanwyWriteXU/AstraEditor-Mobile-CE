@@ -51,6 +51,9 @@ import { openAeFeaturesModal } from '../../reducers/modals.js';
 import ExtensionManager from '../extension-chooser/extension-chooser.jsx';
 import MonacoEditor from '../../containers/monaco-editor.jsx';
 import MoreFilePage from '../ae-mobile/more-file-page.jsx';
+import MoreViewPage from '../ae-mobile/more-view-page.jsx';
+import { persistTheme } from '../../lib/themes/themePersistance.js';
+import { setTheme } from '../../reducers/theme.js';
 import { setProjectTitle } from '../../reducers/project-title';
 import PreviewExt from '../../containers/ae-preview-ext.jsx';
 
@@ -221,6 +224,19 @@ const GUIComponent = (props) => {
   const [spritePanelOpen, setSpritePanelOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [morePage, setMorePage] = useState(null);
+  const [isRunning, setIsRunning] = useState(false);
+
+  useEffect(() => {
+    if (!vm) return undefined;
+    const handleStart = () => setIsRunning(true);
+    const handleStop = () => setIsRunning(false);
+    vm.on('PROJECT_RUN_START', handleStart);
+    vm.on('PROJECT_RUN_STOP', handleStop);
+    return () => {
+      vm.off('PROJECT_RUN_START', handleStart);
+      vm.off('PROJECT_RUN_STOP', handleStop);
+    };
+  }, [vm]);
   const [isPaused, setIsPaused] = useState(() => Boolean(vm && vm.runtime && vm.runtime.paused));
 
   // The editor only works in landscape; ask the platform to lock it when possible.
@@ -398,19 +414,6 @@ const GUIComponent = (props) => {
     </React.Fragment>
   );
 
-  const viewportMenu = (
-    <div className={styles.viewportMenu}>
-      {canChangeLanguage ? <LanguageMenu onRequestCloseSettings={() => {}} /> : null}
-      {canChangeTheme ? (
-        <React.Fragment>
-          <TWGuiThemeMenu />
-          <TWBlocksThemeMenu />
-          <TWAccentThemeMenu />
-        </React.Fragment>
-      ) : null}
-    </div>
-  );
-
   const closeMorePanel = () => {
     setMoreOpen(false);
     setMorePage(null);
@@ -426,9 +429,18 @@ const GUIComponent = (props) => {
         onToggle={closeMorePanel}
       />
     ) : morePage === 'view' ? (
-      viewportMenu
-    ) : morePage === 'settings' ? (
-      <TWSettingsModal inline />
+      <MoreViewPage
+        theme={theme}
+        onChangeTheme={(key, value) => {
+          const nextTheme = theme.set(key, value);
+          dispatch(setTheme(nextTheme));
+          persistTheme(nextTheme);
+        }}
+      />
+    ) : morePage === 'projectSettings' ? (
+      <TWSettingsModal inline where="settings" />
+    ) : morePage === 'editorSettings' ? (
+      <TWSettingsModal inline where="ae" />
     ) : null;
 
   return (
@@ -587,6 +599,7 @@ const GUIComponent = (props) => {
             activeScreen={activeScreen}
             isMoreOpen={moreOpen}
             isPaused={isPaused}
+            isRunning={isRunning}
             isSpritePanelOpen={spritePanelOpen}
             isStageOpen={isFullScreen}
             onMore={() => {

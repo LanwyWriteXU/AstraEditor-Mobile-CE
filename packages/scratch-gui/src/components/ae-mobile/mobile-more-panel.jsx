@@ -7,6 +7,7 @@ import fileIcon from '../menu-bar/icon--file.svg';
 import settingsIcon from '../menu-bar/icon--settings.svg';
 import toolsIcon from '../menu-bar/tools.svg';
 import addonsIcon from '../menu-bar/addons.svg';
+import logoIcon from '../menu-bar/logo.svg';
 import { BackIcon, MaskIcon } from './icons.jsx';
 
 import styles from './mobile-more-panel.css';
@@ -32,10 +33,15 @@ const messages = defineMessages({
     defaultMessage: 'Addons',
     description: 'Entry that opens the addon settings'
   },
-  settings: {
-    id: 'gui.menuBar.settings',
-    defaultMessage: 'Settings',
-    description: 'Entry that opens the advanced settings'
+  projectSettings: {
+    id: 'ae.mobile.projectSettings',
+    defaultMessage: 'Project settings',
+    description: 'Entry that opens the project settings'
+  },
+  editorSettings: {
+    id: 'ae.mobile.editorSettings',
+    defaultMessage: 'Editor settings',
+    description: 'Entry that opens the editor settings'
   },
   blocks: {
     id: 'ae.mobile.blockCount',
@@ -47,7 +53,8 @@ const messages = defineMessages({
 const ENTRIES = [
   { id: 'file', label: messages.file, icon: fileIcon },
   { id: 'view', label: messages.view, icon: settingsIcon },
-  { id: 'settings', label: messages.settings, icon: toolsIcon },
+  { id: 'projectSettings', label: messages.projectSettings, icon: toolsIcon },
+  { id: 'editorSettings', label: messages.editorSettings, icon: logoIcon },
   { id: 'addons', label: messages.addons, icon: addonsIcon }
 ];
 

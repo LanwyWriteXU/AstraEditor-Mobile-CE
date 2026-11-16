@@ -18,6 +18,7 @@ const messages = {
     'ae.mobile.close': 'Close',
     'ae.mobile.codeEditor': 'Code editor',
     'ae.mobile.editorSettings': 'Editor settings',
+
     'ae.mobile.projectSettings': 'Project settings'
   },
   'zh-cn': {
@@ -29,6 +30,7 @@ const messages = {
     'ae.mobile.close': '关闭',
     'ae.mobile.codeEditor': '代码编辑器',
     'ae.mobile.editorSettings': '编辑器设置',
+
     'ae.mobile.projectSettings': '项目设置'
   },
   'zh-tw': {
