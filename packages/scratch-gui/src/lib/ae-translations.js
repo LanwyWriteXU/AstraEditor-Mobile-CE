@@ -11,35 +11,47 @@
 const messages = {
   en: {
     'ae.mobile.more': 'More',
-    'ae.mobile.viewport': 'Viewport',
+    'ae.mobile.view': 'View',
     'ae.mobile.pause': 'Pause',
     'ae.mobile.resume': 'Resume',
     'ae.mobile.blockCount': '{num} blocks',
-    'ae.mobile.close': 'Close'
+    'ae.mobile.close': 'Close',
+    'ae.mobile.codeEditor': 'Code editor',
+    'ae.mobile.editorSettings': 'Editor settings',
+    'ae.mobile.projectSettings': 'Project settings'
   },
   'zh-cn': {
     'ae.mobile.more': '更多',
-    'ae.mobile.viewport': '视口',
+    'ae.mobile.view': '视图',
     'ae.mobile.pause': '暂停',
     'ae.mobile.resume': '继续',
     'ae.mobile.blockCount': '{num} 块积木',
-    'ae.mobile.close': '关闭'
+    'ae.mobile.close': '关闭',
+    'ae.mobile.codeEditor': '代码编辑器',
+    'ae.mobile.editorSettings': '编辑器设置',
+    'ae.mobile.projectSettings': '项目设置'
   },
   'zh-tw': {
     'ae.mobile.more': '更多',
-    'ae.mobile.viewport': '視窗',
+    'ae.mobile.view': '檢視',
     'ae.mobile.pause': '暫停',
     'ae.mobile.resume': '繼續',
     'ae.mobile.blockCount': '{num} 塊積木',
-    'ae.mobile.close': '關閉'
+    'ae.mobile.close': '關閉',
+    'ae.mobile.codeEditor': '程式碼編輯器',
+    'ae.mobile.editorSettings': '編輯器設定',
+    'ae.mobile.projectSettings': '專案設定'
   },
   ja: {
     'ae.mobile.more': 'その他',
-    'ae.mobile.viewport': '表示',
+    'ae.mobile.view': '表示',
     'ae.mobile.pause': '一時停止',
     'ae.mobile.resume': '再開',
     'ae.mobile.blockCount': '{num} 個のブロック',
-    'ae.mobile.close': '閉じる'
+    'ae.mobile.close': '閉じる',
+    'ae.mobile.codeEditor': 'コードエディター',
+    'ae.mobile.editorSettings': 'エディター設定',
+    'ae.mobile.projectSettings': 'プロジェクト設定'
   }
 };
 

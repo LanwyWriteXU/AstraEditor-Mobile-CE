@@ -1,7 +1,7 @@
 @import '../../css/units.css';
 @import '../../css/colors.css';
 
-/* Sliding panel that holds the sprite grid, sprite info and the stage selector. */
+/* Sliding panel: sprite grid, sprite info bar, and a separate stage row at the bottom. */
 
 .panel {
   position: absolute;
@@ -11,8 +11,8 @@
   z-index: 400;
   display: flex;
   flex-direction: column;
-  width: 22rem;
-  max-width: 68vw;
+  width: 30rem;
+  max-width: 100%;
   background-color: $ui-secondary;
   border-left: 1px solid $ui-black-transparent;
   box-shadow: -4px 0 16px $shadow;
@@ -62,4 +62,96 @@
   flex-grow: 1;
   min-height: 0;
   overflow: hidden;
+}
+
+/* Keep the original sprite info on one row: slightly tighter name field and
+   padding so name + X + Y and show + size + direction both fit. */
+.content [class*='sprite-info_sprite-input'] {
+  width: 6rem;
+}
+
+.content [class*='sprite-info_sprite-info'] {
+  padding: 0.5rem 0.75rem;
+}
+
+/* Adding a sprite lives in the toolbar now. */
+.content [class*='sprite-selector_add-button'] {
+  display: none;
+}
+
+/* Sticky hover states on touch screens leave the red delete badge visible all the
+   time; deletion is available from the context menu instead. */
+.content [class*='sprite-selector-item_delete-button'] {
+  display: none;
+}
+
+/* The desktop grid caps each tile at 6rem; in this wider panel let the tiles fill the row. */
+.content [class*='sprite-selector_sprite-wrapper'] {
+  max-width: none;
+}
+
+/* Stage row: a separate block, visually different from the sprite tiles. */
+.stage-row {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: 100%;
+  height: 3.75rem;
+  padding: 0 12px;
+  gap: 10px;
+  border: none;
+  border-top: 1px solid $ui-black-transparent;
+  background-color: $ui-tertiary;
+  cursor: pointer;
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.stage-row:active {
+  background-color: $ui-secondary;
+}
+
+.stage-row-selected {
+  box-shadow: inset 3px 0 0 $looks-secondary;
+}
+
+.stage-thumb-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 64px;
+  height: 44px;
+  border: 1px solid $ui-black-transparent;
+  border-radius: 6px;
+  background-color: $ui-white;
+  overflow: hidden;
+}
+
+.stage-thumb {
+  background-color: #ffffff;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.stage-text {
+  display: flex;
+  align-items: baseline;
+  flex-grow: 1;
+  min-width: 0;
+  gap: 6px;
+}
+
+.stage-title {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: $text-primary;
+}
+
+.stage-count {
+  font-size: 11px;
+  color: $text-primary-transparent;
 }

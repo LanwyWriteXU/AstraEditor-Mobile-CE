@@ -1,49 +1,75 @@
-import PropTypes from 'prop-types';
 import React from 'react';
+import PropTypes from 'prop-types';
 import { defineMessages, injectIntl, intlShape } from 'react-intl';
 
+import getCostumeUrl from '../../lib/get-costume-url';
 import TargetPane from '../../containers/target-pane.jsx';
 import { STAGE_DISPLAY_SIZES } from '../../lib/layout-constants';
-import { BackIcon } from './icons.jsx';
 
 import styles from './mobile-sprite-panel.css';
 
 const messages = defineMessages({
-  sprites: {
-    id: 'gui.SpriteInfo.sprite',
-    defaultMessage: 'Sprite',
-    description: 'Sprite info label, reused as the title of the mobile sprite panel'
-  },
-  back: {
-    id: 'gui.modal.back',
-    defaultMessage: 'Back',
-    description: 'Button used to leave the sprite panel'
+  backdrop: {
+    id: 'gui.stageSelector.backdrops',
+    defaultMessage: 'Backdrops',
+    description: 'Label of the stage row at the bottom of the sprite panel'
   }
 });
 
 /**
- * The sprite panel is the desktop target pane, laid out vertically:
- * sprite grid on top, sprite info below it, stage selector at the bottom.
- * Those parts keep their original styles; only the stacking order is ours.
+ * The sprite panel reuses the original target pane (sprite grid + sprite info),
+ * with the stage pulled out into its own row at the bottom so backdrops read as
+ * a different kind of target.
  */
-const MobileSpritePanel = ({ intl, onClose, vm }) => (
-  <div className={styles.panel}>
-    <div className={styles.header}>
-      <button aria-label={intl.formatMessage(messages.back)} className={styles.backButton} onClick={onClose}>
-        <BackIcon className={styles.backIcon} />
+const MobileSpritePanel = ({ editingTarget, intl, onClose, onOpenCode, stage, vm }) => {
+  const stageAsset = stage && stage.costume && stage.costume.asset;
+  const isStageSelected = Boolean(stage && stage.id && stage.id === editingTarget);
+
+  const handleStageClick = () => {
+    if (!stage || !stage.id) return;
+    vm.setEditingTarget(stage.id);
+    if (onOpenCode) onOpenCode();
+    onClose();
+  };
+
+  return (
+    <div className={styles.panel}>
+      <div className={styles.content}>
+        <TargetPane hideSpriteLibrary stageSize={STAGE_DISPLAY_SIZES.large} vm={vm} />
+      </div>
+      <button
+        className={[styles.stageRow, isStageSelected ? styles.stageRowSelected : ''].join(' ').trim()}
+        onClick={handleStageClick}
+      >
+        <span className={styles.stageThumbWrapper}>
+          {stageAsset ? (
+            <img className={styles.stageThumb} draggable={false} src={getCostumeUrl(stageAsset)} alt="" />
+          ) : null}
+        </span>
+        <span className={styles.stageText}>
+          <span className={styles.stageTitle}>{intl.formatMessage(messages.backdrop)}</span>
+          <span className={styles.stageCount}>{stage && stage.costumeCount ? stage.costumeCount : 0}</span>
+        </span>
       </button>
-      <span className={styles.title}>{intl.formatMessage(messages.sprites)}</span>
     </div>
-    <div className={styles.content}>
-      <TargetPane hideSpriteLibrary stageSize={STAGE_DISPLAY_SIZES.large} vm={vm} />
-    </div>
-  </div>
-);
+  );
+};
 
 MobileSpritePanel.propTypes = {
+  editingTarget: PropTypes.string,
   intl: intlShape.isRequired,
   onClose: PropTypes.func,
-  vm: PropTypes.shape({}).isRequired
+  onOpenCode: PropTypes.func,
+  stage: PropTypes.shape({
+    costume: PropTypes.shape({
+      asset: PropTypes.shape({})
+    }),
+    costumeCount: PropTypes.number,
+    id: PropTypes.string
+  }),
+  vm: PropTypes.shape({
+    setEditingTarget: PropTypes.func
+  }).isRequired
 };
 
 export default injectIntl(MobileSpritePanel);

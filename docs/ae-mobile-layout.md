@@ -240,3 +240,74 @@ flowchart LR
 
 - `eslint`：0 error（gui.jsx 仍剩若干"未使用 props"的 warning，用于阻止 props 泄漏到 DOM）
 - `scratch-gui` 生产构建：`NODE_ENV=production npx webpack --bail` → exit 0，仅体积警告
+
+### 12.7 舞台必须常驻
+
+`vm.attachRenderer()` 是在 `containers/stage.jsx` 挂载时执行的，所以只要页面上没有 `<Stage>`，`vm.renderer` 就是
+`undefined`。最初把编辑页的舞台整个移除后，`VMManager.loadProject` 里那行
+`vm.renderer.setUseHighQualityRender(...)` 直接抛 `TypeError`。
+
+现在的做法：编辑页也渲染一个 `<StageWrapper>`，放进 `.stage-host` 容器里，用
+`position: absolute; left: -3000px` 挪到屏幕外。这样 renderer 始终存在，用户看不到它；
+进入全屏时 `StageWrapper` 自己变成 `position: fixed` 覆盖视口，容器位置不再起作用。
+
+## 13. 工具栏与面板的交互修正
+
+| 需求 | 实现 |
+| --- | --- |
+| 按钮全部正方形 | 工具栏宽 48px，按钮统一 36×36、圆角 8px；`overflow: visible`（不能让弹层被裁） |
+| 更多按钮点开变叉 | `isMoreOpen` 切换 `MoreIcon` / `CloseIcon`，并给按钮加选中态 |
+| 去掉面板顶部关闭按钮 | `MobileScreen` 不再有 header；角色面板、更多面板的头部按钮全部移除 |
+| 点角色按钮展开角色 | 面板改为纯内容 + 底部背景行，靠工具栏按钮或点编辑区（`.panel-scrim`）关闭 |
+| 添加角色为悬浮面板 | 新增 `add-sprite-menu.jsx`：复用原版 `ActionMenu`，四项为上传 / 随机 / 绘制 / 素材库；容器仍带 `sprite-selector_add-button` 类名，插件可继续定位 |
+| 切换按钮展开浮层 | 原来 `.toolbar { overflow-y: auto }` 把绝对定位的浮层裁掉了，改为 `visible` |
+| 暂停按钮对齐插件 | 直接用 `addons/addons/pause/pause.svg` 与 `play.svg` |
+| 底部按钮超出屏幕 | 按钮 36px、间距 4px，整列约 332px，`spacer` 撑开中间 |
+| 图标变紫 | 代码 / 造型 / 声音三个图标改走 `!../../lib/tw-recolor/build!` 加载器 + `<RecoloredImg>`，跟随主题色 |
+| 删除面板内添加按钮 | `mobile-sprite-panel.css` 隐藏 `sprite-selector_add-button`，并去掉 `sprite-selector` 为它预留的底部内边距 |
+
+## 14. addon 初始化竞态与工具栏浮窗
+
+### 14.1 `Cannot access 'guiReducer' before initialization`
+
+`lib/app-state-hoc.jsx` 原来在 `constructor` 里 `require('../reducers/gui')`，注释说明是为了不加载不需要的代码。
+但 addon bundle（`addons/entry.js` → `import('./api')`）和 GUI 是两套入口，谁先执行不确定。手机上 addon
+chunk 先跑完时，`reducers/gui` 还没有执行完，`require` 拿到的模块读 `default` 直接命中 TDZ，整个页面白屏。
+
+改成在模块顶层加载一次（webpack 会把它当静态依赖，保证求值顺序），`constructor` 只读结果。
+同时 `addons/redux.js` 的 `get state` 在 store 尚未创建时返回一个最小默认状态（浏览器语言 + 编辑器模式），
+`dispatch` 在 store 为空时直接丢弃，避免 addon 抢先执行时再抛 `Cannot read properties of null`。
+
+### 14.2 工具栏浮窗
+
+- **新建角色**：不再用 `ActionMenu`（它的展开列表是用 `max-height` 动画做的，在 48px 宽的工具列里会被裁成一截）。
+  改为自己的一排横向按钮：上传 / 随机 / 绘制 / 素材库，浮在按钮左侧；容器仍带 `sprite-selector_add-button` 类名。
+- **切换编辑器**：同样改为横向浮窗，只列出**当前不在**的界面，图标在上、文字 `writing-mode: vertical-rl` 竖排。
+- **图标颜色**：代码 / 造型 / 声音恢复用原版 `icon--code|costumes|sounds.svg`，通过 CSS `mask-image` +
+  `background-color: currentColor` 上色，形状不变、颜色跟随主题，不再用 recolor 加载器（它会把图标染成主题强调色）。
+- 开始 / 停止按钮补上 `green-flag`、`stop-all` 类名，让依赖这些选择器插入内容的插件仍能找到挂载点。
+
+## 15. 局域网访问白屏：crypto.randomUUID
+
+手机通过 `http://192.168.x.x:1145` 打开时：
+
+```
+TypeError: crypto.randomUUID is not a function
+```
+
+`scratch-vm/src/engine/runtime.js` 有三处 `crypto.randomUUID()`（初始化 `_projectid`）。这个方法只在
+**安全上下文**（https / localhost）里存在，局域网 http 访问时 `crypto` 存在但没有 `randomUUID`，
+构造 Runtime 直接抛错，整个界面挂掉。
+
+改成使用文件里已经引入的 `uuid` 包（`uuid.v4()`），它内部走 `crypto.getRandomValues`，不受安全上下文限制。
+注意 `scratch-gui` 引用的是 `scratch-vm/dist`，所以改完必须先构建 vm。
+
+## 16. 工具栏与面板（本轮）
+
+- **新建角色按钮跑位**：容器为了插件兼容保留了 `sprite-selector_add-button` 类名，但原版那条规则是
+  `position: absolute` + `[dir='ltr'] { right: 1rem }`，把它顶出了工具栏。用 `!important` 清掉四个方向的偏移。
+- **代码编辑器**：`MONACO_EDITOR_TAB_INDEX` 本来就在 `reducers/editor-tab` 里，`containers/monaco-editor.jsx`
+  也一直在，只是没有入口。现在它是切换浮窗的第四项（`ae.mobile.codeEditor`），走 `onActivateTab(3)`。
+- **更多面板分组**：条目改为「文件 / 编辑器设置 / 项目设置 / 插件」。文件页渲染 `MenuBar`，用 CSS 只保留
+  `data-menu="file|edit|tools"` 三组、隐藏 logo / 账户 / 分享 / 反馈 / 设置菜单，并把下拉面板 (`ul.menu`)
+  从 `position: absolute` 改成文档流内联，形成手风琴。

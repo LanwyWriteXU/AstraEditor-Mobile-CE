@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React, { useLayoutEffect, useState, useEffect, useRef } from 'react';
-import { FormattedMessage, injectIntl, intlShape } from 'react-intl';
+import { injectIntl, intlShape } from 'react-intl';
 import { connect } from 'react-redux';
 import VM from 'scratch-vm';
 
@@ -49,10 +49,18 @@ import { loadData } from '../ae-readme/ae-readme.jsx';
 import { openAeFeaturesModal } from '../../reducers/modals.js';
 
 import ExtensionManager from '../extension-chooser/extension-chooser.jsx';
+import MonacoEditor from '../../containers/monaco-editor.jsx';
+import MoreFilePage from '../ae-mobile/more-file-page.jsx';
+import { setProjectTitle } from '../../reducers/project-title';
 import PreviewExt from '../../containers/ae-preview-ext.jsx';
 
-import { closeSpriteLibrary, openReadme, openSettingsModal, openSpriteLibrary } from '../../reducers/modals.js';
-import { BLOCKS_TAB_INDEX, COSTUMES_TAB_INDEX, SOUNDS_TAB_INDEX } from '../../reducers/editor-tab';
+import { closeSpriteLibrary, openReadme, openSettingsModal } from '../../reducers/modals.js';
+import {
+  BLOCKS_TAB_INDEX,
+  COSTUMES_TAB_INDEX,
+  MONACO_EDITOR_TAB_INDEX,
+  SOUNDS_TAB_INDEX
+} from '../../reducers/editor-tab';
 import { setFullScreen } from '../../reducers/mode';
 
 import { STAGE_SIZE_MODES } from '../../lib/layout-constants';
@@ -321,13 +329,17 @@ const GUIComponent = (props) => {
     }
   }, []);
   const stageSize = resolveStageSize(stageSizeMode, true);
-  const activeScreen =
-    activeTabIndex === COSTUMES_TAB_INDEX ? 'costumes' : activeTabIndex === SOUNDS_TAB_INDEX ? 'sounds' : 'code';
+  let activeScreen = 'code';
+  if (activeTabIndex === COSTUMES_TAB_INDEX) activeScreen = 'costumes';
+  else if (activeTabIndex === SOUNDS_TAB_INDEX) activeScreen = 'sounds';
+  else if (activeTabIndex === MONACO_EDITOR_TAB_INDEX) activeScreen = 'monaco';
 
   const handleSwitchScreen = (screen) => {
     dispatch(setFullScreen(false));
     if (screen === 'costumes') {
       onActivateTab(COSTUMES_TAB_INDEX);
+    } else if (screen === 'monaco') {
+      onActivateTab(MONACO_EDITOR_TAB_INDEX);
     } else if (screen === 'sounds') {
       onActivateTab(SOUNDS_TAB_INDEX);
     } else {
@@ -354,11 +366,6 @@ const GUIComponent = (props) => {
     if (entry === 'addons') {
       setMoreOpen(false);
       if (onClickAddonSettings) onClickAddonSettings();
-      return;
-    }
-    if (entry === 'settings') {
-      setMoreOpen(false);
-      dispatch(openSettingsModal());
       return;
     }
     setMorePage(entry);
@@ -391,52 +398,6 @@ const GUIComponent = (props) => {
     </React.Fragment>
   );
 
-  const menuBar = (
-    <MenuBar
-      accountNavOpen={accountNavOpen}
-      authorId={authorId}
-      authorThumbnailUrl={authorThumbnailUrl}
-      authorUsername={authorUsername}
-      canChangeLanguage={canChangeLanguage}
-      canChangeTheme={canChangeTheme}
-      canCreateCopy={canCreateCopy}
-      canCreateNew={canCreateNew}
-      canEditTitle={canEditTitle}
-      canManageFiles={canManageFiles}
-      canRemix={canRemix}
-      canSave={canSave}
-      canShare={canShare}
-      enableCommunity={enableCommunity}
-      isShared={isShared}
-      isTotallyNormal={isTotallyNormal}
-      logo={logo}
-      renderLogin={renderLogin}
-      showComingSoon={showComingSoon}
-      showOpenFilePicker={showOpenFilePicker}
-      showSaveFilePicker={showSaveFilePicker}
-      onClickAbout={onClickAbout}
-      onClickAccountNav={onClickAccountNav}
-      onClickAddonSettings={onClickAddonSettings}
-      onClickDesktopSettings={onClickDesktopSettings}
-      onClickMinimize={onClickMinimize}
-      onClickMaximize={onClickMaximize}
-      isMaximize={isMaximize}
-      onClickClose={onClickClose}
-      onClickNewWindow={onClickNewWindow}
-      onClickPackager={onClickPackager}
-      onClickLogo={onClickLogo}
-      onCloseAccountNav={onCloseAccountNav}
-      onLogOut={onLogOut}
-      onOpenRegistration={onOpenRegistration}
-      onProjectTelemetryEvent={onProjectTelemetryEvent}
-      onSeeCommunity={onSeeCommunity}
-      onShare={onShare}
-      onStartSelectingFileUpload={onStartSelectingFileUpload}
-      onToggleLoginOpen={onToggleLoginOpen}
-      onOpenExtensionEditor={onOpenExtensionEditor}
-    />
-  );
-
   const viewportMenu = (
     <div className={styles.viewportMenu}>
       {canChangeLanguage ? <LanguageMenu onRequestCloseSettings={() => {}} /> : null}
@@ -450,11 +411,24 @@ const GUIComponent = (props) => {
     </div>
   );
 
+  const closeMorePanel = () => {
+    setMoreOpen(false);
+    setMorePage(null);
+  };
+
   const morePageContent =
     morePage === 'file' ? (
-      <div className={styles.filePageMenuBar}>{menuBar}</div>
-    ) : morePage === 'viewport' ? (
+      <MoreFilePage
+        projectTitle={projectTitle}
+        vm={vm}
+        onOpenExtensionEditor={onOpenExtensionEditor}
+        onStartSelectingFileUpload={onStartSelectingFileUpload}
+        onToggle={closeMorePanel}
+      />
+    ) : morePage === 'view' ? (
       viewportMenu
+    ) : morePage === 'settings' ? (
+      <TWSettingsModal inline />
     ) : null;
 
   return (
@@ -513,56 +487,32 @@ const GUIComponent = (props) => {
         </React.Fragment>
       ) : (
         <Box className={styles.mobileBody}>
-          {isFullScreen ? (
-            <Box className={styles.mobileFullStage}>
-              <StageWrapper
-                hideStageHeader
-                isFullScreen
-                isRendererSupported={isRendererSupported()}
-                isRtl={isRtl}
-                stageSize={STAGE_SIZE_MODES.full}
-                vm={vm}
-              />
-            </Box>
-          ) : (
+          {/*
+            The stage has to stay mounted: vm.attachRenderer() is called inside the Stage
+            container, and the VM needs a renderer even while the stage is not visible.
+            While editing it is parked off screen, in full screen mode it covers the viewport.
+          */}
+          <Box className={styles.stageHost}>
+            <StageWrapper
+              hideStageHeader
+              isFullScreen={isFullScreen}
+              isRendererSupported={isRendererSupported()}
+              isRtl={isRtl}
+              stageSize={STAGE_SIZE_MODES.full}
+              vm={vm}
+            />
+          </Box>
+          {isFullScreen ? null : (
             <Box className={styles.mobileMain}>
               {activeScreen === 'costumes' ? (
-                <MobileScreen
-                  title={
-                    targetIsStage ? (
-                      <FormattedMessage
-                        defaultMessage="Backdrops"
-                        description="Title of the backdrop editor page"
-                        id="gui.gui.backdropsTab"
-                      />
-                    ) : (
-                      <FormattedMessage
-                        defaultMessage="Costumes"
-                        description="Title of the costume editor page"
-                        id="gui.gui.costumesTab"
-                      />
-                    )
-                  }
-                  onBack={() => onActivateTab(BLOCKS_TAB_INDEX)}
-                >
-                  {costumesTabVisible ? <CostumeTab vm={vm} /> : null}
-                </MobileScreen>
+                <MobileScreen>{costumesTabVisible ? <CostumeTab vm={vm} /> : null}</MobileScreen>
               ) : null}
 
               {activeScreen === 'sounds' ? (
-                <MobileScreen
-                  title={
-                    <FormattedMessage
-                      defaultMessage="Sounds"
-                      description="Title of the sound editor page"
-                      id="gui.gui.soundsTab"
-                    />
-                  }
-                  onBack={() => onActivateTab(BLOCKS_TAB_INDEX)}
-                >
-                  {soundsTabVisible ? <SoundTab vm={vm} /> : null}
-                </MobileScreen>
+                <MobileScreen>{soundsTabVisible ? <SoundTab vm={vm} /> : null}</MobileScreen>
               ) : null}
+
+              {activeScreen === 'monaco' ? <MonacoEditor /> : null}
 
               {/* Kept mounted so switching between code/costumes doesn't rebuild the Blockly workspace. */}
               <Box
@@ -594,7 +544,26 @@ const GUIComponent = (props) => {
 
               {backpackVisible ? <Backpack host={backpackHost} /> : null}
 
-              {spritePanelOpen ? <MobileSpritePanel vm={vm} onClose={() => setSpritePanelOpen(false)} /> : null}
+              {spritePanelOpen || moreOpen ? (
+                <div
+                  className={styles.panelScrim}
+                  onClick={() => {
+                    setSpritePanelOpen(false);
+                    setMoreOpen(false);
+                    setMorePage(null);
+                  }}
+                />
+              ) : null}
+
+              {spritePanelOpen ? (
+                <MobileSpritePanel
+                  editingTarget={editingTarget}
+                  stage={stage}
+                  vm={vm}
+                  onClose={() => setSpritePanelOpen(false)}
+                  onOpenCode={() => onActivateTab(BLOCKS_TAB_INDEX)}
+                />
+              ) : null}
 
               {moreOpen ? (
                 <MobileMorePanel
@@ -606,6 +575,7 @@ const GUIComponent = (props) => {
                     setMorePage(null);
                   }}
                   onSelectEntry={handleMoreEntry}
+                  onUpdateTitle={(title) => dispatch(setProjectTitle(title))}
                 >
                   {morePageContent}
                 </MobileMorePanel>
@@ -615,13 +585,10 @@ const GUIComponent = (props) => {
 
           <MobileToolbar
             activeScreen={activeScreen}
+            isMoreOpen={moreOpen}
             isPaused={isPaused}
+            isSpritePanelOpen={spritePanelOpen}
             isStageOpen={isFullScreen}
-            onAddSprite={() => {
-              setSpritePanelOpen(false);
-              setMoreOpen(false);
-              dispatch(openSpriteLibrary());
-            }}
             onMore={() => {
               setSpritePanelOpen(false);
               if (moreOpen) {
@@ -639,6 +606,7 @@ const GUIComponent = (props) => {
             onStart={handleStart}
             onStop={handleStop}
             onSwitchScreen={handleSwitchScreen}
+            vm={vm}
           />
         </Box>
       )}

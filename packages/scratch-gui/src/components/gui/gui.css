@@ -380,7 +380,8 @@
   position: absolute;
   bottom: 0;
   left: 0;
-  right: 0;
+  /* Small square in the bottom left corner, like Scratch, instead of a full width bar. */
+  right: auto;
   z-index: $z-index-extension-button;
   background: $looks-secondary;
 
@@ -592,36 +593,61 @@ $fade-out-distance: 15px;
   box-shadow: none;
 }
 
-/* Only the menus matter here; hide the account / share / feedback block. */
+/* Only the File / Edit / Tools menus matter here; hide everything else. */
 .file-page-menu-bar [class*='menu-bar_control-bar-inner'],
 .file-page-menu-bar [class*='menu-bar_account-info-group'],
-.file-page-menu-bar [class*='menu-bar_menu-bar-button'] {
+.file-page-menu-bar [class*='menu-bar_menu-bar-button'],
+.file-page-menu-bar [data-menu='settings'],
+.file-page-menu-bar [data-menu='errors'],
+.file-page-menu-bar [class*='menu-bar_menu-group'] > img {
   display: none;
+}
+
+/* Inline the dropdown panel so it reads as an accordion instead of a popup. */
+.file-page-menu-bar [class*='menu_menu'] {
+  position: static;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.file-page-menu-bar [class*='menu_menu-item'] {
+  border-radius: 6px;
 }
 
 .is-hidden {
   display: none;
 }
 
-/* Full screen stage: the stage covers the whole viewport and the toolbar floats on top. */
-.mobile-full-stage {
-  position: fixed;
+/* The stage is always mounted (the VM needs its renderer), so park it off screen
+   while the blocks editor is showing. */
+.stage-host {
+  position: absolute;
+  top: 0;
+  left: -3000px;
+  width: 480px;
+  height: 360px;
+  overflow: hidden;
+}
+
+/* In full screen mode the stage wrapper is position: fixed, so this container is
+   irrelevant; only the desktop menu-bar offset has to go. */
+.stage-host [class*='stage-wrapper_full-screen'] {
+  top: 0 !important;
+  height: 100% !important;
+  padding: 0 !important;
+}
+
+/* Invisible layer behind the panels: tapping the editor closes them. */
+.panel-scrim {
+  position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: 800;
-  background-color: $fullscreen-background;
-}
-
-.mobile-full-stage [class*='stage-wrapper_stage-wrapper'] {
-  position: absolute !important;
-  top: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  height: 100% !important;
-  padding: 0 !important;
-  justify-content: center;
-  background-color: $fullscreen-background;
+  z-index: 390;
+  background-color: transparent;
 }

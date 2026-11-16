@@ -14,6 +14,11 @@ import { detectLocale } from './detect-locale';
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
+// Loaded eagerly. Reading it lazily inside the constructor raced with the addon bundle
+// (which also pulls this module in) and surfaced as
+// "Cannot access 'guiReducer' before initialization" on slower devices.
+const guiRedux = require('../reducers/gui');
+
 /*
  * Higher Order Component to provide redux state. If an `intl` prop is provided
  * it will override the internal `intl` redux state
@@ -43,9 +48,6 @@ const AppStateHOC = function (WrappedComponent, localesOnly) {
         initialState = { locales: initializedLocales };
         enhancer = composeEnhancers();
       } else {
-        // You are right, this is gross. But it's necessary to avoid
-        // importing unneeded code that will crash unsupported browsers.
-        const guiRedux = require('../reducers/gui');
         const guiReducer = guiRedux.default;
         const { guiInitialState, guiMiddleware, initFullScreen, initPlayer, initEmbedded, initTelemetryModal } =
           guiRedux;

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 
 const baseProps = {
@@ -18,6 +19,36 @@ const Icon = ({ children, ...props }) => (
 export const MoreIcon = (props) => (
   <Icon {...props}>
     <path d="M4 7h16M4 12h16M4 17h16" />
+  </Icon>
+);
+
+// Recolours an SVG by using it as a mask: the shape comes from the file, the colour
+// comes from the current text colour, so icons work in both light and dark themes.
+export const MaskIcon = ({ className, src }) => (
+  <span
+    aria-hidden="true"
+    className={className}
+    style={{
+      WebkitMaskImage: `url("${src}")`,
+      maskImage: `url("${src}")`,
+      WebkitMaskSize: 'contain',
+      maskSize: 'contain',
+      WebkitMaskRepeat: 'no-repeat',
+      maskRepeat: 'no-repeat',
+      WebkitMaskPosition: 'center',
+      maskPosition: 'center'
+    }}
+  />
+);
+
+MaskIcon.propTypes = {
+  className: PropTypes.string,
+  src: PropTypes.string
+};
+
+export const CloseIcon = (props) => (
+  <Icon {...props}>
+    <path d="M6 6l12 12M18 6l-12 12" />
   </Icon>
 );
 

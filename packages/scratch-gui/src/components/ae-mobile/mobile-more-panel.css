@@ -36,6 +36,25 @@
   min-width: 0;
 }
 
+.project-title-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 2px 4px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background-color: transparent;
+  color: $text-primary;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.project-title-input:focus {
+  outline: none;
+  border-color: $looks-secondary;
+  background-color: $ui-white;
+}
+
 .project-title {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 14px;
@@ -125,6 +144,7 @@
   width: 20px;
   height: 20px;
   flex-shrink: 0;
+  background-color: currentColor;
 }
 
 .entry-label {

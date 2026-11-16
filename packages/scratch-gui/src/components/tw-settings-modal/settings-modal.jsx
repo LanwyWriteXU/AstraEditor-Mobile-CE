@@ -514,20 +514,20 @@ const LoadExtensionToDataURL = (props) => (
           id="tw.settingsModal.loadExtensionToDataURLHelp"
         />
         <WarningTip>
-            <FormattedMessage
-              defaultMessage="This will significantly increase the size of the .sb3 file."
-              id="tw.settingsModal.LoadExtensionToDataURLWarn"
-            />
+          <FormattedMessage
+            defaultMessage="This will significantly increase the size of the .sb3 file."
+            id="tw.settingsModal.LoadExtensionToDataURLWarn"
+          />
         </WarningTip>
       </>
     }
   />
-)
+);
 const WarningTip = (props) => {
   return <div className={styles.warning}>{props.children}</div>;
 };
 const SettingsModalComponent = (props) => {
-  const tabState = useState(props.where)
+  const tabState = useState(props.where);
   /** @type {'ae' | 'settings'} */
   const settingsTab = tabState[0];
   /** @type {(where: 'ae' | 'settings') => void} */
@@ -536,13 +536,8 @@ const SettingsModalComponent = (props) => {
   const update = () => {
     onUpdate(!settingsUpdate);
   };
-  return (
-    <Modal
-      className={styles.modalContent}
-      onRequestClose={props.onClose}
-      contentLabel={props.intl.formatMessage(messages.title)}
-      id="settingsModal"
-    >
+  const body = (
+    <React.Fragment>
       <div
         className={styles.Modaltab}
         style={{
@@ -649,7 +644,7 @@ const SettingsModalComponent = (props) => {
               onChange={(e) => {
                 set('loadExtensionToDataURL', e.target.checked);
                 update();
-              }} 
+              }}
             />
             <Header>
               <FormattedMessage
@@ -669,11 +664,28 @@ const SettingsModalComponent = (props) => {
           </>
         )}
       </Box>
+    </React.Fragment>
+  );
+
+  // `inline` renders the same settings UI inside the mobile side panel instead of a modal.
+  if (props.inline) {
+    return <Box className={styles.inlineBody}>{body}</Box>;
+  }
+
+  return (
+    <Modal
+      className={styles.modalContent}
+      onRequestClose={props.onClose}
+      contentLabel={props.intl.formatMessage(messages.title)}
+      id="settingsModal"
+    >
+      {body}
     </Modal>
   );
 };
 
 SettingsModalComponent.propTypes = {
+  inline: PropTypes.bool,
   intl: intlShape,
   onClose: PropTypes.func,
   isEmbedded: PropTypes.bool,

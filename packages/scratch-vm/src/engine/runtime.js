@@ -570,7 +570,7 @@ class Runtime extends EventEmitter {
     /**
      * 作品ID
      */
-    this._projectid = crypto.randomUUID();
+    this._projectid = uuid.v4();
 
     /**
      * 存储于sb3的自定义键值对
@@ -1024,7 +1024,7 @@ class Runtime extends EventEmitter {
    * @returns {string} 作品 ID
    */
   getProjectId() {
-    if (!this._projectid) this._projectid = crypto.randomUUID();
+    if (!this._projectid) this._projectid = uuid.v4();
     return this._projectid;
   }
 
@@ -1034,7 +1034,7 @@ class Runtime extends EventEmitter {
    * @returns {string} 作品 ID
    */
   setProjectId(projectId) {
-    this._projectid = projectId || crypto.randomUUID();
+    this._projectid = projectId || uuid.v4();
     return this._projectid;
   }
 

@@ -7,8 +7,6 @@
   flex-direction: column;
   flex-grow: 1;
   min-height: 0;
-  /* Room for the absolute add-sprite button below the sprite info bar. */
-  padding-bottom: 3.25rem;
   position: relative;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   /* margin-right: calc($space / 2); disable*/

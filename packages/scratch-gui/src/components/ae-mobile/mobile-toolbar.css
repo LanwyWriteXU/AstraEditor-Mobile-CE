@@ -1,27 +1,32 @@
 @import '../../css/units.css';
 @import '../../css/colors.css';
 
-/* Right-hand vertical toolbar: the only chrome the editor has on mobile. */
+/* Right-hand vertical toolbar: the only chrome the editor has on mobile.
+   Every button is a 36px square so the column reads as one strip. */
 
 .toolbar {
   display: flex;
   flex-direction: column;
+  align-items: center;
   flex-shrink: 0;
-  width: $ae-toolbar-width;
+  box-sizing: border-box;
+  width: 44px;
   height: 100%;
-  padding: 4px;
+  padding: 5px 0;
   gap: 4px;
-  overflow-y: auto;
   background-color: $ui-tertiary;
   border-left: 1px solid $ui-black-transparent;
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
+  /* No overflow here: the editor switch popup is absolutely positioned. */
+  overflow: visible;
 }
 
 .top-group {
   display: flex;
   flex-direction: column;
+  align-items: center;
   flex-shrink: 0;
   gap: 4px;
 }
@@ -32,29 +37,34 @@
   min-height: 0;
 }
 
-.tool-button {
+.tool-button,
+.play-button {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 100%;
-  height: 36px;
-  padding: 8px;
+  box-sizing: border-box;
+  width: 32px;
+  height: 32px;
+  padding: 6px;
   border: 1px solid $ui-black-transparent;
-  border-radius: 10px;
+  border-radius: 8px;
   background-color: $ui-white;
   color: $text-primary;
   cursor: pointer;
   touch-action: manipulation;
 }
 
-.tool-button:active {
+.tool-button:active,
+.play-button:active {
   background-color: $ui-secondary;
 }
 
-.tool-button.is-active {
+.tool-button.is-active,
+.play-button.is-active {
+  /* Outline only: the filled pink background made the icon unreadable. */
   border-color: $looks-secondary;
-  background-color: $looks-transparent;
+  box-shadow: inset 0 0 0 1px $looks-secondary;
 }
 
 .icon {
@@ -71,6 +81,24 @@
   pointer-events: none;
 }
 
+/* Scratch's tab SVGs are purple by design; masking them keeps the shape but lets
+   the icon take the same colour as every other toolbar icon. */
+.screen-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: currentColor;
+  -webkit-mask-image: var(--screen-icon);
+  mask-image: var(--screen-icon);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  pointer-events: none;
+}
+
 .switch-wrapper {
   position: relative;
 }
@@ -78,31 +106,29 @@
 .switch-popup {
   position: absolute;
   top: 0;
-  right: calc(100% + 8px);
+  right: calc(100% + 6px);
   z-index: 500;
   display: flex;
-  flex-direction: column;
-  padding: 6px;
+  flex-direction: row;
   gap: 4px;
-  min-width: 132px;
+  padding: 4px;
   border: 1px solid $ui-black-transparent;
-  border-radius: 12px;
+  border-radius: 10px;
   background-color: $ui-white;
   box-shadow: 0 4px 16px $shadow;
 }
 
 .switch-option {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 10px 12px;
-  gap: 10px;
+  gap: 4px;
+  width: 38px;
+  padding: 8px 0;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   background-color: transparent;
   color: $text-primary;
-  font-family: inherit;
-  font-size: 13px;
-  text-align: left;
   cursor: pointer;
   touch-action: manipulation;
 }
@@ -111,53 +137,25 @@
   background-color: $ui-secondary;
 }
 
-.switch-option.is-active {
-  background-color: $looks-transparent;
-  color: $looks-secondary;
-}
-
-.switch-icon {
+.switch-option-icon {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
 }
 
+.switch-option-label {
+  writing-mode: vertical-rl;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: $text-primary;
+}
+
 .play-controls {
   display: flex;
   flex-direction: column;
+  align-items: center;
   flex-shrink: 0;
   gap: 4px;
-}
-
-.play-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 34px;
-  padding: 6px;
-  border: 1px solid $ui-black-transparent;
-  border-radius: 10px;
-  background-color: $ui-white;
-  color: $text-primary;
-  cursor: pointer;
-  touch-action: manipulation;
-}
-
-.play-button:active {
-  background-color: $ui-secondary;
-}
-
-.play-button.is-active {
-  border-color: $looks-secondary;
-  background-color: $looks-transparent;
-}
-
-.play-icon {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  pointer-events: none;
 }
 
 /* Full screen stage: the toolbar floats over the stage so the buttons keep their place. */
@@ -166,7 +164,15 @@
   top: 0;
   right: 0;
   bottom: 0;
-  z-index: 860;
+  z-index: 9999;
   background-color: transparent;
   border-left: none;
+}
+
+/* In full screen the stage behind the toolbar is dark, so the buttons need their
+   own light background to stay visible and clickable. */
+.toolbar.is-overlay .play-button {
+  background-color: rgba(255, 255, 255, 0.92);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
 }

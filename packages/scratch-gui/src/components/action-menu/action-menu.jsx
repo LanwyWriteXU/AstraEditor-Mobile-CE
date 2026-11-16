@@ -102,7 +102,7 @@ class ActionMenu extends React.Component {
     this.containerRef = ref;
   }
   render() {
-    const { className, img: mainImg, title: mainTitle, moreButtons, tooltipPlace, onClick } = this.props;
+    const { className, iconNode, img: mainImg, title: mainTitle, moreButtons, tooltipPlace, onClick } = this.props;
 
     return (
       <div
@@ -122,7 +122,7 @@ class ActionMenu extends React.Component {
           ref={this.setButtonRef}
           onClick={this.clickDelayer(onClick)}
         >
-          <img className={styles.mainIcon} draggable={false} src={mainImg} />
+          {iconNode || <img className={styles.mainIcon} draggable={false} src={mainImg} />}
         </button>
         <ReactTooltip
           className={styles.tooltip}
@@ -181,6 +181,7 @@ class ActionMenu extends React.Component {
 
 ActionMenu.propTypes = {
   className: PropTypes.string,
+  iconNode: PropTypes.node,
   img: PropTypes.string,
   moreButtons: PropTypes.arrayOf(
     PropTypes.shape({
