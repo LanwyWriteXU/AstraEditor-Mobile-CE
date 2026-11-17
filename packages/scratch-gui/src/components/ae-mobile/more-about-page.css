@@ -1,0 +1,72 @@
+@import '../../css/colors.css';
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 14px;
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-mark {
+  display: block;
+  width: auto;
+  height: 64px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.title {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: $text-primary;
+}
+
+.edition {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  color: $looks-secondary;
+}
+
+.version {
+  margin-top: 4px;
+  font-size: 13px;
+  color: $text-primary-transparent;
+}
+
+.slogans {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: $text-primary;
+  opacity: 0.9;
+}
+
+.link {
+  align-self: flex-start;
+  margin-top: 18px;
+  padding: 8px 14px;
+  border: 1px solid $ui-black-transparent;
+  border-radius: 8px;
+  color: $looks-secondary;
+  font-size: 13px;
+  text-decoration: none;
+}

@@ -52,6 +52,7 @@ import ExtensionManager from '../extension-chooser/extension-chooser.jsx';
 import MonacoEditor from '../../containers/monaco-editor.jsx';
 import MoreFilePage from '../ae-mobile/more-file-page.jsx';
 import MoreViewPage from '../ae-mobile/more-view-page.jsx';
+import MoreAboutPage from '../ae-mobile/more-about-page.jsx';
 import { persistTheme } from '../../lib/themes/themePersistance.js';
 import { setTheme } from '../../reducers/theme.js';
 import { setProjectTitle } from '../../reducers/project-title';
@@ -441,6 +442,8 @@ const GUIComponent = (props) => {
       <TWSettingsModal inline where="settings" />
     ) : morePage === 'editorSettings' ? (
       <TWSettingsModal inline where="ae" />
+    ) : morePage === 'about' ? (
+      <MoreAboutPage />
     ) : null;
 
   return (

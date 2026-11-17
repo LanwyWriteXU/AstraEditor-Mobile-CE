@@ -23,22 +23,9 @@ export const MoreIcon = (props) => (
 );
 
 // Recolours an SVG by using it as a mask: the shape comes from the file, the colour
-// comes from the current text colour, so icons work in both light and dark themes.
+// comes from CSS. Callers set the mask-image from the --mask-url custom property.
 export const MaskIcon = ({ className, src }) => (
-  <span
-    aria-hidden="true"
-    className={className}
-    style={{
-      WebkitMaskImage: `url("${src}")`,
-      maskImage: `url("${src}")`,
-      WebkitMaskSize: 'contain',
-      maskSize: 'contain',
-      WebkitMaskRepeat: 'no-repeat',
-      maskRepeat: 'no-repeat',
-      WebkitMaskPosition: 'center',
-      maskPosition: 'center'
-    }}
-  />
+  <span aria-hidden="true" className={className} style={{ '--mask-url': `url(${src})` }} />
 );
 
 MaskIcon.propTypes = {

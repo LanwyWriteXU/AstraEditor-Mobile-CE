@@ -11,6 +11,8 @@ const RenderGUI = (props) => (
     hasCloudPermission
     canSave={false}
     basePath={process.env.ROOT}
+    backpackVisible
+    backpackHost="_local_"
     canEditTitle
     enableCommunity
     {...props}

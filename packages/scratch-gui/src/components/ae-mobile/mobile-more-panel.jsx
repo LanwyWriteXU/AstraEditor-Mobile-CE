@@ -7,7 +7,8 @@ import fileIcon from '../menu-bar/icon--file.svg';
 import settingsIcon from '../menu-bar/icon--settings.svg';
 import toolsIcon from '../menu-bar/tools.svg';
 import addonsIcon from '../menu-bar/addons.svg';
-import logoIcon from '../menu-bar/logo.svg';
+import logoIcon from './icon--logo.svg';
+import aboutIcon from './icon--about.svg';
 import { BackIcon, MaskIcon } from './icons.jsx';
 
 import styles from './mobile-more-panel.css';
@@ -35,12 +36,17 @@ const messages = defineMessages({
   },
   projectSettings: {
     id: 'ae.mobile.projectSettings',
-    defaultMessage: 'Project settings',
+    defaultMessage: 'Project',
     description: 'Entry that opens the project settings'
+  },
+  about: {
+    id: 'ae.mobile.about',
+    defaultMessage: 'About',
+    description: 'Entry that opens the about page'
   },
   editorSettings: {
     id: 'ae.mobile.editorSettings',
-    defaultMessage: 'Editor settings',
+    defaultMessage: 'AstraEditor',
     description: 'Entry that opens the editor settings'
   },
   blocks: {
@@ -54,8 +60,9 @@ const ENTRIES = [
   { id: 'file', label: messages.file, icon: fileIcon },
   { id: 'view', label: messages.view, icon: settingsIcon },
   { id: 'projectSettings', label: messages.projectSettings, icon: toolsIcon },
-  { id: 'editorSettings', label: messages.editorSettings, icon: logoIcon },
-  { id: 'addons', label: messages.addons, icon: addonsIcon }
+  { id: 'editorSettings', label: messages.editorSettings, image: logoIcon },
+  { id: 'addons', label: messages.addons, icon: addonsIcon },
+  { id: 'about', label: messages.about, icon: aboutIcon }
 ];
 
 const MobileMorePanel = ({ children, intl, onSelectEntry, onUpdateTitle, page, projectTitle, vm }) => {
@@ -129,9 +136,13 @@ const MobileMorePanel = ({ children, intl, onSelectEntry, onUpdateTitle, page, p
         <div className={styles.content}>{children}</div>
       ) : (
         <div className={styles.entries}>
-          {ENTRIES.map(({ id, label, icon }) => (
+          {ENTRIES.map(({ id, label, icon, image }) => (
             <button className={styles.entry} key={id} onClick={() => onSelectEntry(id)}>
-              <MaskIcon className={styles.entryIcon} src={icon} />
+              {image ? (
+                <img className={styles.entryIconImage} draggable={false} src={image} alt="" />
+              ) : (
+                <MaskIcon className={styles.entryIconMask} src={icon} />
+              )}
               <span className={styles.entryLabel}>{intl.formatMessage(label)}</span>
             </button>
           ))}

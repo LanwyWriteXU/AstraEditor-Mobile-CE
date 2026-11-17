@@ -648,21 +648,6 @@ const SettingsModalComponent = (props) => {
                 update();
               }}
             />
-            <Header>
-              <FormattedMessage
-                defaultMessage="Interface Settings"
-                description="Settings modal interface. settings"
-                id="tw.settingsModal.interfaceSettings"
-              />
-            </Header>
-            <EnableVSCodeLayout
-              value={get('EnableVSCodeLayout')}
-              onChange={(e) => {
-                set('EnableVSCodeLayout', e.target.checked);
-                location.reload();
-                update();
-              }}
-            />
           </>
         )}
       </Box>

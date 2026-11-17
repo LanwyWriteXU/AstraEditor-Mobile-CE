@@ -1293,9 +1293,14 @@ export default async function ({ addon, console, msg }) {
           return;
         }
         document.removeEventListener('click', clickListener);
-        const backpackInstance = getBackpackFromElement(backpackContainer);
-        verifyBackpack(backpackInstance);
-        patchBackpack(backpackInstance);
+        try {
+          const backpackInstance = getBackpackFromElement(backpackContainer);
+          verifyBackpack(backpackInstance);
+          patchBackpack(backpackInstance);
+        } catch (e) {
+          // The mobile layout doesn't expose the backpack component at the expected path.
+          console.warn('[folders] backpack folders are not available in this layout:', e.message);
+        }
       });
     };
     document.addEventListener('click', clickListener, true);
@@ -1308,15 +1313,21 @@ export default async function ({ addon, console, msg }) {
     });
     vm = addon.tab.traps.vm;
     reactInternalKey = Object.keys(spriteSelectorItemElement).find((i) => i.startsWith(REACT_INTERNAL_PREFIX));
-    const sortableHOCInstance = getSortableHOCFromElement(spriteSelectorItemElement);
-    const spriteSelectorItemInstance = spriteSelectorItemElement[reactInternalKey].child.child.child.stateNode;
-    verifySortableHOC(sortableHOCInstance);
-    verifySpriteSelectorItem(spriteSelectorItemInstance);
-    verifyVM(vm);
-    patchSortableHOC(sortableHOCInstance.constructor, TYPE_SPRITES);
-    patchSpriteSelectorItem(spriteSelectorItemInstance.constructor);
-    sortableHOCInstance.saInitialSetup();
-    patchVM();
+    try {
+      const sortableHOCInstance = getSortableHOCFromElement(spriteSelectorItemElement);
+      const spriteSelectorItemInstance = spriteSelectorItemElement[reactInternalKey].child.child.child.stateNode;
+      verifySortableHOC(sortableHOCInstance);
+      verifySpriteSelectorItem(spriteSelectorItemInstance);
+      verifyVM(vm);
+      patchSortableHOC(sortableHOCInstance.constructor, TYPE_SPRITES);
+      patchSpriteSelectorItem(spriteSelectorItemInstance.constructor);
+      sortableHOCInstance.saInitialSetup();
+      patchVM();
+    } catch (e) {
+      // No desktop asset panel in the mobile layout; folders stay disabled instead of
+      // throwing an unhandled error on every navigation.
+      console.warn('[folders] sprite folders are not available in this layout:', e.message);
+    }
   }
 
   // Costume and sound list

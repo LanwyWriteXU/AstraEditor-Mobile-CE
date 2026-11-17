@@ -129,10 +129,6 @@ const MoreFilePage = ({
           onClick: () => vm.setFramerate(sixtyFps ? 30 : 60)
         }
       ]
-    },
-    {
-      id: 'tools',
-      items: [{ id: 'extensionEditor', label: messages.extensionEditor, onClick: onOpenExtensionEditor }]
     }
   ];
 

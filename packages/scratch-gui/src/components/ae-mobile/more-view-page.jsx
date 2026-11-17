@@ -35,7 +35,7 @@ const messages = defineMessages({
     description: 'Entry that opens the language list'
   },
   gui: {
-    id: 'tw.menuBar.theme',
+    id: 'tw.guiAccent',
     defaultMessage: 'Interface theme',
     description: 'Entry that opens the interface theme list'
   },
