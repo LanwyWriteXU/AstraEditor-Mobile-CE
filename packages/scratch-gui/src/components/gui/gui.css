@@ -488,7 +488,9 @@ $fade-out-distance: 15px;
   flex-grow: 1;
   flex-shrink: 1;
   min-height: 0;
-  overflow: hidden;
+  /* Not hidden: the block drag surface has to be able to render over the toolbar
+     while a stack is being dragged. */
+  overflow: visible;
   background-color: $ui-primary;
 }
 
@@ -499,7 +501,7 @@ $fade-out-distance: 15px;
   flex-grow: 1;
   min-width: 0;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .workspace-area {

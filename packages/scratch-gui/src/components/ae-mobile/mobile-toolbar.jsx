@@ -123,7 +123,7 @@ const MobileToolbar = ({
   const activeScreenConfig = SCREENS.find((screen) => screen.id === activeScreen) || SCREENS[0];
 
   return (
-    <div className={classNames(styles.toolbar, { [styles.isOverlay]: isStageOpen })}>
+    <div className={classNames(styles.toolbar, { [styles.isOverlay]: isStageOpen })} data-ae-toolbar="true">
       {isStageOpen ? null : (
         <div className={styles.topGroup}>
           <button

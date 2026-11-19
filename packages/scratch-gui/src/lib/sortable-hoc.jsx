@@ -25,10 +25,11 @@ const SortableHOC = function (WrappedComponent) {
           if (a.top === b.top) return (a.left - b.left) * (this.props.isRtl ? -1 : 1);
           return a.top - b.top;
         });
-        if (!this.ref) {
-          throw new Error('The containerRef must be assigned to the sortable area');
+        // The panel can be opening while the drag starts; measure on the next pass instead
+        // of crashing the whole editor.
+        if (this.ref) {
+          this.containerBox = this.ref.getBoundingClientRect();
         }
-        this.containerBox = this.ref.getBoundingClientRect();
       } else if (!newProps.dragInfo.dragging && this.props.dragInfo.dragging) {
         const newIndex = this.getMouseOverIndex();
         if (newIndex !== null) {
@@ -71,7 +72,9 @@ const SortableHOC = function (WrappedComponent) {
       // the dragging object. Obviously only exists if there is a drag (i.e. currentOffset).
       // Return null if outside the container, zero if there are no boxes.
       let mouseOverIndex = null;
-      if (this.props.dragInfo.currentOffset && this.ref) {
+      // containerBox is only measured after mount; a re-render triggered while the
+      // container is being mounted/unmounted can reach this before it exists.
+      if (this.props.dragInfo.currentOffset && this.ref && this.containerBox) {
         const { x, y } = this.props.dragInfo.currentOffset;
         const { top, left, bottom, right } = this.containerBox;
 

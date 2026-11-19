@@ -23,7 +23,6 @@ import LanguageMenu from '../menu-bar/language-menu.jsx';
 import TWGuiThemeMenu from '../menu-bar/tw-theme-gui.jsx';
 import TWBlocksThemeMenu from '../menu-bar/tw-theme-blocks.jsx';
 import TWAccentThemeMenu from '../menu-bar/tw-theme-accent.jsx';
-import Backpack from '../../containers/backpack.jsx';
 import BrowserModal from '../browser-modal/browser-modal.jsx';
 import TipsLibrary from '../../containers/tips-library.jsx';
 import Cards from '../../containers/cards.jsx';
@@ -104,7 +103,9 @@ const GUIComponent = (props) => {
     authorUsername,
     basePath,
     backdropLibraryVisible,
+    assetDragging,
     backpackHost,
+    blockDragging,
     backpackVisible,
     blocksId,
     blocksTabVisible,
@@ -226,6 +227,78 @@ const GUIComponent = (props) => {
   const [moreOpen, setMoreOpen] = useState(false);
   const [morePage, setMorePage] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [backpackExpanded, setBackpackExpanded] = useState(false);
+
+  // Drag zones are resolved from the pointer position: HTML5 drag targets can be the
+  // drag image or the body, so event.target is not reliable here.
+  const resolveDragZone = (x, y) => {
+    const element = document.elementFromPoint(x, y);
+    if (!element || !element.closest) return null;
+    if (element.closest('[data-ae-toolbar]')) return 'toolbar';
+    if (element.closest('[data-ae-backpack]')) return 'backpack';
+    const panel = element.closest('[data-ae-sprite-panel]');
+    if (panel) {
+      const rect = panel.getBoundingClientRect();
+      if (y > rect.bottom - 72) return 'backpack';
+      return 'panel';
+    }
+    return 'outside';
+  };
+
+  const applyDragZone = (zone) => {
+    if (!zone) return;
+    if (zone === 'toolbar') {
+      if (!spritePanelOpen) {
+        setSpritePanelOpen(true);
+        setBackpackExpanded(false);
+      }
+      return;
+    }
+    if (zone === 'backpack') {
+      if (!spritePanelOpen) setSpritePanelOpen(true);
+      setBackpackExpanded(true);
+      return;
+    }
+    if (zone === 'panel') {
+      setBackpackExpanded(false);
+      return;
+    }
+    if (spritePanelOpen) {
+      setSpritePanelOpen(false);
+      setBackpackExpanded(false);
+    }
+  };
+
+  // Blockly drags don't fire HTML5 drag events, so watch the drag surface and the pointer.
+  useEffect(() => {
+    if (isFullScreen) return undefined;
+    const pointer = { x: 0, y: 0 };
+    let wasDragging = false;
+    const handlePointerMove = (event) => {
+      pointer.x = event.clientX;
+      pointer.y = event.clientY;
+    };
+    const check = () => {
+      // Scratch-Blocks puts .blocklyDragging on the block being dragged; costumes and
+      // sounds are dragged through the assetDrag redux state instead.
+      const dragging = Boolean(document.querySelector('.blocklyDragging')) || assetDragging;
+      if (!dragging) {
+        if (wasDragging) {
+          wasDragging = false;
+          setBackpackExpanded(false);
+        }
+        return;
+      }
+      wasDragging = true;
+      applyDragZone(resolveDragZone(pointer.x, pointer.y));
+    };
+    const interval = setInterval(check, 120);
+    document.addEventListener('pointermove', handlePointerMove);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('pointermove', handlePointerMove);
+    };
+  }, [assetDragging, isFullScreen, spritePanelOpen]);
 
   useEffect(() => {
     if (!vm) return undefined;
@@ -346,6 +419,19 @@ const GUIComponent = (props) => {
     }
   }, []);
   const stageSize = resolveStageSize(stageSizeMode, true);
+
+  // Sprites, costumes, sounds and backpack items use HTML5 drag events.
+  useEffect(() => {
+    const handleDragOver = (event) => {
+      applyDragZone(resolveDragZone(event.clientX, event.clientY));
+    };
+    document.addEventListener('dragover', handleDragOver, true);
+    return () => document.removeEventListener('dragover', handleDragOver, true);
+  });
+
+  const handleDragEnd = () => {
+    setBackpackExpanded(false);
+  };
   let activeScreen = 'code';
   if (activeTabIndex === COSTUMES_TAB_INDEX) activeScreen = 'costumes';
   else if (activeTabIndex === SOUNDS_TAB_INDEX) activeScreen = 'sounds';
@@ -501,7 +587,7 @@ const GUIComponent = (props) => {
           />
         </React.Fragment>
       ) : (
-        <Box className={styles.mobileBody}>
+        <Box className={styles.mobileBody} onDragEnd={handleDragEnd} onDrop={handleDragEnd}>
           {/*
             The stage has to stay mounted: vm.attachRenderer() is called inside the Stage
             container, and the VM needs a renderer even while the stage is not visible.
@@ -557,8 +643,6 @@ const GUIComponent = (props) => {
                 </Box>
               </Box>
 
-              {backpackVisible ? <Backpack host={backpackHost} /> : null}
-
               {spritePanelOpen || moreOpen ? (
                 <div
                   className={styles.panelScrim}
@@ -572,6 +656,9 @@ const GUIComponent = (props) => {
 
               {spritePanelOpen ? (
                 <MobileSpritePanel
+                  backpackExpanded={backpackExpanded}
+                  backpackHost={backpackHost}
+                  backpackVisible={backpackVisible}
                   editingTarget={editingTarget}
                   stage={stage}
                   vm={vm}
@@ -647,6 +734,8 @@ GUIComponent.propTypes = {
   authorUsername: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]), // can be false
   backdropLibraryVisible: PropTypes.bool,
   backpackHost: PropTypes.string,
+  assetDragging: PropTypes.bool,
+  blockDragging: PropTypes.bool,
   backpackVisible: PropTypes.bool,
   basePath: PropTypes.string,
   blocksTabVisible: PropTypes.bool,

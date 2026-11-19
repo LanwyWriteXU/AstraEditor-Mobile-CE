@@ -1331,7 +1331,9 @@ export default async function ({ addon, console, msg }) {
   }
 
   // Costume and sound list
-  {
+  // Patching these lists makes the mobile asset panel render the folder wrapper object
+  // as a React child ("Objects are not valid as a React child"), so skip it there.
+  if (!document.querySelector('[data-ae-toolbar]')) {
     const selectorListItem = await addon.tab.waitForElement("[class*='selector_list-item']", {
       reduxCondition: (state) => state.scratchGui.editorTab.activeTabIndex !== 0 && !state.scratchGui.mode.isPlayerOnly
     });
@@ -1340,4 +1342,5 @@ export default async function ({ addon, console, msg }) {
     patchSortableHOC(sortableHOCInstance.constructor, TYPE_ASSETS);
     sortableHOCInstance.saInitialSetup();
   }
+
 }

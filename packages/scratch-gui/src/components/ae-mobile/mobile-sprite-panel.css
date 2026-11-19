@@ -11,7 +11,7 @@
   z-index: 400;
   display: flex;
   flex-direction: column;
-  width: 30rem;
+  width: 360px;
   max-width: 100%;
   background-color: $ui-secondary;
   border-left: 1px solid $ui-black-transparent;
@@ -88,6 +88,12 @@
 /* The desktop grid caps each tile at 6rem; in this wider panel let the tiles fill the row. */
 .content [class*='sprite-selector_sprite-wrapper'] {
   max-width: none;
+}
+
+/* The backpack sits under the sprite grid, as in the desktop target pane. */
+.backpack-slot {
+  flex-shrink: 0;
+  border-top: 1px solid $ui-black-transparent;
 }
 
 /* Stage row: a separate block, visually different from the sprite tiles. */

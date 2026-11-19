@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { defineMessages, injectIntl, intlShape } from 'react-intl';
 
+import Backpack from '../../containers/backpack.jsx';
 import getCostumeUrl from '../../lib/get-costume-url';
 import TargetPane from '../../containers/target-pane.jsx';
 import { STAGE_DISPLAY_SIZES } from '../../lib/layout-constants';
@@ -21,7 +22,17 @@ const messages = defineMessages({
  * with the stage pulled out into its own row at the bottom so backdrops read as
  * a different kind of target.
  */
-const MobileSpritePanel = ({ editingTarget, intl, onClose, onOpenCode, stage, vm }) => {
+const MobileSpritePanel = ({
+  backpackExpanded,
+  backpackHost,
+  backpackVisible,
+  editingTarget,
+  intl,
+  onClose,
+  onOpenCode,
+  stage,
+  vm
+}) => {
   const stageAsset = stage && stage.costume && stage.costume.asset;
   const isStageSelected = Boolean(stage && stage.id && stage.id === editingTarget);
 
@@ -33,10 +44,15 @@ const MobileSpritePanel = ({ editingTarget, intl, onClose, onOpenCode, stage, vm
   };
 
   return (
-    <div className={styles.panel}>
+    <div className={styles.panel} data-ae-sprite-panel="true">
       <div className={styles.content}>
         <TargetPane hideSpriteLibrary stageSize={STAGE_DISPLAY_SIZES.large} vm={vm} />
       </div>
+      {backpackVisible ? (
+        <div className={styles.backpackSlot} data-ae-backpack="true">
+          <Backpack forceExpanded={backpackExpanded} host={backpackHost} />
+        </div>
+      ) : null}
       <button
         className={[styles.stageRow, isStageSelected ? styles.stageRowSelected : ''].join(' ').trim()}
         onClick={handleStageClick}
@@ -56,6 +72,9 @@ const MobileSpritePanel = ({ editingTarget, intl, onClose, onOpenCode, stage, vm
 };
 
 MobileSpritePanel.propTypes = {
+  backpackExpanded: PropTypes.bool,
+  backpackHost: PropTypes.string,
+  backpackVisible: PropTypes.bool,
   editingTarget: PropTypes.string,
   intl: intlShape.isRequired,
   onClose: PropTypes.func,

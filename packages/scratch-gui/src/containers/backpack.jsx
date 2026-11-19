@@ -265,7 +265,7 @@ class Backpack extends React.Component {
         blockDragOver={this.state.blockDragOverBackpack}
         contents={this.state.contents}
         error={this.state.error}
-        expanded={this.state.expanded}
+        expanded={this.state.expanded || Boolean(this.props.forceExpanded)}
         loading={this.state.loading}
         showMore={this.state.moreToLoad}
         onDelete={this.handleDelete}
@@ -281,6 +281,7 @@ class Backpack extends React.Component {
 }
 
 Backpack.propTypes = {
+  forceExpanded: PropTypes.bool,
   intl: intlShape,
   host: PropTypes.string,
   token: PropTypes.string,
