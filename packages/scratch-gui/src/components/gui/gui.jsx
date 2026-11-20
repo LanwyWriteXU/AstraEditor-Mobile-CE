@@ -26,6 +26,7 @@ import TWAccentThemeMenu from '../menu-bar/tw-theme-accent.jsx';
 import BrowserModal from '../browser-modal/browser-modal.jsx';
 import TipsLibrary from '../../containers/tips-library.jsx';
 import Cards from '../../containers/cards.jsx';
+import Backpack from '../../containers/backpack.jsx';
 import Alerts from '../../containers/alerts.jsx';
 import DragLayer from '../../containers/drag-layer.jsx';
 import ConnectionModal from '../../containers/connection-modal.jsx';
@@ -43,6 +44,9 @@ import CustomThemeModal from '../../containers/tw-custom-theme-modal.jsx';
 import AEReadMe from '../../containers/ae-readme.jsx';
 import AeFeaturesModal from '../../containers/ae-features-modal.jsx';
 import version from '../../lib/ae-version.js';
+import { elementAtPoint, closestFromPoint } from '../../lib/drag-zone';
+import DragConstants from '../../lib/drag-constants';
+import installDropZonePatch from '../../lib/backpack-drop-zone';
 import { loadData } from '../ae-readme/ae-readme.jsx';
 
 import { openAeFeaturesModal } from '../../reducers/modals.js';
@@ -65,6 +69,8 @@ import {
   SOUNDS_TAB_INDEX
 } from '../../reducers/editor-tab';
 import { setFullScreen } from '../../reducers/mode';
+import { updateAssetDrag } from '../../reducers/asset-drag';
+import { setHoveredSprite } from '../../reducers/hovered-target';
 
 import { STAGE_SIZE_MODES } from '../../lib/layout-constants';
 import { resolveStageSize } from '../../lib/screen-utils';
@@ -93,6 +99,17 @@ const getFullscreenBackgroundColor = () => {
 
 const fullscreenBackgroundColor = getFullscreenBackgroundColor();
 
+// Drag types that transfer something into the sprite panel. Reordering a sprite inside
+// the panel should leave the panel open, everything else closes it once dropped.
+const PANEL_DROP_TYPES = [
+  DragConstants.COSTUME,
+  DragConstants.SOUND,
+  DragConstants.BACKPACK_COSTUME,
+  DragConstants.BACKPACK_SOUND,
+  DragConstants.BACKPACK_SPRITE,
+  DragConstants.BACKPACK_CODE
+];
+
 const GUIComponent = (props) => {
   const {
     accountNavOpen,
@@ -104,8 +121,10 @@ const GUIComponent = (props) => {
     basePath,
     backdropLibraryVisible,
     assetDragging,
+    assetDragType,
     backpackHost,
     blockDragging,
+    hoveredSpriteId,
     backpackVisible,
     blocksId,
     blocksTabVisible,
@@ -228,20 +247,26 @@ const GUIComponent = (props) => {
   const [morePage, setMorePage] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
   const [backpackExpanded, setBackpackExpanded] = useState(false);
+  // Latest "which sprite tile is hovered" value, readable from timer callbacks without
+  // re-creating them on every hover change.
+  const hoveredSpriteRef = useRef(hoveredSpriteId);
+  useEffect(() => {
+    hoveredSpriteRef.current = hoveredSpriteId;
+  }, [hoveredSpriteId]);
+  // Pointer position shared with the drag timer; must survive the effect rebuilds caused
+  // by the sprite panel opening during a drag.
+  const pointerRef = useRef({ x: 0, y: 0 });
+  const wasDraggingRef = useRef(false);
 
   // Drag zones are resolved from the pointer position: HTML5 drag targets can be the
-  // drag image or the body, so event.target is not reliable here.
+  // drag image or the body, and Blockly drags move the stack on a drag surface that sits
+  // under the cursor, so event.target is not reliable here.
   const resolveDragZone = (x, y) => {
-    const element = document.elementFromPoint(x, y);
+    const element = elementAtPoint(x, y);
     if (!element || !element.closest) return null;
     if (element.closest('[data-ae-toolbar]')) return 'toolbar';
     if (element.closest('[data-ae-backpack]')) return 'backpack';
-    const panel = element.closest('[data-ae-sprite-panel]');
-    if (panel) {
-      const rect = panel.getBoundingClientRect();
-      if (y > rect.bottom - 72) return 'backpack';
-      return 'panel';
-    }
+    if (element.closest('[data-ae-sprite-panel]')) return 'panel';
     return 'outside';
   };
 
@@ -255,48 +280,156 @@ const GUIComponent = (props) => {
       return;
     }
     if (zone === 'backpack') {
-      if (!spritePanelOpen) setSpritePanelOpen(true);
       setBackpackExpanded(true);
       return;
     }
-    if (zone === 'panel') {
-      setBackpackExpanded(false);
-      return;
-    }
-    if (spritePanelOpen) {
-      setSpritePanelOpen(false);
-      setBackpackExpanded(false);
-    }
+    // Never close the panel while something is being dragged: the panel owns both drag
+    // sources (sprite tiles) and drop targets (the sprite grid), and unmounting it mid
+    // drag leaves the drag without a source to finish it.
+    setBackpackExpanded(false);
   };
+
+  // The backpack and the sprite panel float over the blocks canvas; teach Blockly that a
+  // drop on them ends the drag outside the workspace.
+  useEffect(() => {
+    installDropZonePatch();
+  }, []);
+
+  // A drag can outlive the component that started it (its tile unmounts with the panel)
+  // and then nothing dispatches `dragging: false`: the drag image stays pinned to the
+  // cursor and the editor stops responding. Only the leftover case is cleaned up here,
+  // after the normal end-of-drag handlers had their turn.
+  const assetDragRef = useRef({ dragging: assetDragging, type: assetDragType });
+  useEffect(() => {
+    assetDragRef.current = { dragging: assetDragging, type: assetDragType };
+  }, [assetDragging, assetDragType]);
+
+  useEffect(() => {
+    if (!assetDragging) return undefined;
+    const pointer = { x: 0, y: 0 };
+    const track = (event) => {
+      const touch = event.touches && event.touches[0];
+      const source = touch || event;
+      if (typeof source.clientX !== 'number') return;
+      pointer.x = source.clientX;
+      pointer.y = source.clientY;
+    };
+    let timer = null;
+    const handleRelease = () => {
+      if (timer) return;
+      // Let the drag source finish its own drop first (it dispatches on mouseup too).
+      timer = setTimeout(() => {
+        timer = null;
+        const { dragging, type } = assetDragRef.current;
+        if (dragging) {
+          dispatch(
+            updateAssetDrag({
+              img: null,
+              currentOffset: null,
+              dragging: false,
+              dragType: null,
+              index: null
+            })
+          );
+        }
+        // Dropping an asset on the sprite panel is a one-shot action; leaving the panel
+        // open afterwards just blocks the editor behind its scrim.
+        if (PANEL_DROP_TYPES.includes(type) && closestFromPoint(pointer.x, pointer.y, '[data-ae-sprite-panel]')) {
+          setSpritePanelOpen(false);
+        }
+      }, 0);
+    };
+    document.addEventListener('pointermove', track);
+    document.addEventListener('touchmove', track, { passive: true });
+    document.addEventListener('mouseup', handleRelease);
+    document.addEventListener('touchend', handleRelease);
+    document.addEventListener('touchcancel', handleRelease);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('pointermove', track);
+      document.removeEventListener('touchmove', track, { passive: true });
+      document.removeEventListener('mouseup', handleRelease);
+      document.removeEventListener('touchend', handleRelease);
+      document.removeEventListener('touchcancel', handleRelease);
+    };
+  }, [assetDragging, dispatch]);
 
   // Blockly drags don't fire HTML5 drag events, so watch the drag surface and the pointer.
   useEffect(() => {
     if (isFullScreen) return undefined;
-    const pointer = { x: 0, y: 0 };
-    let wasDragging = false;
+    // The pointer lives in a ref: this effect is rebuilt whenever the panel opens, and a
+    // local variable would lose the position and stop resolving the hovered sprite.
+    const pointer = pointerRef.current;
     const handlePointerMove = (event) => {
       pointer.x = event.clientX;
       pointer.y = event.clientY;
+    };
+    // Touch drags go through touchmove; keep a position for those too. The check runs
+    // right away because a finger drag has no hover state to fall back on.
+    const handleTouchMove = (event) => {
+      const touch = event.touches && event.touches[0];
+      if (!touch) return;
+      pointer.x = touch.clientX;
+      pointer.y = touch.clientY;
+      check();
+    };
+    // Same value, painted straight onto the DOM: the tile highlight must be visible even
+    // if the component tree does not re-render fast enough during a drag.
+    const highlightTile = (spriteId) => {
+      const tiles = document.querySelectorAll('[data-ae-sprite-id]');
+      for (let i = 0; i < tiles.length; i++) {
+        const tile = tiles[i];
+        const isTarget = spriteId !== null && tile.getAttribute('data-ae-sprite-id') === spriteId;
+        if (isTarget !== tile.classList.contains('ae-sprite-drop-hover')) {
+          tile.classList.toggle('ae-sprite-drop-hover', isTarget);
+        }
+      }
+    };
+    const setHovered = (spriteId) => {
+      highlightTile(spriteId);
+      if (spriteId !== hoveredSpriteRef.current) {
+        dispatch(setHoveredSprite(spriteId));
+      }
+    };
+    // While dragging, mouseover is the most reliable signal: it fires on every element
+    // the cursor travels over, including when the panel is inserted under a still pointer.
+    const handleMouseOver = (event) => {
+      if (!assetDragging && !document.querySelector('.blocklyDragging')) return;
+      const target = event.target;
+      const tile = target && target.closest && target.closest('[data-ae-sprite-id]');
+      setHovered(tile ? tile.getAttribute('data-ae-sprite-id') : null);
     };
     const check = () => {
       // Scratch-Blocks puts .blocklyDragging on the block being dragged; costumes and
       // sounds are dragged through the assetDrag redux state instead.
       const dragging = Boolean(document.querySelector('.blocklyDragging')) || assetDragging;
       if (!dragging) {
-        if (wasDragging) {
-          wasDragging = false;
+        if (wasDraggingRef.current) {
+          wasDraggingRef.current = false;
           setBackpackExpanded(false);
+          highlightTile(null);
         }
         return;
       }
-      wasDragging = true;
+      wasDraggingRef.current = true;
       applyDragZone(resolveDragZone(pointer.x, pointer.y));
+      // Track which sprite tile is under the pointer for the duration of the drag. Mouse
+      // enter events are not dependable while something is being dragged, and both the
+      // tile highlight and "drop blocks on another sprite" read this state.
+      const tile = closestFromPoint(pointer.x, pointer.y, '[data-ae-sprite-id]');
+      setHovered(tile ? tile.getAttribute('data-ae-sprite-id') : null);
     };
     const interval = setInterval(check, 120);
     document.addEventListener('pointermove', handlePointerMove);
+    document.addEventListener('mousemove', handlePointerMove);
+    document.addEventListener('mouseover', handleMouseOver, true);
+    document.addEventListener('touchmove', handleTouchMove, { passive: true });
     return () => {
       clearInterval(interval);
       document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('mousemove', handlePointerMove);
+      document.removeEventListener('mouseover', handleMouseOver, true);
+      document.removeEventListener('touchmove', handleTouchMove, { passive: true });
     };
   }, [assetDragging, isFullScreen, spritePanelOpen]);
 
@@ -654,11 +787,20 @@ const GUIComponent = (props) => {
                 />
               ) : null}
 
+              {/*
+                The backpack has to be mounted before a drag starts: its drop area is
+                measured from the DOM, and blocks / costumes / sounds are dropped based on
+                state that only exists while it is alive. Keeping it inside the sprite
+                panel meant it only appeared mid-drag, so every drop was lost.
+              */}
+              {backpackVisible ? (
+                <div className={styles.backpackDock} data-ae-backpack="true">
+                  <Backpack forceExpanded={backpackExpanded} host={backpackHost} />
+                </div>
+              ) : null}
+
               {spritePanelOpen ? (
                 <MobileSpritePanel
-                  backpackExpanded={backpackExpanded}
-                  backpackHost={backpackHost}
-                  backpackVisible={backpackVisible}
                   editingTarget={editingTarget}
                   stage={stage}
                   vm={vm}
@@ -735,7 +877,9 @@ GUIComponent.propTypes = {
   backdropLibraryVisible: PropTypes.bool,
   backpackHost: PropTypes.string,
   assetDragging: PropTypes.bool,
+  assetDragType: PropTypes.string,
   blockDragging: PropTypes.bool,
+  hoveredSpriteId: PropTypes.string,
   backpackVisible: PropTypes.bool,
   basePath: PropTypes.string,
   blocksTabVisible: PropTypes.bool,

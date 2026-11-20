@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
 import { indexForPositionOnList } from './drag-utils';
+import DragConstants from './drag-constants';
 
 const SortableHOC = function (WrappedComponent) {
   class SortableWrapper extends React.Component {
@@ -19,7 +20,9 @@ const SortableHOC = function (WrappedComponent) {
     UNSAFE_componentWillReceiveProps(newProps) {
       if (newProps.dragInfo.dragging && !this.props.dragInfo.dragging) {
         // Drag just started, snapshot the sorted bounding boxes for sortables.
-        this.boxes = this.sortableRefs.map((el) => el && el.getBoundingClientRect());
+        // Some tiles may not be mounted yet (the panel can be opening right now), so drop
+        // the missing ones instead of crashing while sorting them.
+        this.boxes = this.sortableRefs.map((el) => el && el.getBoundingClientRect()).filter(Boolean);
         this.boxes.sort((a, b) => {
           // Sort top-to-bottom, left-to-right (in LTR) / right-to-left (in RTL).
           if (a.top === b.top) return (a.left - b.left) * (this.props.isRtl ? -1 : 1);
@@ -31,8 +34,12 @@ const SortableHOC = function (WrappedComponent) {
           this.containerBox = this.ref.getBoundingClientRect();
         }
       } else if (!newProps.dragInfo.dragging && this.props.dragInfo.dragging) {
+        // Reordering sprites is the only thing this list commits. Other drag types are
+        // dropped onto the pane by its own drop area -- handling them here as well added
+        // the asset twice (backpack sprites ended up creating two sprites).
+        if (this.props.dragInfo.dragType !== DragConstants.SPRITE) return;
         const newIndex = this.getMouseOverIndex();
-        if (newIndex !== null) {
+        if (newIndex !== null && this.props.onDrop) {
           this.props.onDrop(Object.assign({}, this.props.dragInfo, { newIndex }));
         }
       }

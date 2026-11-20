@@ -382,7 +382,9 @@
   left: 0;
   /* Small square in the bottom left corner, like Scratch, instead of a full width bar. */
   right: auto;
-  z-index: $z-index-extension-button;
+  /* Above the blocks SVG: scratch-blocks gives .injectionDiv z-index 50 and it covers
+     the whole workspace, which otherwise swallows this button. */
+  z-index: 60;
   background: $looks-secondary;
 
   border: 1px solid $looks-secondary;
@@ -643,6 +645,13 @@ $fade-out-distance: 15px;
   padding: 0 !important;
 }
 
+/* Dropping onto a sprite tile: set directly on the tile element while a drag is in
+   progress, so the feedback does not depend on hover events being delivered. */
+:global(.ae-sprite-drop-hover) {
+  background-color: $drop-highlight !important;
+  transition: all 0.25s ease;
+}
+
 /* Invisible layer behind the panels: tapping the editor closes them. */
 .panel-scrim {
   position: absolute;
@@ -652,4 +661,35 @@ $fade-out-distance: 15px;
   left: 0;
   z-index: 390;
   background-color: transparent;
+}
+
+/* The backpack is a real row of the editor layout, not an overlay: expanding it pushes
+   the workspace up instead of covering it. It has to stay mounted so it is a valid drop
+   target before a drag starts. */
+.backpack-dock {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  /* Above the panel scrim so it stays a live drop target while a panel is open. */
+  z-index: 395;
+}
+
+.backpack-dock > div {
+  flex-shrink: 0;
+}
+
+/* Keep the list readable if it grows over the workspace. */
+.backpack-dock [class*='backpack_backpack-list'] {
+  background-color: $ui-secondary;
+  max-height: 40vh;
+}
+
+/* A collapsed bar is the drop target, so it needs to be a comfortable touch target. */
+.backpack-dock [class*='backpack_backpack-header'] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  box-sizing: border-box;
 }

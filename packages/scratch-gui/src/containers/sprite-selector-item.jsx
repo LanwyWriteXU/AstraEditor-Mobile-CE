@@ -28,7 +28,8 @@ class SpriteSelectorItem extends React.PureComponent {
       'handleMouseDown',
       'handleDragEnd',
       'handleDrag',
-      'handleTouchEnd'
+      'handleTouchEnd',
+      'tagElement'
     ]);
 
     this.dragRecognizer = new DragRecognizer({
@@ -38,10 +39,27 @@ class SpriteSelectorItem extends React.PureComponent {
   }
   componentDidMount() {
     document.addEventListener('touchend', this.handleTouchEnd);
+    this.tagElement();
+  }
+  componentDidUpdate() {
+    this.tagElement();
   }
   componentWillUnmount() {
     document.removeEventListener('touchend', this.handleTouchEnd);
     this.dragRecognizer.reset();
+  }
+  /**
+   * Drag feedback on touch screens has no :hover to lean on, so the drag code finds the
+   * tile under the pointer by this attribute. Set it on the real DOM node instead of
+   * passing it through react-contextmenu's attributes.
+   */
+  tagElement() {
+    if (this.ref && typeof this.props.id !== 'undefined' && this.props.id !== null) {
+      const id = `${this.props.id}`;
+      if (this.ref.getAttribute('data-ae-sprite-id') !== id) {
+        this.ref.setAttribute('data-ae-sprite-id', id);
+      }
+    }
   }
   getCostumeData() {
     if (this.props.costumeURL) return this.props.costumeURL;
@@ -115,6 +133,7 @@ class SpriteSelectorItem extends React.PureComponent {
   setRef(component) {
     // Access the DOM node using .elem because it is going through ContextMenuTrigger
     this.ref = component && component.elem;
+    this.tagElement();
   }
   render() {
     const {

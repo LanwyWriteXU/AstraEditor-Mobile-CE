@@ -36,36 +36,80 @@ const DropAreaHOC = function (dragTypes) {
     class DropAreaWrapper extends React.Component {
       constructor(props) {
         super(props);
-        bindAll(this, ['setRef']);
+        bindAll(this, ['setRef', 'handlePointerMove', 'handleTouchMove']);
 
         this.state = {
           dragOver: false
         };
 
         this.ref = null;
-        this.containerBox = null;
+        this.pointer = null;
+      }
+
+      componentDidMount() {
+        // The wrapped area can mount or expand in the middle of a drag, so highlight it
+        // from the live pointer position rather than from a rectangle cached at drag start.
+        document.addEventListener('pointermove', this.handlePointerMove);
+        document.addEventListener('touchmove', this.handleTouchMove, { passive: true });
+        this.updateDragOver(this.props.dragInfo);
+      }
+
+      componentDidUpdate() {
+        // The area can change size while a drag is in progress (the backpack expands
+        // under the pointer), and then no mouse event fires to update the highlight.
+        this.updateDragOver(this.props.dragInfo);
+      }
+
+      componentWillUnmount() {
+        document.removeEventListener('pointermove', this.handlePointerMove);
+        document.removeEventListener('touchmove', this.handleTouchMove, { passive: true });
+      }
+
+      handlePointerMove(e) {
+        this.pointer = { x: e.clientX, y: e.clientY };
+        this.updateDragOver(this.props.dragInfo);
+      }
+
+      handleTouchMove(e) {
+        const touch = e.touches && e.touches[0];
+        if (!touch) return;
+        this.pointer = { x: touch.clientX, y: touch.clientY };
+        this.updateDragOver(this.props.dragInfo);
       }
 
       UNSAFE_componentWillReceiveProps(newProps) {
-        // If `dragging` becomes true, record the drop area rectangle
-        if (newProps.dragInfo.dragging && !this.props.dragInfo.dragging) {
-          this.dropAreaRect = this.ref && this.ref.getBoundingClientRect();
-          // If `dragging` becomes false, call the drop handler
-        } else if (!newProps.dragInfo.dragging && this.props.dragInfo.dragging && this.state.dragOver) {
+        // If `dragging` becomes false, call the drop handler
+        if (
+          !newProps.dragInfo.dragging &&
+          this.props.dragInfo.dragging &&
+          this.state.dragOver &&
+          dragTypes.includes(this.props.dragInfo.dragType)
+        ) {
           this.props.onDrop(this.props.dragInfo);
           this.setState({ dragOver: false });
+          return;
         }
 
-        // If a drag is in progress (currentOffset) and it matches the relevant drag types,
-        // test if the drag is within the drop area rect and set the state accordingly.
-        if (this.dropAreaRect && newProps.dragInfo.currentOffset && dragTypes.includes(newProps.dragInfo.dragType)) {
-          const { x, y } = newProps.dragInfo.currentOffset;
-          const { top, right, bottom, left } = this.dropAreaRect;
-          if (x > left && x < right && y > top && y < bottom) {
-            this.setState({ dragOver: true });
-          } else {
-            this.setState({ dragOver: false });
-          }
+        this.updateDragOver(newProps.dragInfo);
+      }
+
+      /**
+       * Highlight the drop area while a matching asset is dragged over it. The rectangle
+       * is measured live: the area may not exist yet when the drag starts (collapsed
+       * backpack) and it may move or resize while the drag is in progress.
+       * @param {object} dragInfo The assetDrag state
+       */
+      updateDragOver(dragInfo) {
+        if (!dragInfo || !dragInfo.dragging || !dragTypes.includes(dragInfo.dragType)) {
+          if (this.state.dragOver) this.setState({ dragOver: false });
+          return;
+        }
+        const rect = this.ref && this.ref.getBoundingClientRect();
+        const point = this.pointer || dragInfo.currentOffset;
+        if (!rect || !point) return;
+        const isOver = point.x > rect.left && point.x < rect.right && point.y > rect.top && point.y < rect.bottom;
+        if (isOver !== this.state.dragOver) {
+          this.setState({ dragOver: isOver });
         }
       }
       setRef(el) {

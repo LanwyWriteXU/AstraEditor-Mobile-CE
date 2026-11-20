@@ -5,6 +5,7 @@
    then the sprite info bar. The stage is rendered by the panel itself. */
 
 .target-pane {
+  position: relative;
   display: flex;
   flex-direction: column;
   flex-grow: 1;

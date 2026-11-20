@@ -17,6 +17,10 @@ import styles from './target-pane.css';
  * @returns {React.Component} rendered component
  */
 const TargetPane = ({
+  containerRef,
+  // Supplied by DropAreaHOC; the drop highlight lives on the sprite tiles themselves,
+  // so it is stripped here instead of leaking onto the DOM node below.
+  dragOver, // eslint-disable-line no-unused-vars
   editingTarget,
   fileInputRef,
   hideSpriteLibrary,
@@ -31,7 +35,6 @@ const TargetPane = ({
   onChangeSpriteX,
   onChangeSpriteY,
   onDeleteSprite,
-  onDrop,
   onDuplicateSprite,
   onExportSprite,
   onFileUploadClick,
@@ -39,6 +42,7 @@ const TargetPane = ({
   onPaintSpriteClick,
   onRequestCloseSpriteLibrary,
   onSelectSprite,
+  onSortDrop,
   onSpriteUpload,
   onSurpriseSpriteClick,
   raiseSprites,
@@ -48,7 +52,7 @@ const TargetPane = ({
   vm,
   ...componentProps
 }) => (
-  <div className={styles.targetPane} {...componentProps}>
+  <div {...componentProps} className={styles.targetPane} ref={containerRef}>
     <SpriteSelectorComponent
       editingTarget={editingTarget}
       hoveredTarget={hoveredTarget}
@@ -65,7 +69,7 @@ const TargetPane = ({
       onChangeSpriteX={onChangeSpriteX}
       onChangeSpriteY={onChangeSpriteY}
       onDeleteSprite={onDeleteSprite}
-      onDrop={onDrop}
+      onDrop={onSortDrop}
       onDuplicateSprite={onDuplicateSprite}
       onExportSprite={onExportSprite}
       onFileUploadClick={onFileUploadClick}
@@ -122,6 +126,7 @@ const spriteShape = PropTypes.shape({
 });
 
 TargetPane.propTypes = {
+  containerRef: PropTypes.func,
   editingTarget: PropTypes.string,
   extensionLibraryVisible: PropTypes.bool,
   hideSpriteLibrary: PropTypes.bool,
@@ -148,6 +153,7 @@ TargetPane.propTypes = {
   onRequestCloseExtensionLibrary: PropTypes.func,
   onRequestCloseSpriteLibrary: PropTypes.func,
   onSelectSprite: PropTypes.func,
+  onSortDrop: PropTypes.func,
   onSpriteUpload: PropTypes.func,
   onSurpriseSpriteClick: PropTypes.func,
   raiseSprites: PropTypes.bool,

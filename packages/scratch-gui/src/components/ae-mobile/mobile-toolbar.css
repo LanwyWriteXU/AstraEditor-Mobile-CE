@@ -21,6 +21,9 @@
   -webkit-tap-highlight-color: transparent;
   /* No overflow here: the editor switch popup is absolutely positioned. */
   overflow: visible;
+  /* Stay above the editor area: scratch-blocks draws its workspace at z-index 50. */
+  position: relative;
+  z-index: 10;
 }
 
 .top-group {

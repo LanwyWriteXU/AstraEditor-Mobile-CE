@@ -165,6 +165,8 @@ const mapStateToProps = (state) => {
   return {
     activeTabIndex: state.scratchGui.editorTab.activeTabIndex,
     assetDragging: state.scratchGui.assetDrag.dragging === true,
+    assetDragType: state.scratchGui.assetDrag.dragType,
+    hoveredSpriteId: state.scratchGui.hoveredTarget.sprite,
     blockDragging: state.scratchGui.blockDrag === true,
     alertsVisible: state.scratchGui.alerts.visible,
     backdropLibraryVisible: state.scratchGui.modals.backdropLibrary,

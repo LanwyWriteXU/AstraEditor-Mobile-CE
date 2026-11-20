@@ -10,6 +10,7 @@ import { setReceivedBlocks } from '../reducers/hovered-target';
 import { showStandardAlert, closeAlertWithId } from '../reducers/alerts';
 import { setRestore } from '../reducers/restore-deletion';
 import DragConstants from '../lib/drag-constants';
+import DropAreaHOC from '../lib/drop-area-hoc.jsx';
 import TargetPaneComponent from '../components/target-pane/target-pane.jsx';
 import { getSpriteLibrary } from '../lib/libraries/tw-async-libraries';
 import { handleFileUpload, spriteUpload } from '../lib/file-uploader.js';
@@ -21,6 +22,20 @@ import randomizeSpritePosition from '../lib/randomize-sprite-position';
 import downloadBlob from '../lib/download-blob';
 import log from '../lib/log';
 import { placeInViewport } from '../lib/backpack/code-payload.js';
+import { base64ToArrayBuffer } from '../lib/tw-base64-utils';
+
+// Everything that can be dropped *into* the pane from outside: sharing assets with a
+// sprite, and pulling sprites / assets in from the backpack. Reordering the sprites
+// themselves is handled by the sortable list, so SPRITE is deliberately absent here --
+// it would light up the whole pane while dragging a tile inside the panel.
+const dragTypes = [
+  DragConstants.COSTUME,
+  DragConstants.SOUND,
+  DragConstants.BACKPACK_COSTUME,
+  DragConstants.BACKPACK_SOUND,
+  DragConstants.BACKPACK_SPRITE,
+  DragConstants.BACKPACK_CODE
+];
 
 class TargetPane extends React.Component {
   constructor(props) {
@@ -172,6 +187,9 @@ class TargetPane extends React.Component {
     if (this.props.hoveredTarget.sprite && this.props.hoveredTarget.sprite !== this.props.editingTarget) {
       this.shareBlocks(blocks, this.props.hoveredTarget.sprite, this.props.editingTarget);
       this.props.onReceivedBlocks(true);
+      if (this.props.onBlockDropComplete) {
+        this.props.onBlockDropComplete();
+      }
     }
   }
   shareBlocks(payload, targetId, optFromTargetId) {
@@ -185,9 +203,12 @@ class TargetPane extends React.Component {
       // Add one to both new and target index because we are not counting/moving the stage
       this.props.vm.reorderTarget(dragInfo.index + 1, dragInfo.newIndex + 1);
     } else if (dragInfo.dragType === DragConstants.BACKPACK_SPRITE) {
-      // TODO storage does not have a way of loading zips right now, and may never need it.
-      // So for now just grab the zip manually.
-      fetchSprite(dragInfo.payload.bodyUrl).then((sprite3Zip) => this.props.vm.addSprite(sprite3Zip));
+      // The local backpack hands out a data: URL, which cannot be fetched with xhr.
+      const { bodyUrl } = dragInfo.payload;
+      const sprite = bodyUrl.startsWith('data:')
+        ? Promise.resolve(base64ToArrayBuffer(bodyUrl.slice(bodyUrl.indexOf(',') + 1)))
+        : fetchSprite(bodyUrl);
+      sprite.then((sprite3Zip) => this.props.vm.addSprite(sprite3Zip)).catch((err) => log.error(err));
     } else if (targetId) {
       // Something is being dragged over one of the sprite tiles or the backdrop.
       // Dropping assets like sounds and costumes duplicate the asset on the
@@ -231,6 +252,7 @@ class TargetPane extends React.Component {
       dispatchUpdateRestore,
       isRtl,
       onActivateTab,
+      onBlockDropComplete,
       onCloseImporting,
       onHighlightTarget,
       onReceivedBlocks,
@@ -240,7 +262,7 @@ class TargetPane extends React.Component {
     } = this.props;
     /* eslint-enable no-unused-vars */
     return (
-      <TargetPaneComponent
+      <DroppableTargetPane
         {...componentProps}
         fileInputRef={this.setFileInput}
         onActivateBlocksTab={this.handleActivateBlocksTab}
@@ -258,6 +280,9 @@ class TargetPane extends React.Component {
         onFileUploadClick={this.handleFileUploadClick}
         onPaintSpriteClick={this.handlePaintSpriteClick}
         onSelectSprite={this.handleSelectSprite}
+        // The drop area above consumes `onDrop`, but the sortable sprite list needs it
+        // too in order to commit a reorder.
+        onSortDrop={this.handleDrop}
         onSpriteUpload={this.handleSpriteUpload}
         onSurpriseSpriteClick={this.handleSurpriseSpriteClick}
       />
@@ -273,10 +298,13 @@ const {
 
 TargetPane.propTypes = {
   intl: intlShape.isRequired,
+  onBlockDropComplete: PropTypes.func,
   onCloseImporting: PropTypes.func,
   onShowImporting: PropTypes.func,
   ...targetPaneProps
 };
+
+const DroppableTargetPane = DropAreaHOC(dragTypes)(TargetPaneComponent);
 
 const mapStateToProps = (state) => ({
   editingTarget: state.scratchGui.targets.editingTarget,

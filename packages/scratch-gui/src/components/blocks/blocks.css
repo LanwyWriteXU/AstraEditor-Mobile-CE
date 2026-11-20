@@ -27,6 +27,13 @@
   border: 1px solid $ui-black-transparent;
   border-top-width: 0px;
   border-bottom-width: 0px;
+  /*
+     scratch-blocks sets z-index: 50 here to sit above its own toolbox, which also lifts
+     the whole canvas above the editor toolbar. `auto` keeps the canvas in the normal
+     flow (below the toolbar) while still letting the drag surface inside it use its own
+     z-index: 1000, so only a stack that is being dragged floats to the top.
+  */
+  z-index: auto;
 }
 
 [dir='rtl'] .blocks :global(.injectionDiv) {

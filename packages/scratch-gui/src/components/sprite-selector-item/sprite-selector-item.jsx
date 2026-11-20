@@ -14,6 +14,7 @@ let contextMenuId = 0;
 const SpriteSelectorItem = (props) => (
   <ContextMenuTrigger
     attributes={{
+      'data-ae-sprite-id': props.id,
       className: classNames(props.className, styles.spriteSelectorItem, {
         [styles.isSelected]: props.selected
       }),

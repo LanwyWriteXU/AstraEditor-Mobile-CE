@@ -38,7 +38,9 @@ const SpriteList = function (props) {
   return (
     <Box
       className={classNames(styles.scrollWrapper, {
-        [styles.scrollWrapperDragging]: draggingType === DragConstants.BACKPACK_SPRITE
+        [styles.scrollWrapperDragging]: draggingType === DragConstants.BACKPACK_SPRITE,
+        // Enables the pure-CSS hover highlight below while a drag is in progress.
+        [styles.dragging]: Boolean(draggingType) || Boolean(raised)
       })}
       componentRef={containerRef}
     >
@@ -48,22 +50,16 @@ const SpriteList = function (props) {
           const receivedBlocks =
             hoveredTarget.sprite === sprite.id && sprite.id !== editingTarget && hoveredTarget.receivedBlocks;
 
-          // If the sprite is indicating it can receive block dropping, used for blue highlight
-          let isRaised = !receivedBlocks && raised && sprite.id !== editingTarget;
-
-          // A sprite is also raised if a costume or sound is being dragged.
-          // Note the absence of the self-sharing check: a sprite can share assets with itself.
-          // This is a quirk of 2.0, but seems worth leaving possible, it
-          // allows quick (albeit unusual) duplication of assets.
-          isRaised =
-            isRaised ||
-            [
-              DragConstants.COSTUME,
-              DragConstants.SOUND,
-              DragConstants.BACKPACK_COSTUME,
-              DragConstants.BACKPACK_SOUND,
-              DragConstants.BACKPACK_CODE
-            ].includes(draggingType);
+          // Only the tile under the pointer is highlighted. Highlighting every tile made
+          // the whole panel light up, which read as a full-panel overlay rather than as
+          // "this sprite is the one that will receive the drop".
+          const isDragging = Boolean(draggingType) || Boolean(raised);
+          const isHovered = hoveredTarget.sprite === sprite.id;
+          // A sprite may share a costume or sound with itself while one is being dragged
+          // (a quirk of 2.0 that allows quick duplication), but a block stack only goes
+          // to another sprite.
+          const canReceive = Boolean(draggingType) || sprite.id !== editingTarget;
+          const isRaised = isDragging && isHovered && canReceive && !receivedBlocks;
 
           return (
             <SortableAsset

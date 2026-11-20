@@ -60,8 +60,20 @@
   overflow-y: auto;
 }
 
+/* Backpack sprites become a new sprite rather than targeting one, so the whole list is
+   marked as the drop area. Everything else highlights the individual sprite tiles. */
 .scroll-wrapper-dragging {
   background-color: $drop-highlight;
+}
+
+/*
+   Hover highlight that does not depend on any JavaScript: while a drag is in progress the
+   browser itself knows which tile the pointer is over, so this works even when mouse and
+   pointer events are being swallowed by the dragged element.
+*/
+.dragging .sprite:hover {
+  background-color: $drop-highlight;
+  transition: all 0.25s ease;
 }
 
 .items-wrapper {
