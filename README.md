@@ -1,146 +1,73 @@
 <p align="center">
-  <img src="assets/logo.svg" alt="AstraEditor" width="50%"/>
+  <img src="assets/logo.svg" alt="AstraEditor Mobile" width="40%"/>
 </p>
 
-[![](https://img.shields.io/badge/Modified%20from-TurboWarp-FF4C4C.svg)](https://github.com/TurboWarp)
-![Stars](https://img.shields.io/github/stars/AstraEditor/AstraEditor?style=social)
-![Forks](https://img.shields.io/github/forks/AstraEditor/AstraEditor?style=social)
-![Issues](https://img.shields.io/github/issues/AstraEditor/AstraEditor?color=0099ff)
+# AstraEditor Mobile-CE
 
-# Welcome to AstraEditor !
+<p>
+  <img src="https://img.shields.io/badge/version-1.2.9-4dabf7?style=flat-square" alt="version"/>
+  <img src="https://img.shields.io/badge/TurboWarp-based-ff4c4c?style=flat-square" alt="TurboWarp"/>
+  <img src="https://img.shields.io/badge/React-16.14-61dafb?style=flat-square&logo=react&logoColor=white" alt="React"/>
+  <img src="https://img.shields.io/badge/Redux-3.7-764abc?style=flat-square&logo=redux&logoColor=white" alt="Redux"/>
+  <img src="https://img.shields.io/badge/Webpack-5-8dd6f9?style=flat-square&logo=webpack&logoColor=black" alt="Webpack"/>
+  <img src="https://img.shields.io/badge/Monaco-0.34-0078d7?style=flat-square" alt="Monaco"/>
+  <img src="https://img.shields.io/badge/Node-%3E%3D18-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node"/>
+  <img src="https://img.shields.io/badge/pnpm-11.17-f69220?style=flat-square&logo=pnpm&logoColor=white" alt="pnpm"/>
+  <img src="https://img.shields.io/badge/license-GPL--3.0-8b5cf6?style=flat-square" alt="license"/>
+</p>
 
-### What is
+The mobile branch of AstraEditor, with the editor relaid out for landscape phones.
 
-**AstraEditor** is a mod of [TurboWarp](https://github.com/TurboWarp), it added more feature to make your coding speed _lightning fast_.
+![Editor](docs/images/editor.png)
 
-### How to Use
+- The workspace fills the screen; the toolbar runs down the right side.
+- Stage, costumes, sounds, code and settings are separate pages.
+- The fullscreen stage can switch between landscape and portrait framing.
 
-You can access [Website](https://editors.astras.top) to use **AstraEditor**, you can also download Desktop in there
+![Fullscreen stage](docs/images/fullscreen.png)
 
-## Features
+![More panel](docs/images/more.png)
 
-### README
+## Development
 
-You can add a README to your project by right-clicking and selecting **Add README**.
-
-```markdown
-# Welcome to AstraEditor!
-
-Thank you for using AstraEditor!
-Give my a Star if you like it! :)
-```
-
-### Addons
-
-- **Todo** - Keep track of tasks in your project
-- **Bookmarks** - Bookmark blocks for quick navigation
-- **Simple Project Analyzer** - Analyze your project's performance and complexity
-
-## Develop
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org) >= 18
-- [pnpm](https://pnpm.io) >= 11.12.0
-
-### Setup
+Requires Node.js >= 18 and pnpm 11.17.
 
 ```bash
-git clone --depth 1 https://github.com/AstraEditor/AstraEditor.git
-cd AstraEditor
 pnpm install
+pnpm fetch     # generates gitignored files such as the microbit hex
+pnpm start     # http://localhost:1145, reachable from phones on the same LAN
 ```
 
-### Build
+After editing a package under `packages/`, rebuild it (the GUI uses each package's `dist`), e.g. `pnpm build:vm`.
 
-Packages must be built in dependency order:
+Full build, in dependency order:
 
 ```bash
-pnpm build:l10n      # @turbowarp/scratch-l10n
-pnpm build:audio     # scratch-audio
-pnpm build:blocks    # scratch-blocks
-pnpm build:render    # scratch-render
-pnpm build:vm        # scratch-vm
-pnpm build:paint     # scratch-paint
-pnpm build:gui       # scratch-gui
+pnpm build:l10n && pnpm build:audio && pnpm build:blocks && pnpm build:render && pnpm build:vm && pnpm build:paint && pnpm build:gui
 ```
 
-Or build everything at once:
+Two things can go wrong: `--colors` was removed in webpack-cli 6, and skipping `pnpm fetch` leaves `microbit-hex-url.cjs` missing.
 
-```bash
-pnpm build
-```
-
-### Development
-
-```bash
-# Start the GUI dev server (with hot reload)
-pnpm start
-```
-
-Visit `http://localhost:9001` in your browser.
-
-When you modify a dependency package (e.g. `scratch-vm`), rebuild just that package and refresh:
-
-```bash
-pnpm build:vm
-```
-
-### Format
-
-```bash
-# Check formatting
-pnpm format::check
-
-# Auto-fix formatting
-pnpm format::fix
-```
-
-### Fetch external assets
-
-```bash
-pnpm fetch
-```
-
-### Clean
-
-```bash
-pnpm clean
-```
-
-### Project Structure
+## Layout
 
 ```
-AstraEditor/
-├── packages/
-│   ├── scratch-gui/       # The main editor application (React)
-│   ├── scratch-vm/        # Virtual Machine - runs Scratch projects
-│   ├── scratch-blocks/    # Block-based code editor (fork of Blockly)
-│   ├── scratch-render/    # WebGL rendering engine
-│   ├── scratch-paint/     # Paint/costume editor
-│   ├── scratch-audio/     # Audio engine
-│   └── scratch-l10n/      # Localization / translations
-├── pnpm-workspace.yaml    # Workspace config
-├── .eslintrc.js           # ESLint config (extends eslint-config-scratch)
-└── .prettierrc            # Prettier config
+packages/
+├── scratch-gui/     editor UI, mobile code in src/components/ae-mobile/
+├── scratch-vm/      virtual machine
+├── scratch-blocks/  block editor
+├── scratch-render/  WebGL renderer
+├── scratch-paint/   paint editor
+├── scratch-audio/   audio engine
+└── scratch-l10n/    translations
+docs/                layout design, touch checklist, addon index
 ```
 
-All packages within `packages/` are linked via `workspace:*` — changes in one package are immediately available to dependents after rebuild.
+## Docs
 
-### Lint
-
-```bash
-# Check all packages
-pnpm -r run lint
-
-# Or check a specific package
-pnpm --filter scratch-vm run lint
-pnpm --filter scratch-gui run test:lint
-
-# Auto-fix
-pnpm -r run lint -- --fix
-```
+- [Mobile layout design](docs/ae-mobile-layout.md)
+- [Touch adaptation checklist](docs/ae-mobile-refactor-checklist.md)
+- [Addon index](docs/addons.md)
 
 ## License
 
-This project is a mod of [TurboWarp](https://github.com/TurboWarp). See individual package licenses for details.
+`scratch-gui` is GPL-3.0; see each package for the rest. Scratch is a trademark of MIT; this project is not affiliated with MIT.
