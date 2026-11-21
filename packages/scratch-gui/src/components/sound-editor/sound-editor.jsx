@@ -176,7 +176,7 @@ const formatSoundSize = (bytes) => {
 
 const SoundEditor = (props) => (
   <div className={styles.editorContainer} ref={props.setRef} onMouseDown={props.onContainerClick}>
-    <div className={styles.row}>
+    <div className={classNames(styles.row, styles.controlsRow)}>
       <div className={styles.inputGroup}>
         <Label text={props.intl.formatMessage(messages.sound)}>
           <BufferedInput
@@ -235,7 +235,7 @@ const SoundEditor = (props) => (
         onClick={props.onDelete}
       />
     </div>
-    <div className={styles.row}>
+    <div className={classNames(styles.row, styles.waveformRow)}>
       <div className={styles.waveformContainer}>
         <Waveform data={props.chunkLevels} height={160} width={600} />
         <AudioSelector

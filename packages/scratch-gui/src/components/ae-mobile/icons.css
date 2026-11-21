@@ -1,0 +1,15 @@
+/* Shared shell for every mask icon. Deliberately does not set width/height or a
+   colour: callers decide the size, and the colour comes from their own
+   `background-color: currentColor`. */
+.mask-icon {
+  display: block;
+  -webkit-mask-image: var(--mask-url);
+  mask-image: var(--mask-url);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  pointer-events: none;
+}

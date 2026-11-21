@@ -81,6 +81,7 @@
   width: 100%;
   height: 100%;
   color: $text-primary;
+  background-color: currentColor;
   pointer-events: none;
 }
 
@@ -178,4 +179,31 @@
   background-color: rgba(255, 255, 255, 0.92);
   border-color: rgba(255, 255, 255, 0.6);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/*
+   Portrait fullscreen viewer: the run controls move to a horizontal row in the
+   bottom-right corner instead of a vertical column (a column would eat the
+   narrow side of the screen). DOM order is fullscreen, stop, pause, run, so a
+   plain row reads right-to-left as run / pause / stop / fullscreen.
+*/
+.toolbar.is-overlay.is-portrait {
+  top: auto;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: auto;
+  width: 100%;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 0 6px calc(6px + env(safe-area-inset-bottom, 0px));
+  /* Let taps through the empty part of the bar reach the stage. */
+  pointer-events: none;
+}
+
+.toolbar.is-overlay.is-portrait .play-controls {
+  flex-direction: row;
+  gap: 6px;
+  padding: 4px;
+  pointer-events: auto;
 }

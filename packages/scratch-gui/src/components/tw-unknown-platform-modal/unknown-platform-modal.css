@@ -9,6 +9,7 @@
   background: $ui-modal-background;
   padding: 1.5rem 2.25rem;
   max-height: calc(100vh - 150px);
+  max-height: calc(100dvh - 150px);
   overflow: auto;
   display: flex;
   flex-direction: column;

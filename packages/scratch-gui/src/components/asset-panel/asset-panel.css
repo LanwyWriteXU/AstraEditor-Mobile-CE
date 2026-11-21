@@ -34,3 +34,35 @@
 [dir='rtl'] .detail-area {
   border-right: 1px solid $ui-black-transparent;
 }
+
+/* Thin rail between the list and the canvas: folds the thumbnail column away
+   without losing the "add costume" flow (it lives in the column). */
+.collapse-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 20px;
+  width: 20px;
+  padding: 0;
+  border: none;
+  border-left: 1px solid $ui-black-transparent;
+  background-color: $ui-tertiary;
+  color: $text-primary;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.collapse-toggle:active {
+  background-color: $ui-secondary;
+}
+
+.collapse-icon {
+  width: 14px;
+  height: 14px;
+  background-color: currentColor;
+  transition: transform 160ms ease;
+}
+
+.is-flipped {
+  transform: rotate(180deg);
+}

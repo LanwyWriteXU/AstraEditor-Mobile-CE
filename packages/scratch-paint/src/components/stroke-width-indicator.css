@@ -1,0 +1,145 @@
+@import '../css/colors.css';
+@import '../css/units.css';
+
+/* Single stroke-width control: a tap opens the panel, a long press opens it with
+   the slider already under the finger. Sized for a thumb, not a mouse. */
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 46px;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid $ui-pane-border;
+  border-radius: 6px;
+  background-color: $popover-background;
+  color: $text-primary;
+  font-family: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.button:active {
+  background-color: $looks-transparent;
+}
+
+.button:disabled {
+  opacity: 0.4;
+}
+
+.preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 20px;
+}
+
+.preview-bar {
+  display: block;
+  width: 100%;
+  background-color: $text-primary;
+  border-radius: 2px;
+}
+
+.value {
+  min-width: 1.1em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 232px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background-color: $popover-background;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: $text-primary;
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+}
+
+.panel-value {
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 36px tall hit area; the track stays thin. */
+.slider {
+  width: 100%;
+  height: 36px;
+  margin: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background-color: $ui-pane-border;
+}
+
+.slider::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background-color: $ui-pane-border;
+}
+
+.slider::-webkit-slider-thumb {
+  width: 26px;
+  height: 26px;
+  margin-top: -10px;
+  border: none;
+  border-radius: 50%;
+  background-color: $looks-secondary;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.slider::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background-color: $looks-secondary;
+}
+
+.panel-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.preset,
+.preset-active {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 6px;
+  border: 1px solid $ui-pane-border;
+  border-radius: 6px;
+  background-color: $popover-background;
+  color: $text-primary;
+  font-family: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.preset-active {
+  border-color: $looks-secondary;
+  box-shadow: inset 0 0 0 1px $looks-secondary;
+  font-weight: bold;
+}

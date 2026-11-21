@@ -240,3 +240,15 @@
 .library-item:hover .favorite-container {
   display: block;
 }
+
+/* Landscape phone: 160px cards fit three per row on a 640px wide screen.
+   Shrinking to 120px gets four per row without changing the aspect ratio. */
+@media (max-height: 420px) {
+  .library-item {
+    flex-basis: 120px;
+    height: 120px;
+    max-width: 120px;
+    margin: 4px;
+    padding: 0.5rem 0.5rem 0 0.5rem;
+  }
+}

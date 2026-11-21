@@ -19,6 +19,7 @@ import MobileToolbar from '../ae-mobile/mobile-toolbar.jsx';
 import MobileSpritePanel from '../ae-mobile/mobile-sprite-panel.jsx';
 import MobileMorePanel from '../ae-mobile/mobile-more-panel.jsx';
 import MobileScreen from '../ae-mobile/mobile-screen.jsx';
+import { RotateStageIcon } from '../ae-mobile/icons.jsx';
 import LanguageMenu from '../menu-bar/language-menu.jsx';
 import TWGuiThemeMenu from '../menu-bar/tw-theme-gui.jsx';
 import TWBlocksThemeMenu from '../menu-bar/tw-theme-blocks.jsx';
@@ -247,6 +248,9 @@ const GUIComponent = (props) => {
   const [morePage, setMorePage] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
   const [backpackExpanded, setBackpackExpanded] = useState(false);
+  // Fullscreen only: presents the stage rotated 90 degrees so a 4:3 project can
+  // fill a portrait phone instead of being letterboxed to a thin strip.
+  const [stagePortrait, setStagePortrait] = useState(false);
   // Latest "which sprite tile is hovered" value, readable from timer callbacks without
   // re-creating them on every hover change.
   const hoveredSpriteRef = useRef(hoveredSpriteId);
@@ -553,6 +557,18 @@ const GUIComponent = (props) => {
   }, []);
   const stageSize = resolveStageSize(stageSizeMode, true);
 
+  // Leaving the fullscreen stage always returns to the landscape presentation.
+  useEffect(() => {
+    if (!isFullScreen) setStagePortrait(false);
+  }, [isFullScreen]);
+
+  const handleRotateStage = () => {
+    setStagePortrait(!stagePortrait);
+    // The stage measures itself on window resize; rotating is a layout change
+    // the renderer cannot see on its own.
+    window.setTimeout(() => window.dispatchEvent(new Event('resize')), 60);
+  };
+
   // Sprites, costumes, sounds and backpack items use HTML5 drag events.
   useEffect(() => {
     const handleDragOver = (event) => {
@@ -726,11 +742,12 @@ const GUIComponent = (props) => {
             container, and the VM needs a renderer even while the stage is not visible.
             While editing it is parked off screen, in full screen mode it covers the viewport.
           */}
-          <Box className={styles.stageHost}>
+          <Box className={classNames(styles.stageHost, { [styles.isPortrait]: isFullScreen && stagePortrait })}>
             <StageWrapper
               hideStageHeader
               isFullScreen={isFullScreen}
               isRendererSupported={isRendererSupported()}
+              isPortrait={stagePortrait}
               isRtl={isRtl}
               stageSize={STAGE_SIZE_MODES.full}
               vm={vm}
@@ -831,6 +848,7 @@ const GUIComponent = (props) => {
             activeScreen={activeScreen}
             isMoreOpen={moreOpen}
             isPaused={isPaused}
+            isPortraitStage={isFullScreen && stagePortrait}
             isRunning={isRunning}
             isSpritePanelOpen={spritePanelOpen}
             isStageOpen={isFullScreen}
@@ -853,14 +871,34 @@ const GUIComponent = (props) => {
             onSwitchScreen={handleSwitchScreen}
             vm={vm}
           />
+
+          {/*
+            Fullscreen stage only. The button lives outside the rotated layer and
+            is anchored in screen coordinates: top-right while landscape, bottom-left
+            while portrait, so it never ends up under a thumb or off a corner.
+          */}
+          {isFullScreen ? (
+            <button
+              aria-label={intl.formatMessage({ defaultMessage: 'Rotate stage', id: 'ae.mobile.rotateStage' })}
+              className={classNames(styles.stageRotateButton, {
+                [styles.isPortraitAnchor]: stagePortrait
+              })}
+              title={intl.formatMessage({ defaultMessage: 'Rotate stage', id: 'ae.mobile.rotateStage' })}
+              onClick={handleRotateStage}
+            >
+              <RotateStageIcon className={styles.stageRotateIcon} />
+            </button>
+          ) : null}
         </Box>
       )}
 
       <DragLayer />
 
-      <div className={styles.rotateHint}>
-        <span className={styles.rotateHintText}>请将设备横屏使用</span>
-      </div>
+      {isFullScreen ? null : (
+        <div className={styles.rotateHint}>
+          <span className={styles.rotateHintText}>请将设备横屏使用</span>
+        </div>
+      )}
     </Box>
   );
 };

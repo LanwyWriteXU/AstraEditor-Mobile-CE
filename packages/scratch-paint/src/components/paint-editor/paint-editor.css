@@ -226,3 +226,93 @@ $border-radius: 0.25rem;
   width: 100%; /* Fixes button text wrapping in Edge */
   white-space: nowrap;
 }
+
+/* ==========================================================================
+   Landscape phone (320-430px tall)
+
+   The two tool rows become one horizontally scrollable strip, the drawing-mode
+   grid moves under the canvas as a horizontal strip, and the canvas takes back
+   all the remaining space. Nothing keeps a desktop minimum width any more.
+   ========================================================================== */
+
+@media (max-height: 420px) {
+  .editor-container {
+    padding: 4px 6px;
+  }
+
+  .editor-container-top {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    height: 46px;
+    flex-shrink: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .editor-container-top::-webkit-scrollbar {
+    display: none;
+  }
+
+  .editor-container-top > .row {
+    flex-shrink: 0;
+  }
+
+  .editor-container-top .row + .row {
+    margin-top: 0;
+  }
+
+  .mod-labeled-icon-height {
+    height: 2.25rem;
+  }
+
+  .top-align-row {
+    min-width: 0;
+    padding-top: 2px;
+    flex-direction: column;
+  }
+
+  /* Drawing modes under the canvas, like every mobile paint app. */
+  .mode-selector {
+    order: 2;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    max-width: none;
+    width: 100%;
+    margin-top: 2px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .mode-selector::-webkit-scrollbar {
+    display: none;
+  }
+
+  .controls-container {
+    margin: 0;
+    min-width: 0;
+  }
+
+  .canvas-container {
+    min-width: 0;
+  }
+
+  .canvas-controls {
+    height: 30px;
+    margin-top: 2px;
+  }
+
+  .bitmap-button {
+    padding: 2px 6px;
+    font-size: 0.7rem;
+    line-height: 1.2rem;
+  }
+
+}

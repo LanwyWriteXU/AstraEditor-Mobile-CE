@@ -165,7 +165,24 @@ class Stage extends React.Component {
     window.removeEventListener('scroll', this.updateRect);
   }
   updateRect() {
-    this.rect = this.canvas.getBoundingClientRect();
+    const bounds = this.canvas.getBoundingClientRect();
+    // Layout size, not the transformed bounding box. In the rotated fullscreen
+    // stage getBoundingClientRect reports swapped dimensions, which would make
+    // the renderer stretch the canvas.
+    this.rect = {
+      width: this.canvas.offsetWidth || bounds.width,
+      height: this.canvas.offsetHeight || bounds.height,
+      left: bounds.left,
+      top: bounds.top,
+      right: bounds.right,
+      bottom: bounds.bottom
+    };
+  }
+  /**
+   * Client coordinates -> position inside the canvas.
+   */
+  getCanvasPoint(clientX, clientY) {
+    return [clientX - this.rect.left, clientY - this.rect.top];
   }
   getScratchCoords(x, y) {
     const nativeSize = this.renderer.getNativeSize();
@@ -188,7 +205,7 @@ class Stage extends React.Component {
     }
     const { x, y } = getEventXY(e);
     // Set editing target from cursor position, if clicking on a sprite.
-    const mousePosition = [x - this.rect.left, y - this.rect.top];
+    const mousePosition = this.getCanvasPoint(x, y);
     const drawableId = this.renderer.pick(mousePosition[0], mousePosition[1]);
     if (drawableId === -1) return;
     const targetId = this.props.vm.getTargetIdForDrawableId(drawableId);
@@ -197,7 +214,7 @@ class Stage extends React.Component {
   }
   onMouseMove(e) {
     const { x, y } = getEventXY(e);
-    const mousePosition = [x - this.rect.left, y - this.rect.top];
+    const mousePosition = this.getCanvasPoint(x, y);
 
     if (this.props.isColorPicking) {
       // Set the pickX/Y for the color picker loop to pick up
@@ -239,7 +256,7 @@ class Stage extends React.Component {
   }
   onMouseUp(e) {
     const { x, y } = getEventXY(e);
-    const mousePosition = [x - this.rect.left, y - this.rect.top];
+    const mousePosition = this.getCanvasPoint(x, y);
     this.cancelMouseDownTimeout();
     this.setState({
       mouseDown: false,
@@ -248,8 +265,8 @@ class Stage extends React.Component {
     const data = {
       isDown: false,
       button: e.button,
-      x: x - this.rect.left,
-      y: y - this.rect.top,
+      x: mousePosition[0],
+      y: mousePosition[1],
       canvasWidth: this.rect.width,
       canvasHeight: this.rect.height,
       wasDragged: this.state.isDragging
@@ -281,7 +298,7 @@ class Stage extends React.Component {
   onMouseDown(e) {
     this.updateRect();
     const { x, y } = getEventXY(e);
-    const mousePosition = [x - this.rect.left, y - this.rect.top];
+    const mousePosition = this.getCanvasPoint(x, y);
     if (this.props.isColorPicking) {
       // Set the pickX/Y for the color picker loop to pick up
       this.pickX = mousePosition[0];
@@ -462,6 +479,7 @@ Stage.propTypes = {
   disableEditingTargetChange: PropTypes.bool,
   isColorPicking: PropTypes.bool,
   isFullScreen: PropTypes.bool.isRequired,
+  isPortrait: PropTypes.bool,
   isPlayerOnly: PropTypes.bool,
   isRtl: PropTypes.bool,
   isWindowFullScreen: PropTypes.bool,

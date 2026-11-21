@@ -42,3 +42,17 @@ img.tool-select-icon {
     margin: 0;
   }
 }
+
+/* Landscape phone: keep the tool strip to ~32px tall so the canvas keeps
+   the vertical space. */
+@media (max-height: 420px) {
+  .mod-tool-select {
+    margin: 0;
+    padding: 2px 4px;
+  }
+
+  img.tool-select-icon {
+    width: 1.55rem;
+    height: 1.55rem;
+  }
+}

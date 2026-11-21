@@ -81,3 +81,14 @@ $fade-out-distance: 100px;
   background: white;
   filter: opacity(15%) brightness(0%);
 }
+
+/* Folded away: the canvas gets the width back. Declared last so it beats the
+   narrow-screen width above. */
+.is-collapsed {
+  width: 0;
+  min-width: 0;
+  flex: 0 0 0;
+  overflow: hidden;
+  border: none;
+  transition: width 160ms ease;
+}

@@ -7,8 +7,8 @@ import fileIcon from '../menu-bar/icon--file.svg';
 import settingsIcon from '../menu-bar/icon--settings.svg';
 import toolsIcon from '../menu-bar/tools.svg';
 import addonsIcon from '../menu-bar/addons.svg';
-import logoIcon from './icon--logo.svg';
-import aboutIcon from './icon--about.svg';
+import logoIcon from './icons/icon--logo.svg';
+import aboutIcon from './icons/icon--about.svg';
 import { BackIcon, MaskIcon } from './icons.jsx';
 
 import styles from './mobile-more-panel.css';

@@ -13,6 +13,8 @@ import styles from './selector.css';
 const Selector = (props) => {
   const {
     buttons,
+    className,
+    collapsed,
     containerRef,
     dragType,
     isRtl,
@@ -50,7 +52,10 @@ const Selector = (props) => {
   }
 
   return (
-    <Box className={styles.wrapper} componentRef={containerRef}>
+    <Box
+      className={classNames(styles.wrapper, className, { [styles.isCollapsed]: collapsed })}
+      componentRef={containerRef}
+    >
       <Box className={styles.listArea}>
         {items.map((item, index) => (
           <SortableAsset
@@ -96,6 +101,8 @@ Selector.propTypes = {
     })
   ),
   containerRef: PropTypes.func,
+  className: PropTypes.string,
+  collapsed: PropTypes.bool,
   dragType: PropTypes.oneOf(Object.keys(DragConstants)),
   draggingIndex: PropTypes.number,
   draggingType: PropTypes.oneOf(Object.keys(DragConstants)),

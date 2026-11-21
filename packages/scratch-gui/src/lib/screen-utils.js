@@ -79,9 +79,10 @@ const resolveStageSize = (stageSizeMode, isUnconstrained) => {
  * @param {STAGE_DISPLAY_SIZES} stageSize - the current fully-resolved stage size.
  * @param {{width: number, height: number}} customStageSize Custom stage size
  * @param {boolean} isFullScreen - true if full-screen mode is enabled.
+ * @param {boolean} isPortrait - true when the fullscreen viewer uses the portrait layout.
  * @return {StageDimensions} - an object describing the dimensions of the stage.
  */
-const getStageDimensions = (stageSize, customStageSize, isFullScreen) => {
+const getStageDimensions = (stageSize, customStageSize, isFullScreen, isPortrait) => {
   const stageDimensions = {
     heightDefault: customStageSize.height,
     widthDefault: customStageSize.width,
@@ -91,23 +92,40 @@ const getStageDimensions = (stageSize, customStageSize, isFullScreen) => {
   };
 
   if (isFullScreen) {
-    stageDimensions.height =
-      window.innerHeight -
-      STAGE_DIMENSION_DEFAULTS.menuHeightAdjustment -
-      getMenuBarHeight() -
-      STAGE_DIMENSION_DEFAULTS.fullScreenSpacingBorderAdjustment;
+    // The portrait viewer is a bare fullscreen surface: no stage header, no menu
+    // bar, nothing to subtract. That is what lets a portrait project (custom
+    // stage size) hug the screen edge to edge instead of floating in the middle.
+    if (isPortrait) {
+      // 2px accounts for the 1px fullscreen border on each side, so the rendered
+      // stage lands exactly on the viewport edges.
+      const maxWidth = window.innerWidth - 2;
+      const maxHeight = window.innerHeight - 2;
+      stageDimensions.height = maxHeight;
+      stageDimensions.width = stageDimensions.height * (customStageSize.width / customStageSize.height);
+      if (stageDimensions.width > maxWidth) {
+        stageDimensions.width = maxWidth;
+        stageDimensions.height = stageDimensions.width * (customStageSize.height / customStageSize.width);
+      }
+      stageDimensions.scale = stageDimensions.width / stageDimensions.widthDefault;
+    } else {
+      stageDimensions.height =
+        window.innerHeight -
+        STAGE_DIMENSION_DEFAULTS.menuHeightAdjustment -
+        getMenuBarHeight() -
+        STAGE_DIMENSION_DEFAULTS.fullScreenSpacingBorderAdjustment;
 
-    stageDimensions.width = stageDimensions.height * (customStageSize.width / customStageSize.height);
+      stageDimensions.width = stageDimensions.height * (customStageSize.width / customStageSize.height);
 
-    const maxWidth = maxScaleParam
-      ? Math.min(window.innerWidth, maxScaleParam * customStageSize.width)
-      : window.innerWidth;
-    if (stageDimensions.width > maxWidth) {
-      stageDimensions.width = maxWidth;
-      stageDimensions.height = stageDimensions.width * (customStageSize.height / customStageSize.width);
+      const maxWidth = maxScaleParam
+        ? Math.min(window.innerWidth, maxScaleParam * customStageSize.width)
+        : window.innerWidth;
+      if (stageDimensions.width > maxWidth) {
+        stageDimensions.width = maxWidth;
+        stageDimensions.height = stageDimensions.width * (customStageSize.height / customStageSize.width);
+      }
+
+      stageDimensions.scale = stageDimensions.width / stageDimensions.widthDefault;
     }
-
-    stageDimensions.scale = stageDimensions.width / stageDimensions.widthDefault;
   } else {
     const metadata = STAGE_DISPLAY_SCALE_METADATA[stageSize];
     if (metadata.width) {

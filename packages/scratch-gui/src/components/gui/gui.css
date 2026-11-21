@@ -2,10 +2,30 @@
 @import '../../css/colors.css';
 @import '../../css/z-index.css';
 
+/*
+   The editor is a full-screen app: nothing outside it scrolls, and every
+   percentage height inside the layout resolves against the viewport rather
+   than against the tallest piece of content (which is what `height: 100%`
+   with no anchored ancestor used to do).
+*/
+:global(html),
+:global(body) {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+:global(#app) {
+  height: 100%;
+}
+
 .page-wrapper {
   height: 100%;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .body-wrapper {
@@ -428,6 +448,21 @@ $fade-out-distance: 15px;
   margin-top: 0;
 }
 
+/* Phones in landscape are only 320-430px tall; the full-size add-extension
+   square would eat a sixth of the editor. */
+@media (max-height: 420px) {
+  .extension-button-container {
+    width: 44px;
+    height: 40px;
+  }
+
+  .extension-button-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0;
+  }
+}
+
 /* Sprite Selection Watermark */
 .watermark {
   position: absolute;
@@ -643,6 +678,72 @@ $fade-out-distance: 15px;
   top: 0 !important;
   height: 100% !important;
   padding: 0 !important;
+  /* No stage header in the mobile shell: centre the stage instead of leaving it
+     stuck to the top edge. */
+  justify-content: center;
+  /* A fullscreen viewer should letterbox against black, like a video player.
+     The themed $fullscreen-background is white in light mode, which made the
+     empty area look like the stage had failed to fill the screen. */
+  background-color: #000 !important;
+}
+
+/*
+   Portrait viewer: the stage is *not* rotated, it is just laid out against the
+   bare viewport (see getStageDimensions), so a portrait-sized project fills the
+   screen while a landscape one is letterboxed as usual.
+*/
+.stage-host.is-portrait [class*='stage-wrapper_full-screen'] {
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+}
+
+/* The rotate button is anchored in screen space, never inside the rotated layer.
+   Same box as the toolbar buttons so it reads as part of the same control strip. */
+.stage-rotate-button {
+  position: fixed;
+  top: calc(6px + env(safe-area-inset-top, 0px));
+  right: calc(6px + env(safe-area-inset-right, 0px));
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.92);
+  /* Literal colour, not $text-primary: that variable flips to white in dark
+     mode and the icon vanished against the white button. */
+  color: #575e75;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.stage-rotate-button.is-portrait-anchor {
+  top: auto;
+  right: auto;
+  bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+  left: calc(6px + env(safe-area-inset-left, 0px));
+}
+
+.stage-rotate-button:active {
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.stage-rotate-icon {
+  width: 100%;
+  height: 100%;
+  background-color: currentColor;
+  pointer-events: none;
 }
 
 /* Dropping onto a sprite tile: set directly on the tile element while a drag is in

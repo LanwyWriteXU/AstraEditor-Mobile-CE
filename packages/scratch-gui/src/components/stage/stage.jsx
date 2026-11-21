@@ -21,6 +21,7 @@ const StageComponent = (props) => {
     dragRef,
     isColorPicking,
     isFullScreen,
+    isPortrait,
     isPlayerOnly,
     isStarted,
     isRtl,
@@ -35,7 +36,7 @@ const StageComponent = (props) => {
     ...boxProps
   } = props;
 
-  const stageDimensions = getStageDimensions(stageSize, customStageSize, isFullScreen);
+  const stageDimensions = getStageDimensions(stageSize, customStageSize, isFullScreen, isPortrait);
   const minWidth = getMinWidth(stageSize);
   const transformStyle =
     stageDimensions.width < minWidth && !isFullScreen
@@ -127,6 +128,7 @@ StageComponent.propTypes = {
   dragRef: PropTypes.func,
   isColorPicking: PropTypes.bool,
   isFullScreen: PropTypes.bool.isRequired,
+  isPortrait: PropTypes.bool,
   isPlayerOnly: PropTypes.bool,
   isRtl: PropTypes.bool,
   isStarted: PropTypes.bool,

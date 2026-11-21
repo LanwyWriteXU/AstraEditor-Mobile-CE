@@ -29,5 +29,7 @@ $menu-bar-button-size: 2rem;
 $menu-bar-item-max-width: 12rem;
 
 /* mobile (landscape) layout */
-$ae-toolbar-width: 64px;
+$ae-toolbar-width: 44px;
+$ae-toolbar-button: 32px;
+$ae-touch-target: 40px;
 $ae-screen-header-height: 2.75rem;

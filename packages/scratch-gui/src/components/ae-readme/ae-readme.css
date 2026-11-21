@@ -27,6 +27,7 @@
   padding: 0.5rem;
   min-height: 200px;
   max-height: calc(100vh - 250px);
+  max-height: calc(100dvh - 250px);
   overflow-y: auto;
 }
 
@@ -123,6 +124,7 @@
 
   .body {
     max-height: calc(100vh - 150px);
+    max-height: calc(100dvh - 150px);
   }
 }
 

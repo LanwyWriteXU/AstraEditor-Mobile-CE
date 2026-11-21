@@ -23,7 +23,8 @@
 } */
 
 .modal-content {
-  margin: 100px auto;
+  position: relative;
+  margin: 16px auto;
   outline: none;
   border: 4px solid $ui-white-transparent;
   padding: 0;
@@ -32,6 +33,16 @@
 
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   overflow: hidden;
+  /* A phone is 320-430px tall in landscape: the old 100px top margin pushed
+     most of the dialog off screen and nothing could scroll. */
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-content > div {
+  min-height: 0;
 }
 
 .modal-content.full-screen {
@@ -40,6 +51,7 @@
   display: flex;
   height: 100%;
   width: 100%;
+  max-height: none;
 
   overflow-y: auto;
   -webkit-overflow-scrolling: 'touch';
@@ -68,6 +80,7 @@ $sides: 20rem;
   flex-wrap: nowrap;
   justify-content: flex-start;
   height: $library-header-height;
+  flex-shrink: 0;
 
   box-sizing: border-box;
   width: 100%;
@@ -178,6 +191,86 @@ $sides: 20rem;
 }
 
 :global(.file-selection-modal) {
-  width: 320px !important;
-  max-width: 320px !important;
+  width: min(420px, 92vw) !important;
+  max-width: min(420px, 92vw) !important;
+}
+
+/* ==========================================================================
+   Phones in landscape: every non-fullscreen modal becomes a bottom sheet.
+
+   The header used to reserve a fixed 20rem (320px) on both sides so the title
+   would stay optically centred. On a 568-640px wide screen that left the title
+   with zero width, so the two wings shrink and the title is allowed to ellipsis.
+   ========================================================================== */
+
+@media (max-height: 420px) {
+  .modal-overlay {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .modal-content:not(.full-screen) {
+    width: 100%;
+    margin: 0;
+    max-height: calc(100vh - 8px);
+    max-height: calc(100dvh - 8px);
+    border-width: 0;
+    border-radius: 16px 16px 0 0;
+    animation: ae-sheet-in 180ms cubic-bezier(0.2, 0.8, 0.3, 1);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .header {
+    height: 2.75rem;
+  }
+
+  .header-item {
+    padding: 0.5rem;
+  }
+
+  .header-item-filter {
+    flex-basis: 2.75rem;
+  }
+
+  [dir='ltr'] .header-item-title {
+    margin: 0 -2.75rem 0 0;
+  }
+
+  [dir='rtl'] .header-item-title {
+    margin: 0 0 0 -2.75rem;
+  }
+
+  .header-item-title {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 0.9rem;
+  }
+
+  [dir='ltr'] .header-item-help {
+    margin-left: 0;
+  }
+
+  [dir='rtl'] .header-item-help {
+    margin-right: 0;
+  }
+
+  .modal-content:not(.full-screen) > div > div {
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+}
+
+@keyframes ae-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
 }

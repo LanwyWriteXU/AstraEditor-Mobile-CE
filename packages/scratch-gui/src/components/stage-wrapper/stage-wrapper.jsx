@@ -12,7 +12,8 @@ import Loader from '../loader/loader.jsx';
 import styles from './stage-wrapper.css';
 
 const StageWrapperComponent = function (props) {
-  const { hideStageHeader, isEmbedded, isFullScreen, isRtl, isRendererSupported, loading, stageSize, vm } = props;
+  const { hideStageHeader, isEmbedded, isFullScreen, isPortrait, isRtl, isRendererSupported, loading, stageSize, vm } =
+    props;
 
   return (
     <Box
@@ -34,7 +35,7 @@ const StageWrapperComponent = function (props) {
           [styles.isfullScreen]: isFullScreen
         })}
       >
-        {isRendererSupported ? <Stage stageSize={stageSize} vm={vm} /> : null}
+        {isRendererSupported ? <Stage isPortrait={isPortrait} stageSize={stageSize} vm={vm} /> : null}
       </Box>
       {loading ? <Loader isFullScreen={isFullScreen} /> : null}
     </Box>
@@ -46,6 +47,7 @@ StageWrapperComponent.propTypes = {
   isEmbedded: PropTypes.bool,
   isFullScreen: PropTypes.bool,
   isRendererSupported: PropTypes.bool.isRequired,
+  isPortrait: PropTypes.bool,
   isRtl: PropTypes.bool.isRequired,
   loading: PropTypes.bool,
   stageSize: PropTypes.oneOf(Object.keys(STAGE_DISPLAY_SIZES)).isRequired,

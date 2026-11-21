@@ -3,7 +3,7 @@ import React from 'react';
 import { defineMessages, injectIntl, intlShape } from 'react-intl';
 
 import aeVersion from '../../lib/ae-version.js';
-import logo from './icon--logo.svg';
+import logo from './icons/icon--logo.svg';
 
 import styles from './more-about-page.css';
 

@@ -9,6 +9,7 @@ import { manuallyTrustExtension } from '../../containers/tw-security-manager.jsx
 import Modal from '../../containers/modal.jsx';
 import Box from '../box/box.jsx';
 import classNames from 'classnames';
+import { BlocksIcon, MoreIcon } from '../ae-mobile/icons.jsx';
 import styles from './monaco-editor.css';
 
 let monaco = null;
@@ -462,6 +463,7 @@ class MonacoEditorComponent extends React.Component {
   constructor(props) {
     super(props);
     this.containerRef = React.createRef();
+    this.rootRef = React.createRef();
     this.editor = null;
     this.saveTimeout = null;
     this.state = {
@@ -477,6 +479,7 @@ class MonacoEditorComponent extends React.Component {
       showFileSelectionModal: false,
       showSettingsModal: false,
       fontSize: 14,
+      sidebarOpen: false,
       editorSettings: {
         tabSize: 4,
         wordWrap: 'on',
@@ -589,7 +592,35 @@ class MonacoEditorComponent extends React.Component {
         this.loadFilesFromProject();
       }
     }
+
+    // On a phone the on-screen keyboard shrinks the visual viewport but not the
+    // layout viewport, so the bottom half of the code would end up behind it.
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', this.handleViewportResize);
+      window.visualViewport.addEventListener('scroll', this.handleViewportResize);
+    }
   }
+
+  handleViewportResize = () => {
+    const root = this.rootRef.current;
+    const viewport = window.visualViewport;
+    if (!root || !viewport) return;
+    // Only shrink while a keyboard is actually showing; otherwise the browser
+    // chrome (address bar) would keep resizing the editor.
+    const keyboardOpen = viewport.height < window.innerHeight - 80;
+    if (keyboardOpen) {
+      root.style.height = `${Math.max(140, viewport.height)}px`;
+    } else {
+      root.style.height = '';
+    }
+    if (this.editor) {
+      this.editor.layout();
+    }
+  };
+
+  setRootRef = (element) => {
+    this.rootRef.current = element;
+  };
 
   async initMonaco() {
     try {
@@ -649,6 +680,10 @@ class MonacoEditorComponent extends React.Component {
     const vm = this.props.vm;
     if (vm && vm.runtime) {
       vm.runtime.off('PROJECT_LOADED', this.loadFilesFromProject);
+    }
+    if (window.visualViewport) {
+      window.visualViewport.removeEventListener('resize', this.handleViewportResize);
+      window.visualViewport.removeEventListener('scroll', this.handleViewportResize);
     }
     if (this.saveTimeout) {
       clearTimeout(this.saveTimeout);
@@ -1033,7 +1068,7 @@ class MonacoEditorComponent extends React.Component {
         language: getFileLanguage(extension),
         theme: this.getEditorTheme(),
         minimap: {
-          enabled: true,
+          enabled: this.state.editorSettings.minimapEnabled,
           scale: 1,
           showSlider: 'mouseover',
           renderCharacters: true,
@@ -1048,11 +1083,12 @@ class MonacoEditorComponent extends React.Component {
         wordWrap: 'on',
         folding: true,
         foldingStrategy: 'auto',
-        showFoldingControls: 'mouseover',
+        showFoldingControls: 'always',
         matchBrackets: 'always',
         autoIndent: 'advanced',
         formatOnPaste: true,
-        formatOnType: true,
+        // Mobile keyboards get into a fight with format-on-type.
+        formatOnType: false,
         suggestOnTriggerCharacters: true,
         acceptSuggestionOnEnter: 'on',
         snippetSuggestions: 'inline',
@@ -1064,8 +1100,9 @@ class MonacoEditorComponent extends React.Component {
         parameterHints: {
           enabled: true
         },
+        // There is no hover on a touch screen.
         hover: {
-          enabled: true,
+          enabled: false,
           delay: 300
         },
         contextmenu: true,
@@ -1074,7 +1111,7 @@ class MonacoEditorComponent extends React.Component {
           autoFindInSelection: 'multiline',
           seedSearchStringFromSelection: 'selection'
         },
-        glyphMargin: true,
+        glyphMargin: false,
         fixedOverflowWidgets: true,
         renderLineHighlight: 'all',
         scrollbar: {
@@ -1082,9 +1119,9 @@ class MonacoEditorComponent extends React.Component {
           horizontal: 'visible',
           verticalHasArrows: false,
           horizontalHasArrows: false,
-          verticalScrollbarSize: 14,
-          horizontalScrollbarSize: 14,
-          arrowSize: 30,
+          verticalScrollbarSize: 10,
+          horizontalScrollbarSize: 10,
+          arrowSize: 0,
           useShadows: true
         },
         overviewRulerBorder: true,
@@ -1124,7 +1161,7 @@ class MonacoEditorComponent extends React.Component {
   };
 
   selectFile = (fileId) => {
-    this.setState({ activeFileId: fileId, editingFileName: null, blockGenerationStatus: null });
+    this.setState({ activeFileId: fileId, editingFileName: null, blockGenerationStatus: null, sidebarOpen: false });
   };
 
   createNewFile = () => {
@@ -1578,8 +1615,12 @@ class MonacoEditorComponent extends React.Component {
 
     return (
       <React.Fragment>
-        <div className={styles.editorWrapper}>
-          <div className={styles.sidebar}>
+        <div className={styles.editorWrapper} ref={this.setRootRef}>
+          <div
+            className={classNames(styles.sidebarScrim, { [styles.isOpen]: this.state.sidebarOpen })}
+            onClick={() => this.setState({ sidebarOpen: false })}
+          />
+          <div className={classNames(styles.sidebar, { [styles.isOpen]: this.state.sidebarOpen })}>
             <div className={styles.sidebarHeader}>
               <span className={styles.sidebarTitle}>
                 <FormattedMessage
@@ -1702,6 +1743,14 @@ class MonacoEditorComponent extends React.Component {
             {activeFile && (
               <div className={styles.editorHeader}>
                 <div className={styles.editorHeaderLeft}>
+                  <button
+                    className={styles.sidebarToggle}
+                    onClick={() => this.setState((prev) => ({ sidebarOpen: !prev.sidebarOpen }))}
+                    title={this.props.intl.formatMessage({ id: 'gui.monacoEditor.filesHeader' })}
+                  >
+                    <MoreIcon className={styles.sidebarToggleIcon} />
+                    {activeFile.name}
+                  </button>
                   <div
                     className={classNames(styles.fileIcon, {
                       [styles.lightText]:
@@ -1744,11 +1793,14 @@ class MonacoEditorComponent extends React.Component {
                     onClick={this.openFileSelectionModal}
                     title={this.props.intl.formatMessage({ id: 'gui.monacoEditor.generateBlocksTooltip' })}
                   >
-                    <FormattedMessage
-                      defaultMessage="生成积木"
-                      description="Generate blocks button"
-                      id="gui.monacoEditor.generateBlocks"
-                    />
+                    <BlocksIcon className={styles.generateIcon} />
+                    <span className={styles.generateLabel}>
+                      <FormattedMessage
+                        defaultMessage="生成积木"
+                        description="Generate blocks button"
+                        id="gui.monacoEditor.generateBlocks"
+                      />
+                    </span>
                   </button>
                 </div>
               </div>

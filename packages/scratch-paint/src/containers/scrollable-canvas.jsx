@@ -28,13 +28,23 @@ class ScrollableCanvas extends React.Component {
       'handleVerticalScrollbarMouseDown',
       'handleVerticalScrollbarMouseMove',
       'handleVerticalScrollbarMouseUp',
-      'handleWheel'
+      'handleWheel',
+      'handlePinchPointerDown',
+      'handlePinchPointerMove',
+      'handlePinchPointerUp'
     ]);
+    // Paper draws from pointer events, so a two-finger gesture has to intercept
+    // them before the canvas does, otherwise pinching also paints a stroke.
+    this.activePointers = new Map();
+    this.pinchDistance = null;
+    this.pinchMidpoint = null;
+    this.pointerHost = null;
   }
   componentDidMount() {
     if (this.props.canvas) {
       this.props.canvas.addEventListener('wheel', this.handleWheel);
       this.props.canvas.addEventListener('mousedown', this.handleMouseDown);
+      this.attachPinchListeners(this.props.canvas);
     }
   }
   componentWillReceiveProps(nextProps) {
@@ -42,9 +52,103 @@ class ScrollableCanvas extends React.Component {
       if (this.props.canvas) {
         this.props.canvas.removeEventListener('wheel', this.handleWheel);
         this.props.canvas.removeEventListener('mousedown', this.handleMouseDown);
+        this.detachPinchListeners();
       }
       nextProps.canvas.addEventListener('wheel', this.handleWheel);
       nextProps.canvas.addEventListener('mousedown', this.handleMouseDown);
+      this.attachPinchListeners(nextProps.canvas);
+    }
+  }
+  componentWillUnmount() {
+    this.detachPinchListeners();
+  }
+  attachPinchListeners(canvas) {
+    // Captured on the parent element: the capture phase runs before the canvas
+    // listeners paper registered, which is the only way to keep it from drawing.
+    this.pointerHost = canvas.parentElement || canvas;
+    this.pointerHost.addEventListener('pointerdown', this.handlePinchPointerDown, true);
+    this.pointerHost.addEventListener('pointermove', this.handlePinchPointerMove, true);
+    this.pointerHost.addEventListener('pointerup', this.handlePinchPointerUp, true);
+    this.pointerHost.addEventListener('pointercancel', this.handlePinchPointerUp, true);
+  }
+  detachPinchListeners() {
+    if (this.pointerHost) {
+      this.pointerHost.removeEventListener('pointerdown', this.handlePinchPointerDown, true);
+      this.pointerHost.removeEventListener('pointermove', this.handlePinchPointerMove, true);
+      this.pointerHost.removeEventListener('pointerup', this.handlePinchPointerUp, true);
+      this.pointerHost.removeEventListener('pointercancel', this.handlePinchPointerUp, true);
+    }
+    this.pointerHost = null;
+    this.activePointers.clear();
+    this.pinchDistance = null;
+    this.pinchMidpoint = null;
+  }
+  getPinchPair() {
+    const points = Array.from(this.activePointers.values());
+    if (points.length < 2) return null;
+    return [points[0], points[1]];
+  }
+  handlePinchPointerDown(event) {
+    if (event.pointerType !== 'touch') return;
+    this.activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (this.activePointers.size < 2) return;
+    // Second finger down: start the gesture and swallow the event so paper does
+    // not begin a stroke with it.
+    const pair = this.getPinchPair();
+    if (!pair) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.pinchDistance = Math.hypot(pair[0].x - pair[1].x, pair[0].y - pair[1].y);
+    this.pinchMidpoint = { x: (pair[0].x + pair[1].x) / 2, y: (pair[0].y + pair[1].y) / 2 };
+  }
+  /**
+   * Two fingers zoom around their midpoint (and dragging both pans the view).
+   * Paper has no pinch support, so the gesture is translated into the same view
+   * helpers the scrollbars and the wheel already use.
+   */
+  handlePinchPointerMove(event) {
+    if (!this.activePointers.has(event.pointerId)) return;
+    this.activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (this.pinchDistance === null) return;
+
+    // While pinching, no pointer (including the first finger) may reach paper.
+    event.preventDefault();
+    event.stopPropagation();
+
+    const pair = this.getPinchPair();
+    if (!pair) return;
+
+    const distance = Math.hypot(pair[0].x - pair[1].x, pair[0].y - pair[1].y);
+    const midpoint = { x: (pair[0].x + pair[1].x) / 2, y: (pair[0].y + pair[1].y) / 2 };
+    const rect = this.props.canvas.getBoundingClientRect();
+    const fixedPoint = paper.view.viewToProject(new paper.Point(midpoint.x - rect.left, midpoint.y - rect.top));
+
+    if (distance > 0 && this.pinchDistance > 0) {
+      const ratio = distance / this.pinchDistance;
+      const deltaZoom = paper.view.zoom * (ratio - 1);
+      if (Math.abs(deltaZoom) > 0.0001) {
+        zoomOnFixedPoint(deltaZoom, fixedPoint);
+      }
+    }
+
+    if (this.pinchMidpoint) {
+      const dx = (this.pinchMidpoint.x - midpoint.x) / paper.view.zoom;
+      const dy = (this.pinchMidpoint.y - midpoint.y) / paper.view.zoom;
+      if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) {
+        pan(dx, dy);
+      }
+    }
+
+    this.pinchDistance = distance;
+    this.pinchMidpoint = midpoint;
+    this.props.updateViewBounds(paper.view.matrix);
+    this.props.redrawSelectionBox();
+  }
+  handlePinchPointerUp(event) {
+    this.activePointers.delete(event.pointerId);
+    if (this.activePointers.size < 2) {
+      this.pinchDistance = null;
+      this.pinchMidpoint = null;
     }
   }
   handleMouseDown(event) {

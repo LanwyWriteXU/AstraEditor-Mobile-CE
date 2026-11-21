@@ -12,8 +12,8 @@ import fullscreenIcon from '../stage-header/icon--fullscreen.svg';
 import unfullscreenIcon from '../stage-header/icon--unfullscreen.svg';
 import stopIcon from '../stop-all/icon--stop-all.svg';
 import greenFlagIcon from '../green-flag/icon--green-flag.svg';
-import pauseIcon from './icon--pause.svg';
-import playIcon from './icon--play.svg';
+import pauseIcon from './icons/icon--pause.svg';
+import playIcon from './icons/icon--play.svg';
 import AddSpriteMenu from './add-sprite-menu.jsx';
 import { CloseIcon, MoreIcon } from './icons.jsx';
 
@@ -100,6 +100,7 @@ const MobileToolbar = ({
   intl,
   isMoreOpen,
   isPaused,
+  isPortraitStage,
   isRunning,
   isSpritePanelOpen,
   isStageOpen,
@@ -123,7 +124,13 @@ const MobileToolbar = ({
   const activeScreenConfig = SCREENS.find((screen) => screen.id === activeScreen) || SCREENS[0];
 
   return (
-    <div className={classNames(styles.toolbar, { [styles.isOverlay]: isStageOpen })} data-ae-toolbar="true">
+    <div
+      className={classNames(styles.toolbar, {
+        [styles.isOverlay]: isStageOpen,
+        [styles.isPortrait]: isStageOpen && isPortraitStage
+      })}
+      data-ae-toolbar="true"
+    >
       {isStageOpen ? null : (
         <div className={styles.topGroup}>
           <button
@@ -224,6 +231,7 @@ MobileToolbar.propTypes = {
   intl: intlShape.isRequired,
   isMoreOpen: PropTypes.bool,
   isPaused: PropTypes.bool,
+  isPortraitStage: PropTypes.bool,
   isRunning: PropTypes.bool,
   isSpritePanelOpen: PropTypes.bool,
   isStageOpen: PropTypes.bool,
