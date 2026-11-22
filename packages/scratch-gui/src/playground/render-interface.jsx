@@ -175,10 +175,27 @@ class Interface extends React.Component {
     super(props);
     this.handleUpdateProjectTitle = this.handleUpdateProjectTitle.bind(this);
   }
+  componentDidMount() {
+    this.updatePlayerHomeClass();
+  }
   componentDidUpdate(prevProps) {
     if (prevProps.isLoading && !this.props.isLoading) {
       loadServiceWorker();
     }
+    if (prevProps.isPlayerOnly !== this.props.isPlayerOnly) {
+      this.updatePlayerHomeClass();
+    }
+  }
+  componentWillUnmount() {
+    this.updatePlayerHomeClass(false);
+  }
+  // The editor locks html/body to the viewport (overflow: hidden). The preview
+  // page is a normal scrolling document, so opt out of that lock here instead of
+  // weakening it for the editor.
+  updatePlayerHomeClass(enabled = this.props.isPlayerOnly) {
+    const isHomepage = Boolean(enabled) && !isInvalidEmbed;
+    document.documentElement.classList.toggle('ae-player-home', isHomepage);
+    document.body.classList.toggle('ae-player-home', isHomepage);
   }
   handleUpdateProjectTitle(title, isDefault) {
     if (isDefault || !title) {
@@ -232,14 +249,17 @@ class Interface extends React.Component {
           style={
             isPlayerOnly
               ? {
-                  // + 2 accounts for 1px border on each side of the stage
-                  width: `${Math.max(480, props.customStageSize.width) + 2}px`
+                  // The desktop preview is exactly as wide as the stage (plus its
+                  // 1px borders). Keeping it in a custom property lets the compact
+                  // layout switch to the full viewport width without a JS resize.
+                  '--stage-width': `${Math.max(480, props.customStageSize.width) + 2}px`
                 }
               : null
           }
         >
           <GUI
             onClickAddonSettings={handleClickAddonSettings}
+            isPlayerHome={isHomepage}
             onUpdateProjectTitle={this.handleUpdateProjectTitle}
             backpackVisible
             backpackHost="_local_"

@@ -22,6 +22,7 @@ const StageComponent = (props) => {
     isColorPicking,
     isFullScreen,
     isPortrait,
+    isPlayerHome,
     isPlayerOnly,
     isStarted,
     isRtl,
@@ -36,10 +37,10 @@ const StageComponent = (props) => {
     ...boxProps
   } = props;
 
-  const stageDimensions = getStageDimensions(stageSize, customStageSize, isFullScreen, isPortrait);
+  const stageDimensions = getStageDimensions(stageSize, customStageSize, isFullScreen, isPortrait, isPlayerHome);
   const minWidth = getMinWidth(stageSize);
   const transformStyle =
-    stageDimensions.width < minWidth && !isFullScreen
+    stageDimensions.width < minWidth && !isFullScreen && !isPlayerHome
       ? {
           transform: `translateX(${(minWidth - stageDimensions.width) / (isRtl ? -2 : 2)}px)`
         }
@@ -129,6 +130,7 @@ StageComponent.propTypes = {
   isColorPicking: PropTypes.bool,
   isFullScreen: PropTypes.bool.isRequired,
   isPortrait: PropTypes.bool,
+  isPlayerHome: PropTypes.bool,
   isPlayerOnly: PropTypes.bool,
   isRtl: PropTypes.bool,
   isStarted: PropTypes.bool,

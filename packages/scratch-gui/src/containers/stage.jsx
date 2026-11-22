@@ -480,6 +480,7 @@ Stage.propTypes = {
   isColorPicking: PropTypes.bool,
   isFullScreen: PropTypes.bool.isRequired,
   isPortrait: PropTypes.bool,
+  isPlayerHome: PropTypes.bool,
   isPlayerOnly: PropTypes.bool,
   isRtl: PropTypes.bool,
   isWindowFullScreen: PropTypes.bool,

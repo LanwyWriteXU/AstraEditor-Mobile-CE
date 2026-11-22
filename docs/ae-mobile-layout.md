@@ -311,3 +311,38 @@ TypeError: crypto.randomUUID is not a function
 - **更多面板分组**：条目改为「文件 / 编辑器设置 / 项目设置 / 插件」。文件页渲染 `MenuBar`，用 CSS 只保留
   `data-menu="file|edit|tools"` 三组、隐藏 logo / 账户 / 分享 / 反馈 / 设置菜单，并把下拉面板 (`ul.menu`)
   从 `position: absolute` 改成文档流内联，形成手风琴。
+
+## 17. 进入编辑器前的预览页
+
+预览页（`index.html` 的 player）此前完全沿用 TurboWarp 桌面布局，手机上会出现两层问题：页面横向滚动、舞台被裁。
+
+实测（修复前）：
+
+| 视口 | 文档宽 / 视口宽 | 舞台 | 说明 |
+| --- | --- | --- | --- |
+| 568×320 | 631 / 568 | 482×405 | 菜单栏最小宽度 631；舞台高于视口 |
+| 390×844 | 631 / 390 | 482×405 | 整页右移，文字被切 |
+| 900×420 | 900 / 900 | 482×405 | 舞台下半截在首屏外 |
+
+原因：
+
+- `render-interface.jsx` 把舞台容器内联成 `Math.max(480, 舞台宽) + 2`，最小 482px。
+- 预览页固定使用 `stageSize="full"`（480×360），不随视口缩放。
+- `menu-bar` 是 `nowrap`，所有项合计约 631px，直接把页面撑宽。
+- `interface.css` 没有任何小屏规则，页脚三列固定 200px。
+- 欢迎弹窗固定 `width: 600px`，390 宽下溢出。
+
+修复：
+
+- `screen-utils.js` 增加 `isPlayerHome` 参数：可用高度 = 视口高 − 菜单 48 − 间距 8 − 舞台头 45 − 边距 8，按 4:3 反算宽度并封顶 1 倍；桌面布局不变。
+- `isPlayerHome` 由 `render-interface` → `GUI` → `StageWrapper` → `Stage` / `StageHeader` 传递。`StageHeader` 也要用缩放后的宽度做 `minWidth`，否则控制条仍按 482px 排，绿旗会跑到屏幕左边。
+- `interface.css`：舞台容器改 `--stage-width` 变量（桌面 482px），小屏改 `width: 100%` + 12px 内边距；预览页的 `page-wrapper` 从 `100dvh + overflow:hidden` 改成自动高度；舞台外层 `width: fit-content` 居中。
+- 紧凑档 `@media (max-height: 520px), (max-width: 720px)` 隐藏反馈按钮与保存状态；≤460px 再隐藏工具、高级；≤340px 再隐藏插件。保留原生菜单（不用滚动容器，否则下拉菜单会被裁）。
+- 欢迎弹窗宽 `min(600px, 100vw - 24px)`，正文 `max-height: 75vh`（`dvh` 版本作增强），窄屏收窄内边距与 logo。
+- 竖屏不再显示「请将设备横屏使用」——该提示只属于编辑器。
+- `gui.css` 里 `html, body { height:100%; overflow:hidden }` 是为编辑器加的全局锁，预览页同样被锁住，表现是内容超出视口却完全无法滚动。`render-interface.jsx` 在预览页给 `html/body` 加 `ae-player-home`，`interface.css` 用它把两处恢复为 `height:auto; overflow-y:auto`；预览容器同时从 `position:absolute` 改为 `relative`，保证文档高度正常参与滚动。编辑器页面不带这个类，仍保持锁定。
+- 预览页进入全屏后不再使用 `StageHeader`：`fullscreen` 插件默认把全屏舞台头 `translateY(-101%)`，等鼠标移到顶边才出现，触屏永远等不到。现在 `gui.jsx` 的 player 分支在全屏时 `hideStageHeader`，直接渲染编辑器的 `MobileToolbar`（全屏 / 停止 / 暂停 / 运行四键，竖排在右侧），运行、暂停、停止、退出全屏都用同一套处理函数。
+- 暂停按钮：`pause` 插件只往舞台头注入一次，退出全屏、`StageHeader` 重新挂载后不会补回来，所以预览页正常态一开始有、进出一次全屏后就没了。现在 `Controls` 组件自己支持 `showPause`（仅 preview 传 true），容器订阅 `PROJECT_PAUSED` / `PROJECT_RESUMED` 并把 `vm.togglePause()` 接上；同时用 `html.ae-player-home .pause-btn { display:none }` 隐藏插件那份，避免重复。
+- 旋转按钮：原来只渲染在编辑器分支里。现在移到 `GUI` 根节点，全屏时对编辑器和预览页都显示。预览页全屏还需要把 `StageWrapper` 包进 `stageHost`（带 `isPortrait`），才能复用 `.stage-host` 的黑底、居中和竖屏布局规则；`MobileToolbar` 也接收 `isPortraitStage`，旋转后工具栏从右侧竖排变成底部横排。
+
+验证：568×320 / 900×420 / 932×430 / 390×844 下 `scrollWidth === clientWidth`，舞台首屏完整（底部距视口 ≥ 8px）；1366×768 布局与改动前一致。生产构建通过。

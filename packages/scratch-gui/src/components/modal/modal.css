@@ -274,3 +274,31 @@ $sides: 20rem;
     transform: translateY(0);
   }
 }
+
+/* Narrow screens in portrait still use the desktop header, where both wings
+   reserve 20rem and leave the title no room. Shrink the wings instead. */
+@media (max-width: 720px) {
+  .header-item {
+    padding: 0.75rem;
+  }
+
+  .header-item-filter,
+  .header-item-close {
+    flex-basis: 2.75rem;
+  }
+
+  [dir='ltr'] .header-item-title {
+    margin: 0 -2.75rem 0 0;
+  }
+
+  [dir='rtl'] .header-item-title {
+    margin: 0 0 0 -2.75rem;
+  }
+
+  .header-item-title {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}

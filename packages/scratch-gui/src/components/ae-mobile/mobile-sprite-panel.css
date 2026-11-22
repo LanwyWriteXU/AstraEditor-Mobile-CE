@@ -64,14 +64,64 @@
   overflow: hidden;
 }
 
-/* Keep the original sprite info on one row: slightly tighter name field and
-   padding so name + X + Y and show + size + direction both fit. */
-.content [class*='sprite-info_sprite-input'] {
-  width: 6rem;
+/*
+ * Sprite info: the desktop layout puts name, X and Y on one row, which is wider
+ * than this panel (the editor-compact addon also pins the box to a fixed height,
+ * so the last row gets clipped). Lay it out as three rows instead:
+ *   name
+ *   X / Y / show
+ *   size / direction
+ * `display: contents` promotes the two original rows' children into this flex
+ * container, so the markup stays untouched.
+ */
+.content [class*='sprite-info_sprite-info'] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: 6px 8px;
+  height: auto !important;
+  padding: 8px 10px !important;
+  overflow: visible;
 }
 
-.content [class*='sprite-info_sprite-info'] {
-  padding: 0.5rem 0.75rem;
+.content [class*='sprite-info_row'] {
+  display: contents;
+}
+
+/* Name gets a full row of its own. */
+.content [class*='sprite-info_row-primary'] > *:first-child {
+  flex: 0 0 100%;
+}
+
+.content [class*='sprite-info_row-primary'] > *:first-child label {
+  width: 100%;
+}
+
+.content [class*='sprite-info_sprite-input'] {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+
+/* Gaps come from the flex container; the addon's per-group margin would add up
+   and push the last group past the panel edge again. */
+.content [class*='sprite-info_group'] {
+  margin-inline-end: 0 !important;
+}
+
+/* The addon sizes the scroll area with a hard-coded 4.75rem; the info box is
+   taller here, so let flex own the remaining height instead. */
+.content [class*='sprite-selector_scroll-wrapper'] {
+  flex: 1 1 auto;
+  height: auto !important;
+}
+
+/* Collapsing-sprite-properties is a desktop addon; inside this panel the info
+   box is always visible, and its collapse button has no place here. */
+.content :global(.sa-sprite-properties-close-btn) {
+  display: none;
 }
 
 /* Adding a sprite lives in the toolbar now. */

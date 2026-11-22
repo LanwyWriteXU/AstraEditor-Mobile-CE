@@ -1,3 +1,26 @@
+@import '../../css/colors.css';
+
 .controls-container {
   display: flex;
+}
+
+.pause-button {
+  width: 2rem;
+  height: 2rem;
+  padding: 0.375rem;
+  border-radius: 0.25rem;
+  user-select: none;
+  user-drag: none;
+  cursor: pointer;
+}
+
+.pause-button:hover {
+  background-color: $looks-light-transparent;
+}
+
+/* The pause addon injects its own button next to the green flag. On the preview
+   page we render our own (the addon does not re-inject after leaving fullscreen),
+   so hide the duplicate. */
+:global(html.ae-player-home) :global(.pause-btn) {
+  display: none !important;
 }

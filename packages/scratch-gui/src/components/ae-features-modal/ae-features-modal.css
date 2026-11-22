@@ -1,14 +1,25 @@
 @import '../../css/colors.css';
 
 .modal-content {
-  width: 600px;
+  width: min(600px, calc(100vw - 24px));
 }
 
 .body {
   background: $ui-modal-background;
   padding: 1.5rem 2.25rem;
   max-height: 75vh;
+  max-height: min(75vh, calc(100dvh - 120px));
   overflow: auto;
+}
+
+@media (max-width: 720px) {
+  .body {
+    padding: 1rem 1.25rem;
+  }
+
+  .logo {
+    width: 45%;
+  }
 }
 
 .body input[type='checkbox'],

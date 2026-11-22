@@ -30,6 +30,20 @@ const STAGE_DIMENSION_DEFAULTS = {
 };
 
 /**
+ * Chrome around the stage on the player homepage: the project menu bar, the
+ * stage header (green flag / stop / fullscreen), and the breathing room above
+ * and below. Used to fit the preview into a phone screen instead of letting it
+ * overflow the viewport.
+ */
+const PLAYER_HOME_CHROME = {
+  menuBar: 48,
+  menuGap: 8,
+  stageHeader: 45,
+  margin: 8,
+  sideMargin: 12
+};
+
+/**
  * Get the current menu bar height from CSS custom property.
  * Plugins can override --stage-fullscreen-top to change this value.
  * @returns {number} menu bar height in pixels
@@ -80,9 +94,10 @@ const resolveStageSize = (stageSizeMode, isUnconstrained) => {
  * @param {{width: number, height: number}} customStageSize Custom stage size
  * @param {boolean} isFullScreen - true if full-screen mode is enabled.
  * @param {boolean} isPortrait - true when the fullscreen viewer uses the portrait layout.
+ * @param {boolean} isPlayerHome - true on the project preview page (menu bar + stage header shown).
  * @return {StageDimensions} - an object describing the dimensions of the stage.
  */
-const getStageDimensions = (stageSize, customStageSize, isFullScreen, isPortrait) => {
+const getStageDimensions = (stageSize, customStageSize, isFullScreen, isPortrait, isPlayerHome) => {
   const stageDimensions = {
     heightDefault: customStageSize.height,
     widthDefault: customStageSize.width,
@@ -126,6 +141,20 @@ const getStageDimensions = (stageSize, customStageSize, isFullScreen, isPortrait
 
       stageDimensions.scale = stageDimensions.width / stageDimensions.widthDefault;
     }
+  } else if (isPlayerHome) {
+    // Fit the preview between the menu bar and the bottom of the viewport.
+    // The stage never grows past its design size, so desktop is unchanged.
+    const maxHeight =
+      window.innerHeight -
+      PLAYER_HOME_CHROME.menuBar -
+      PLAYER_HOME_CHROME.menuGap -
+      PLAYER_HOME_CHROME.stageHeader -
+      PLAYER_HOME_CHROME.margin;
+    const maxWidth = window.innerWidth - PLAYER_HOME_CHROME.sideMargin * 2;
+    const scale = Math.max(0, Math.min(1, maxHeight / customStageSize.height, maxWidth / customStageSize.width));
+    stageDimensions.scale = scale;
+    stageDimensions.width = scale * customStageSize.width;
+    stageDimensions.height = scale * customStageSize.height;
   } else {
     const metadata = STAGE_DISPLAY_SCALE_METADATA[stageSize];
     if (metadata.width) {

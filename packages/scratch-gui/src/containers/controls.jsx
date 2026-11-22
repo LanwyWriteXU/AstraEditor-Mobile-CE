@@ -9,7 +9,27 @@ import ControlsComponent from '../components/controls/controls.jsx';
 class Controls extends React.Component {
   constructor(props) {
     super(props);
-    bindAll(this, ['handleGreenFlagClick', 'handleStopAllClick']);
+    bindAll(this, ['handleGreenFlagClick', 'handleStopAllClick', 'handlePauseClick', 'handlePauseChange']);
+    this.state = {
+      paused: Boolean(props.vm && props.vm.runtime && props.vm.runtime.paused)
+    };
+  }
+  componentDidMount() {
+    if (!this.props.vm || !this.props.vm.runtime) return;
+    this.props.vm.runtime.on('PROJECT_PAUSED', this.handlePauseChange);
+    this.props.vm.runtime.on('PROJECT_RESUMED', this.handlePauseChange);
+  }
+  componentWillUnmount() {
+    if (!this.props.vm || !this.props.vm.runtime) return;
+    this.props.vm.runtime.off('PROJECT_PAUSED', this.handlePauseChange);
+    this.props.vm.runtime.off('PROJECT_RESUMED', this.handlePauseChange);
+  }
+  handlePauseChange() {
+    this.setState({ paused: Boolean(this.props.vm.runtime.paused) });
+  }
+  handlePauseClick(e) {
+    e.preventDefault();
+    this.props.vm.togglePause();
   }
   handleGreenFlagClick(e) {
     e.preventDefault();
@@ -48,8 +68,10 @@ class Controls extends React.Component {
       <ControlsComponent
         {...props}
         active={projectRunning && isStarted}
+        isPaused={this.state.paused}
         turbo={turbo}
         onGreenFlagClick={this.handleGreenFlagClick}
+        onPauseClick={this.handlePauseClick}
         onStopAllClick={this.handleStopAllClick}
       />
     );

@@ -37,6 +37,17 @@ a {
   text-decoration: underline;
 }
 
+/* The editor locks the document to the viewport; the preview page must scroll.
+   `ae-player-home` is toggled on html/body by render-interface.jsx. */
+:global(html.ae-player-home),
+:global(body.ae-player-home) {
+  height: auto;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: auto;
+}
+
 .container {
   position: absolute;
   top: 0;
@@ -53,7 +64,30 @@ a {
 }
 
 .player-only .center {
-  margin: auto;
+  width: var(--stage-width, auto);
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* The preview page is a normal scrolling document. The editor's page wrapper is
+   viewport-height with overflow hidden, which clips the stage on short screens. */
+.player-only [class*='gui_page-wrapper'] {
+  height: auto;
+  overflow: visible;
+}
+
+/* The stage shrinks on small viewports; keep it centred and let the wrapper hug
+   it so the stage header lines up with the stage edges. */
+.player-only [class*='stage-wrapper_stage-wrapper']:not([class*='stage-wrapper_full-screen']) {
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* No horizontal page scroll: the stage and the menu are handled individually. */
+.player-only {
+  position: relative;
+  overflow-x: hidden;
 }
 .menu {
   margin-bottom: 8px;
@@ -114,4 +148,83 @@ a {
 .unshared-update {
   border-color: #ff52526e;
   background-color: #ff525240;
+}
+
+/* ==========================================================================
+   Phones in landscape: the preview page is still the desktop one, with a fixed
+   482px stage and a menu bar whose min-content width is ~631px. Compact it so
+   the stage fits above the fold and the page stops scrolling sideways.
+   ========================================================================== */
+
+@media (max-height: 520px), (max-width: 720px) {
+  .player-only .center {
+    width: 100%;
+    padding: 0 12px;
+  }
+
+  /* Drop the two items that only make sense on the desktop page: the feedback
+     button and the save-status slot. Everything else keeps its normal dropdown
+     behaviour (no scroll container, which would clip the menus). */
+  .player-only
+    [class*='menu-bar_menu-bar']
+    > [class*='menu-bar_main-menu']
+    > [class*='menu-bar_menuGroup']
+    > [class*='menu-bar_menu-bar-item']:last-child {
+    display: none;
+  }
+
+  .player-only [class*='menu-bar_controlBarInner'] {
+    display: none;
+  }
+
+  .player-only .section {
+    margin: 6px 0;
+  }
+
+  .player-only .footer {
+    margin-top: 6px;
+    padding: 8px 0;
+  }
+
+  .player-only .footer-content {
+    max-width: 100%;
+    padding: 0 12px;
+  }
+
+  .player-only .footer-section {
+    width: auto;
+    flex: 1 1 140px;
+    min-width: 0;
+  }
+
+  .player-only .footer-section > * {
+    margin-bottom: 6px;
+  }
+
+  .player-only .footer-text {
+    margin: 4px 0 6px 0;
+  }
+
+  .player-only [class*='project-input_input'] {
+    font-size: 18px;
+    line-height: 24px;
+  }
+}
+
+/* Portrait phones: even with the feedback button gone the menu is ~480px wide,
+   so drop Tools and Advanced too. Both stay reachable after entering the editor. */
+@media (max-width: 460px) {
+  .player-only [class*='menu-bar_file-group'] > *:nth-last-child(-n + 2) {
+    display: none;
+  }
+}
+
+@media (max-width: 340px) {
+  .player-only [class*='menu-bar_file-group'] > *:nth-last-child(3) {
+    display: none;
+  }
+
+  .player-only [class*='menu-bar_menuGroup'] {
+    gap: 0.25rem;
+  }
 }

@@ -7,6 +7,8 @@ import GreenFlag from '../green-flag/green-flag.jsx';
 import StopAll from '../stop-all/stop-all.jsx';
 import TurboMode from '../turbo-mode/turbo-mode.jsx';
 import FramerateIndicator from '../tw-framerate-indicator/framerate-indicator.jsx';
+import pauseIcon from '../ae-mobile/icons/icon--pause.svg';
+import playIcon from '../ae-mobile/icons/icon--play.svg';
 
 import styles from './controls.css';
 
@@ -20,6 +22,16 @@ const messages = defineMessages({
     id: 'gui.controls.stop',
     defaultMessage: 'Stop',
     description: 'Stop button title'
+  },
+  pauseTitle: {
+    id: 'ae.mobile.pause',
+    defaultMessage: 'Pause',
+    description: 'Pause button title'
+  },
+  resumeTitle: {
+    id: 'ae.mobile.resume',
+    defaultMessage: 'Resume',
+    description: 'Resume button title'
   }
 });
 
@@ -28,8 +40,11 @@ const Controls = function (props) {
     active,
     className,
     intl,
+    isPaused,
     onGreenFlagClick,
+    onPauseClick,
     onStopAllClick,
+    showPause,
     turbo,
     framerate,
     interpolation,
@@ -39,6 +54,15 @@ const Controls = function (props) {
   return (
     <div className={classNames(styles.controlsContainer, className)} {...componentProps}>
       <GreenFlag active={active} title={intl.formatMessage(messages.goTitle)} onClick={onGreenFlagClick} />
+      {showPause ? (
+        <img
+          className={styles.pauseButton}
+          draggable={false}
+          src={isPaused ? playIcon : pauseIcon}
+          title={intl.formatMessage(isPaused ? messages.resumeTitle : messages.pauseTitle)}
+          onClick={onPauseClick}
+        />
+      ) : null}
       <StopAll active={active} title={intl.formatMessage(messages.stopTitle)} onClick={onStopAllClick} />
       {turbo ? <TurboMode isSmall={isSmall} /> : null}
       {!isSmall && <FramerateIndicator framerate={framerate} interpolation={interpolation} />}
@@ -50,8 +74,11 @@ Controls.propTypes = {
   active: PropTypes.bool,
   className: PropTypes.string,
   intl: intlShape.isRequired,
+  isPaused: PropTypes.bool,
   onGreenFlagClick: PropTypes.func.isRequired,
+  onPauseClick: PropTypes.func,
   onStopAllClick: PropTypes.func.isRequired,
+  showPause: PropTypes.bool,
   framerate: PropTypes.number,
   interpolation: PropTypes.bool,
   isSmall: PropTypes.bool,
@@ -60,6 +87,8 @@ Controls.propTypes = {
 
 Controls.defaultProps = {
   active: false,
+  isPaused: false,
+  showPause: false,
   turbo: false,
   isSmall: false
 };

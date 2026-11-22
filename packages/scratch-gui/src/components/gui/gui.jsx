@@ -151,6 +151,7 @@ const GUIComponent = (props) => {
     isCreating,
     isEmbedded,
     isFullScreen,
+    isPlayerHome,
     isPlayerOnly,
     isRtl,
     isShared,
@@ -725,15 +726,54 @@ const GUIComponent = (props) => {
               }}
             />
           ) : null}
-          <StageWrapper
-            isFullScreen={isFullScreen}
-            isEmbedded={isEmbedded}
-            isRendererSupported={isRendererSupported()}
-            isRtl={isRtl}
-            loading={loading}
-            stageSize={STAGE_SIZE_MODES.full}
-            vm={vm}
-          />
+          {isFullScreen ? (
+            <Box className={classNames(styles.stageHost, { [styles.isPortrait]: stagePortrait })}>
+              <StageWrapper
+                hideStageHeader
+                isFullScreen
+                isEmbedded={isEmbedded}
+                isPlayerHome={isPlayerHome}
+                isPortrait={stagePortrait}
+                isRendererSupported={isRendererSupported()}
+                isRtl={isRtl}
+                loading={loading}
+                stageSize={STAGE_SIZE_MODES.full}
+                vm={vm}
+              />
+            </Box>
+          ) : (
+            <StageWrapper
+              isFullScreen={false}
+              isEmbedded={isEmbedded}
+              isPlayerHome={isPlayerHome}
+              isRendererSupported={isRendererSupported()}
+              isRtl={isRtl}
+              loading={loading}
+              stageSize={STAGE_SIZE_MODES.full}
+              vm={vm}
+            />
+          )}
+          {/* Fullscreen preview reuses the editor's floating toolbar: StageHeader
+              hides itself behind a hover zone, which a touch screen never hovers. */}
+          {isFullScreen ? (
+            <MobileToolbar
+              activeScreen="code"
+              isMoreOpen={false}
+              isPaused={isPaused}
+              isPortraitStage={stagePortrait}
+              isRunning={isRunning}
+              isSpritePanelOpen={false}
+              isStageOpen
+              onMore={() => {}}
+              onPause={handlePause}
+              onSprites={() => {}}
+              onStage={() => dispatch(setFullScreen(false))}
+              onStart={handleStart}
+              onStop={handleStop}
+              onSwitchScreen={() => {}}
+              vm={vm}
+            />
+          ) : null}
         </React.Fragment>
       ) : (
         <Box className={styles.mobileBody} onDragEnd={handleDragEnd} onDrop={handleDragEnd}>
@@ -871,30 +911,31 @@ const GUIComponent = (props) => {
             onSwitchScreen={handleSwitchScreen}
             vm={vm}
           />
-
-          {/*
-            Fullscreen stage only. The button lives outside the rotated layer and
-            is anchored in screen coordinates: top-right while landscape, bottom-left
-            while portrait, so it never ends up under a thumb or off a corner.
-          */}
-          {isFullScreen ? (
-            <button
-              aria-label={intl.formatMessage({ defaultMessage: 'Rotate stage', id: 'ae.mobile.rotateStage' })}
-              className={classNames(styles.stageRotateButton, {
-                [styles.isPortraitAnchor]: stagePortrait
-              })}
-              title={intl.formatMessage({ defaultMessage: 'Rotate stage', id: 'ae.mobile.rotateStage' })}
-              onClick={handleRotateStage}
-            >
-              <RotateStageIcon className={styles.stageRotateIcon} />
-            </button>
-          ) : null}
         </Box>
       )}
 
+      {/*
+        Fullscreen stage only, for both the editor and the preview page. The button
+        lives outside the rotated layer and is anchored in screen coordinates:
+        top-right while landscape, bottom-left while portrait, so it never ends up
+        under a thumb or off a corner.
+      */}
+      {isFullScreen ? (
+        <button
+          aria-label={intl.formatMessage({ defaultMessage: 'Rotate stage', id: 'ae.mobile.rotateStage' })}
+          className={classNames(styles.stageRotateButton, {
+            [styles.isPortraitAnchor]: stagePortrait
+          })}
+          title={intl.formatMessage({ defaultMessage: 'Rotate stage', id: 'ae.mobile.rotateStage' })}
+          onClick={handleRotateStage}
+        >
+          <RotateStageIcon className={styles.stageRotateIcon} />
+        </button>
+      ) : null}
+
       <DragLayer />
 
-      {isFullScreen ? null : (
+      {isFullScreen || isPlayerOnly ? null : (
         <div className={styles.rotateHint}>
           <span className={styles.rotateHintText}>请将设备横屏使用</span>
         </div>
@@ -945,6 +986,7 @@ GUIComponent.propTypes = {
   isCreating: PropTypes.bool,
   isEmbedded: PropTypes.bool,
   isFullScreen: PropTypes.bool,
+  isPlayerHome: PropTypes.bool,
   isPlayerOnly: PropTypes.bool,
   isRtl: PropTypes.bool,
   isShared: PropTypes.bool,

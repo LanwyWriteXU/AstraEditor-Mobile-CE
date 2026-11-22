@@ -68,6 +68,7 @@ StageHeader.propTypes = {
     height: PropTypes.number.isRequired
   }).isRequired,
   dimensions: PropTypes.arrayOf(PropTypes.number),
+  isPlayerHome: PropTypes.bool,
   isPlayerOnly: PropTypes.bool,
   onSetStageUnFullScreen: PropTypes.func.isRequired,
   onSetStageFull: PropTypes.func.isRequired,

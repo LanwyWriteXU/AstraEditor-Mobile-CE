@@ -10,6 +10,7 @@ StageWrapper.propTypes = {
   hideStageHeader: PropTypes.bool,
   isFullScreen: PropTypes.bool,
   isRendererSupported: PropTypes.bool.isRequired,
+  isPlayerHome: PropTypes.bool,
   isPortrait: PropTypes.bool,
   isRtl: PropTypes.bool,
   stageSize: PropTypes.oneOf(Object.keys(STAGE_DISPLAY_SIZES)).isRequired,

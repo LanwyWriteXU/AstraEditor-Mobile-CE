@@ -69,6 +69,7 @@ const StageHeaderComponent = function (props) {
     customStageSize,
     showFixedLargeSize,
     isFullScreen,
+    isPlayerHome,
     isPlayerOnly,
     onKeyPress,
     onSetStageFullScreen,
@@ -85,7 +86,13 @@ const StageHeaderComponent = function (props) {
 
   let header = null;
 
-  const stageDimensions = getStageDimensions(stageSize, customStageSize, isFullScreen || isEmbedded);
+  const stageDimensions = getStageDimensions(
+    stageSize,
+    customStageSize,
+    isFullScreen || isEmbedded,
+    false,
+    isPlayerHome
+  );
 
   if (isFullScreen || isEmbedded) {
     const settingsButton =
@@ -134,7 +141,7 @@ const StageHeaderComponent = function (props) {
         })}
       >
         <Box className={styles.stageMenuWrapper} style={{ width: stageDimensions.width }}>
-          <Controls vm={vm} />
+          <Controls showPause={isPlayerOnly} vm={vm} />
           <div
             className={styles.fullscreenButtonsRow}
             key="fullscreen" // addons require the HTML element to be not be re-used by in-editor buttons
@@ -193,7 +200,7 @@ const StageHeaderComponent = function (props) {
             [styles.NOVSC]: !get('EnableVSCodeLayout')
           })}
         >
-          <Controls vm={vm} isSmall={stageSizeMode === STAGE_SIZE_MODES.small} />
+          <Controls isSmall={stageSizeMode === STAGE_SIZE_MODES.small} showPause={isPlayerOnly} vm={vm} />
           <div
             className={styles.stageSizeRow}
             key="editor" // addons require the HTML element to be not be re-used by in-editor buttons
@@ -232,6 +239,7 @@ StageHeaderComponent.propTypes = {
   }),
   showFixedLargeSize: PropTypes.bool,
   isFullScreen: PropTypes.bool.isRequired,
+  isPlayerHome: PropTypes.bool,
   isPlayerOnly: PropTypes.bool.isRequired,
   onKeyPress: PropTypes.func.isRequired,
   onSetStageFullScreen: PropTypes.func.isRequired,
