@@ -143,3 +143,17 @@
   box-shadow: inset 0 0 0 1px $looks-secondary;
   font-weight: bold;
 }
+
+/* Landscape phone: the button sits at the bottom right, so the popover would
+   be laid out past the right edge. Pin the panel to the bottom of the screen
+   instead of letting it follow the button. */
+@media (max-height: 420px) {
+  .panel {
+    position: fixed;
+    left: 50%;
+    bottom: 44px;
+    z-index: 600;
+    width: min(260px, calc(100vw - 24px));
+    transform: translateX(-50%);
+  }
+}

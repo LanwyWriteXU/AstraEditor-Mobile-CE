@@ -197,9 +197,12 @@ const zoomToFit = (isBitmap) => {
         (bounds.width * (1 + (2 * PADDING_PERCENT) / 100)) / canvas.clientWidth,
         (bounds.height * (1 + (2 * PADDING_PERCENT) / 100)) / canvas.clientHeight
       );
-    // Clamp ratio
-    ratio = Math.max(Math.min(1, ratio), MIN_RATIO);
-    if (ratio < 1) {
+    // Clamp ratio: never zoom in more than 8x. There is intentionally no upper
+    // clamp, otherwise a canvas shorter than the artwork (a phone in landscape
+    // is ~164px tall, a 4:3 costume needs ~400px) would refuse to shrink and the
+    // drawing would render cropped and off-centre.
+    ratio = Math.max(ratio, MIN_RATIO);
+    if (ratio !== 1) {
       paper.view.center = bounds.center;
       paper.view.zoom = paper.view.zoom / ratio;
       resizeCrosshair();

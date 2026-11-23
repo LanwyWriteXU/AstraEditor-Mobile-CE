@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import bindAll from 'lodash.bindall';
-import { defineMessages, intlShape, injectIntl } from 'react-intl';
+import { defineMessages, FormattedMessage, intlShape, injectIntl } from 'react-intl';
 import VM from 'scratch-vm';
 
 import AssetPanel from '../components/asset-panel/asset-panel.jsx';
@@ -277,7 +277,28 @@ class SoundTab extends React.Component {
           ) : (
             <SoundEditorNotSupported />
           )
-        ) : null}
+        ) : (
+          <div
+            style={{
+              display: 'flex',
+              flex: 1,
+              minWidth: 0,
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1rem',
+              color: '#8a8f9c',
+              fontSize: '0.8rem',
+              lineHeight: 1.5,
+              textAlign: 'center'
+            }}
+          >
+            <FormattedMessage
+              defaultMessage="还没有声音。点左下角的按钮添加一个。"
+              description="Empty state shown in the sound tab when the sprite has no sounds"
+              id="gui.soundTab.emptyState"
+            />
+          </div>
+        )}
         {this.props.soundRecorderVisible ? <RecordModal onNewSound={this.handleNewSound} /> : null}
         {this.props.soundLibraryVisible ? (
           <SoundLibrary

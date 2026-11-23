@@ -133,3 +133,10 @@ $border-radius: 0.25rem;
   margin-right: 0;
   margin-left: calc(2 * $grid-unit);
 }
+
+/* Landscape phone: the name field was eating a quarter of the single tool row. */
+@media (max-height: 420px) {
+  .costume-input {
+    width: 4.5rem;
+  }
+}

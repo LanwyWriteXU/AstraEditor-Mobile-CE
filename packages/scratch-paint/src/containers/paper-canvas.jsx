@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
 import paper from '@turbowarp/paper';
-import Formats from '../lib/format';
+import Formats, { isBitmap } from '../lib/format';
 import log from '../log/log';
 
 import { performSnapshot } from '../helper/undo';
@@ -43,7 +43,8 @@ class PaperCanvas extends React.Component {
       'maybeZoomToFit',
       'switchCostume',
       'onViewResize',
-      'recalibrateSize'
+      'recalibrateSize',
+      'watchCanvasSize'
     ]);
   }
   componentDidMount() {
@@ -73,6 +74,35 @@ class PaperCanvas extends React.Component {
     setupLayers(this.props.format);
     updateTheme(this.props.theme);
     this.importImage(this.props.imageFormat, this.props.image, this.props.rotationCenterX, this.props.rotationCenterY);
+    this.watchCanvasSize();
+  }
+  /**
+   * The canvas is sized by flex layout, which settles after paper.setup(). Paper
+   * only re-measures the view on window resize, so without this the view keeps
+   * the (too wide) size it saw at mount: the artwork renders zoomed in and
+   * pushed off the visible area on a phone-sized screen.
+   */
+  watchCanvasSize() {
+    if (typeof window.ResizeObserver === 'undefined' || !this.canvas) return;
+    this.canvasResizeObserver = new window.ResizeObserver(() => {
+      if (this.canvasResizeTimer) window.clearTimeout(this.canvasResizeTimer);
+      this.canvasResizeTimer = window.setTimeout(() => {
+        if (!paper.view) return;
+        this.recalibrateSize(() => {
+          if (!paper.view) return;
+          const size = [paper.view.viewSize.width, paper.view.viewSize.height];
+          const previous = this.lastCanvasSize;
+          this.lastCanvasSize = size;
+          const changedALot = !previous || Math.abs(previous[0] - size[0]) > 40 || Math.abs(previous[1] - size[1]) > 40;
+          if (changedALot) {
+            zoomToFit(isBitmap(this.props.format));
+            setWorkspaceBounds();
+            this.props.updateViewBounds(paper.view.matrix);
+          }
+        });
+      }, 150);
+    });
+    this.canvasResizeObserver.observe(this.canvas);
   }
   componentWillReceiveProps(newProps) {
     if (this.props.imageId !== newProps.imageId) {
@@ -106,6 +136,14 @@ class PaperCanvas extends React.Component {
   }
   componentWillUnmount() {
     this.clearQueuedImport();
+    if (this.canvasResizeTimer) {
+      window.clearTimeout(this.canvasResizeTimer);
+      this.canvasResizeTimer = null;
+    }
+    if (this.canvasResizeObserver) {
+      this.canvasResizeObserver.disconnect();
+      this.canvasResizeObserver = null;
+    }
     // shouldZoomToFit means the zoom level hasn't been initialized yet
     if (!this.shouldZoomToFit) {
       this.props.saveZoomLevel();

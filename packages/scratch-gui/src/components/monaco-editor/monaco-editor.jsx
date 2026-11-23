@@ -1740,71 +1740,87 @@ class MonacoEditorComponent extends React.Component {
             )}
           </div>
           <div className={styles.editorArea}>
-            {activeFile && (
-              <div className={styles.editorHeader}>
-                <div className={styles.editorHeaderLeft}>
-                  <button
-                    className={styles.sidebarToggle}
-                    onClick={() => this.setState((prev) => ({ sidebarOpen: !prev.sidebarOpen }))}
-                    title={this.props.intl.formatMessage({ id: 'gui.monacoEditor.filesHeader' })}
-                  >
-                    <MoreIcon className={styles.sidebarToggleIcon} />
-                    {activeFile.name}
-                  </button>
-                  <div
-                    className={classNames(styles.fileIcon, {
-                      [styles.lightText]:
-                        getFileTypeInfo(activeExtension).color === '#f7df1e' ||
-                        getFileTypeInfo(activeExtension).color === '#cbcb41'
-                    })}
-                    style={{ backgroundColor: getFileTypeInfo(activeExtension).color }}
-                  >
-                    {activeExtension.toUpperCase().slice(0, 2)}
-                  </div>
-                  <span className={styles.editorFilename}>{activeFile.name}</span>
-                </div>
-                <div className={styles.editorHeaderRight}>
-                  <div className={styles.zoomControl}>
-                    <button
-                      onClick={this.zoomOut}
-                      className={styles.zoomBtn}
-                      title={this.props.intl.formatMessage({ id: 'gui.monacoEditor.zoomOut' })}
+            <div className={styles.editorHeader}>
+              <div className={styles.editorHeaderLeft}>
+                <button
+                  className={styles.sidebarToggle}
+                  onClick={() => this.setState((prev) => ({ sidebarOpen: !prev.sidebarOpen }))}
+                  title={this.props.intl.formatMessage({ id: 'gui.monacoEditor.filesHeader' })}
+                >
+                  <MoreIcon className={styles.sidebarToggleIcon} />
+                  {activeFile ? activeFile.name : this.props.intl.formatMessage({ id: 'gui.monacoEditor.filesHeader' })}
+                </button>
+                {activeFile ? (
+                  <React.Fragment>
+                    <div
+                      className={classNames(styles.fileIcon, {
+                        [styles.lightText]:
+                          getFileTypeInfo(activeExtension).color === '#f7df1e' ||
+                          getFileTypeInfo(activeExtension).color === '#cbcb41'
+                      })}
+                      style={{ backgroundColor: getFileTypeInfo(activeExtension).color }}
                     >
-                      −
-                    </button>
-                    <span className={styles.zoomValue}>{this.state.fontSize}px</span>
+                      {activeExtension.toUpperCase().slice(0, 2)}
+                    </div>
+                    <span className={styles.editorFilename}>{activeFile.name}</span>
+                  </React.Fragment>
+                ) : null}
+              </div>
+              <div className={styles.editorHeaderRight}>
+                {activeFile ? (
+                  <React.Fragment>
+                    <div className={styles.zoomControl}>
+                      <button
+                        onClick={this.zoomOut}
+                        className={styles.zoomBtn}
+                        title={this.props.intl.formatMessage({ id: 'gui.monacoEditor.zoomOut' })}
+                      >
+                        −
+                      </button>
+                      <span className={styles.zoomValue}>{this.state.fontSize}px</span>
+                      <button
+                        onClick={this.zoomIn}
+                        className={styles.zoomBtn}
+                        title={this.props.intl.formatMessage({ id: 'gui.monacoEditor.zoomIn' })}
+                      >
+                        +
+                      </button>
+                    </div>
                     <button
-                      onClick={this.zoomIn}
-                      className={styles.zoomBtn}
-                      title={this.props.intl.formatMessage({ id: 'gui.monacoEditor.zoomIn' })}
+                      className={styles.settingsBtn}
+                      onClick={this.openSettingsModal}
+                      title={this.props.intl.formatMessage({ id: 'gui.monacoEditor.settings' })}
                     >
-                      +
+                      &#9881;
                     </button>
-                  </div>
-                  <button
-                    className={styles.settingsBtn}
-                    onClick={this.openSettingsModal}
-                    title={this.props.intl.formatMessage({ id: 'gui.monacoEditor.settings' })}
-                  >
-                    &#9881;
-                  </button>
-                  <button
-                    className={styles.generateBtn}
-                    onClick={this.openFileSelectionModal}
-                    title={this.props.intl.formatMessage({ id: 'gui.monacoEditor.generateBlocksTooltip' })}
-                  >
-                    <BlocksIcon className={styles.generateIcon} />
+                    <button
+                      className={styles.generateBtn}
+                      onClick={this.openFileSelectionModal}
+                      title={this.props.intl.formatMessage({ id: 'gui.monacoEditor.generateBlocksTooltip' })}
+                    >
+                      <BlocksIcon className={styles.generateIcon} />
+                      <span className={styles.generateLabel}>
+                        <FormattedMessage
+                          defaultMessage="生成积木"
+                          description="Generate blocks button"
+                          id="gui.monacoEditor.generateBlocks"
+                        />
+                      </span>
+                    </button>
+                  </React.Fragment>
+                ) : (
+                  <button className={styles.generateBtn} onClick={this.createNewFile}>
                     <span className={styles.generateLabel}>
                       <FormattedMessage
-                        defaultMessage="生成积木"
-                        description="Generate blocks button"
-                        id="gui.monacoEditor.generateBlocks"
+                        defaultMessage="New File"
+                        description="New file button"
+                        id="gui.monacoEditor.newFile"
                       />
                     </span>
                   </button>
-                </div>
+                )}
               </div>
-            )}
+            </div>
             {!activeFile && this.state.files.length === 0 && (
               <div className={styles.emptyState}>
                 <FormattedMessage

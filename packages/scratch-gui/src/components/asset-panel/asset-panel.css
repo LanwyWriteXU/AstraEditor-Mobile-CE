@@ -24,6 +24,9 @@
   display: flex;
   flex-grow: 1;
   flex-shrink: 1;
+  /* Flex items default to min-width: auto, which means the paint canvas'
+     intrinsic width wins and the whole panel overflows a 640px phone screen. */
+  min-width: 0;
   overflow: visible;
 }
 

@@ -150,3 +150,18 @@ body :global(.Popover) {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
+
+/* Landscape phone: the colour button sits near the bottom edge, so the panel
+   opens upwards and is capped to the viewport instead of rendering off-screen. */
+@media (max-height: 420px) {
+  /* The panel is ~300px tall and the colour button sits near the bottom edge of
+     a 320px screen, so it has to be shrunk to fit above the button. zoom() is
+     used instead of transform: react-popover positions itself with an inline
+     transform, which a CSS transform would fight with. */
+  :global(.Popover-body) {
+    zoom: 0.72;
+    max-height: calc(100dvh - 48px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

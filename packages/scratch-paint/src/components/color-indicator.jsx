@@ -24,7 +24,7 @@ const ColorIndicatorComponent = (props) => (
         />
       }
       isOpen={props.colorModalVisible}
-      preferPlace="below"
+      preferPlace="above"
       onOuterAction={props.onCloseColor}
     >
       <Label text={props.label}>

@@ -237,7 +237,22 @@ $border-radius: 0.25rem;
 
 @media (max-height: 420px) {
   .editor-container {
+    position: relative;
     padding: 4px 6px;
+  }
+
+  /* Colours and stroke width move to the free space at the bottom right, next
+     to the drawing-mode strip. Otherwise they sit past the right edge of a
+     521px wide tool row and are unreachable without scrolling a strip that has
+     no visible scrollbar. */
+  .editor-container > .editor-container-top .mod-dashed-border {
+    position: absolute;
+    right: 6px;
+    bottom: 4px;
+    z-index: 4;
+    height: 2.25rem;
+    padding-right: 0;
+    border-right: none;
   }
 
   .editor-container-top {
@@ -283,7 +298,8 @@ $border-radius: 0.25rem;
     flex-direction: row;
     flex-wrap: nowrap;
     max-width: none;
-    width: 100%;
+    width: auto;
+    flex: 0 0 auto;
     margin-top: 2px;
     overflow-x: auto;
     overflow-y: hidden;
