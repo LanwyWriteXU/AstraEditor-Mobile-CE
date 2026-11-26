@@ -73,3 +73,17 @@
   /* Make sure it appears below the transparent icon */
   z-index: 1;
 }
+
+/* Landscape phone: the two swatches plus stroke width have to fit next to
+   ten drawing tools in a single 463px bar. */
+@media (max-height: 420px) {
+  .color-button {
+    width: 2.5rem;
+    height: 1.9rem;
+  }
+
+  .color-button-swatch {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+}

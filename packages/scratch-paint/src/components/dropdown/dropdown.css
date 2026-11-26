@@ -35,3 +35,57 @@ $arrow-border-width: 14px;
   padding-bottom: 0;
   padding-top: 0.2rem;
 }
+
+.menu {
+  /* Wrapper that carries the enter/exit animation hooks. */
+  display: block;
+}
+
+/* The menu is placed below its button, so it should grow downwards out of the
+   button and retract upwards back into it. */
+.menu-closing {
+  animation-name: dropOutUp;
+  animation-duration: 160ms;
+  animation-fill-mode: forwards;
+  pointer-events: none;
+}
+
+[class*='Popover-above'] .menu-closing {
+  animation-name: dropOutDown;
+}
+
+@keyframes dropInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dropInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dropOutUp {
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes dropOutDown {
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}

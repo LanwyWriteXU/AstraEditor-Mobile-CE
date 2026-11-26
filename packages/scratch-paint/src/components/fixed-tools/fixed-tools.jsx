@@ -82,6 +82,11 @@ const messages = defineMessages({
     defaultMessage: 'More',
     description: 'Label for dropdown to access more action buttons',
     id: 'paint.paintEditor.more'
+  },
+  arrange: {
+    defaultMessage: 'Arrange',
+    description: 'Label for the dropdown containing group, ungroup and stacking order actions',
+    id: 'paint.paintEditor.arrange'
   }
 });
 
@@ -142,45 +147,48 @@ const FixedToolsComponent = (props) => {
         </ButtonGroup>
       </InputGroup>
 
-      {/* Group/Ungroup */}
-      {isVector(props.format) ? (
-        <InputGroup className={styles.modDashedBorder}>
-          <LabeledIconButton
-            disabled={!shouldShowGroup()}
-            hideLabel={hideLabel(props.intl.locale)}
-            imgSrc={groupIcon}
-            title={props.intl.formatMessage(messages.group)}
-            onClick={props.onGroup}
-          />
-          <LabeledIconButton
-            disabled={!shouldShowUngroup()}
-            hideLabel={hideLabel(props.intl.locale)}
-            imgSrc={ungroupIcon}
-            title={props.intl.formatMessage(messages.ungroup)}
-            onClick={props.onUngroup}
-          />
-        </InputGroup>
-      ) : null}
+      {/* Group/Ungroup + Forward/Backward: inline on wide screens only. On a
+          phone they are folded into the "arrange" dropdown further down. */}
+      <MediaQuery minWidth={layout.fullSizeEditorMinWidth}>
+        {isVector(props.format) ? (
+          <InputGroup className={styles.modDashedBorder}>
+            <LabeledIconButton
+              disabled={!shouldShowGroup()}
+              hideLabel={hideLabel(props.intl.locale)}
+              imgSrc={groupIcon}
+              title={props.intl.formatMessage(messages.group)}
+              onClick={props.onGroup}
+            />
+            <LabeledIconButton
+              disabled={!shouldShowUngroup()}
+              hideLabel={hideLabel(props.intl.locale)}
+              imgSrc={ungroupIcon}
+              title={props.intl.formatMessage(messages.ungroup)}
+              onClick={props.onUngroup}
+            />
+          </InputGroup>
+        ) : null}
 
-      {/* Forward/Backward */}
-      {isVector(props.format) ? (
-        <InputGroup className={styles.modDashedBorder}>
-          <LabeledIconButton
-            disabled={!shouldShowBringForward()}
-            hideLabel={hideLabel(props.intl.locale)}
-            imgSrc={sendForwardIcon}
-            title={props.intl.formatMessage(messages.forward)}
-            onClick={props.onSendForward}
-          />
-          <LabeledIconButton
-            disabled={!shouldShowSendBackward()}
-            hideLabel={hideLabel(props.intl.locale)}
-            imgSrc={sendBackwardIcon}
-            title={props.intl.formatMessage(messages.backward)}
-            onClick={props.onSendBackward}
-          />
-        </InputGroup>
-      ) : null}
+        {/* Forward/Backward */}
+        {isVector(props.format) ? (
+          <InputGroup className={styles.modDashedBorder}>
+            <LabeledIconButton
+              disabled={!shouldShowBringForward()}
+              hideLabel={hideLabel(props.intl.locale)}
+              imgSrc={sendForwardIcon}
+              title={props.intl.formatMessage(messages.forward)}
+              onClick={props.onSendForward}
+            />
+            <LabeledIconButton
+              disabled={!shouldShowSendBackward()}
+              hideLabel={hideLabel(props.intl.locale)}
+              imgSrc={sendBackwardIcon}
+              title={props.intl.formatMessage(messages.backward)}
+              onClick={props.onSendBackward}
+            />
+          </InputGroup>
+        ) : null}
+      </MediaQuery>
 
       {isVector(props.format) ? (
         <MediaQuery minWidth={layout.fullSizeEditorMinWidth}>
@@ -212,6 +220,7 @@ const FixedToolsComponent = (props) => {
                     </InputGroup> */}
         </MediaQuery>
       ) : null}
+      {/* Everything above, folded into one menu on phones. */}
       {isVector(props.format) ? (
         <MediaQuery maxWidth={layout.fullSizeEditorMinWidth - 1}>
           <InputGroup>
@@ -221,9 +230,39 @@ const FixedToolsComponent = (props) => {
               popoverContent={
                 <InputGroup className={styles.modContextMenu} rtl={props.rtl}>
                   <Button
-                    className={classNames(styles.modMenuItem, {
-                      [styles.modDisabled]: !shouldShowBringForward()
-                    })}
+                    className={classNames(styles.modMenuItem, { [styles.modDisabled]: !shouldShowGroup() })}
+                    disabled={!shouldShowGroup()}
+                    onClick={props.onGroup}
+                  >
+                    <TWRenderRecoloredImage className={styles.menuItemIcon} draggable={false} src={groupIcon} />
+                    <span>{props.intl.formatMessage(messages.group)}</span>
+                  </Button>
+                  <Button
+                    className={classNames(styles.modMenuItem, { [styles.modDisabled]: !shouldShowUngroup() })}
+                    disabled={!shouldShowUngroup()}
+                    onClick={props.onUngroup}
+                  >
+                    <TWRenderRecoloredImage className={styles.menuItemIcon} draggable={false} src={ungroupIcon} />
+                    <span>{props.intl.formatMessage(messages.ungroup)}</span>
+                  </Button>
+                  <Button
+                    className={classNames(styles.modMenuItem, { [styles.modDisabled]: !shouldShowBringForward() })}
+                    disabled={!shouldShowBringForward()}
+                    onClick={props.onSendForward}
+                  >
+                    <TWRenderRecoloredImage className={styles.menuItemIcon} draggable={false} src={sendForwardIcon} />
+                    <span>{props.intl.formatMessage(messages.forward)}</span>
+                  </Button>
+                  <Button
+                    className={classNames(styles.modMenuItem, { [styles.modDisabled]: !shouldShowSendBackward() })}
+                    disabled={!shouldShowSendBackward()}
+                    onClick={props.onSendBackward}
+                  >
+                    <TWRenderRecoloredImage className={styles.menuItemIcon} draggable={false} src={sendBackwardIcon} />
+                    <span>{props.intl.formatMessage(messages.backward)}</span>
+                  </Button>
+                  <Button
+                    className={classNames(styles.modMenuItem, { [styles.modDisabled]: !shouldShowBringForward() })}
                     disabled={!shouldShowBringForward()}
                     onClick={props.onSendToFront}
                   >
@@ -231,33 +270,18 @@ const FixedToolsComponent = (props) => {
                     <span>{props.intl.formatMessage(messages.front)}</span>
                   </Button>
                   <Button
-                    className={classNames(styles.modMenuItem, {
-                      [styles.modDisabled]: !shouldShowSendBackward()
-                    })}
+                    className={classNames(styles.modMenuItem, { [styles.modDisabled]: !shouldShowSendBackward() })}
                     disabled={!shouldShowSendBackward()}
                     onClick={props.onSendToBack}
                   >
                     <TWRenderRecoloredImage className={styles.menuItemIcon} draggable={false} src={sendBackIcon} />
                     <span>{props.intl.formatMessage(messages.back)}</span>
                   </Button>
-
-                  {/* To be rotation point */}
-                  {/* <Button
-                                        className={classNames(styles.modMenuItem, styles.modTopDivider)}
-                                        onClick={function () {}}
-                                    >
-                                        <img
-                                            className={styles.menuItemIcon}
-                                            draggable={false}
-                                            src={rotationPointIcon}
-                                        />
-                                        <span>{'Rotation Point'}</span>
-                                    </Button> */}
                 </InputGroup>
               }
               tipSize={0.01}
             >
-              {props.intl.formatMessage(messages.more)}
+              {props.intl.formatMessage(messages.arrange)}
             </Dropdown>
           </InputGroup>
         </MediaQuery>

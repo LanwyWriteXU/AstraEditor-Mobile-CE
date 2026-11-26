@@ -448,21 +448,6 @@ $fade-out-distance: 15px;
   margin-top: 0;
 }
 
-/* Phones in landscape are only 320-430px tall; the full-size add-extension
-   square would eat a sixth of the editor. */
-@media (max-height: 420px) {
-  .extension-button-container {
-    width: 44px;
-    height: 40px;
-  }
-
-  .extension-button-icon {
-    width: 1.25rem;
-    height: 1.25rem;
-    margin-top: 0;
-  }
-}
-
 /* Sprite Selection Watermark */
 .watermark {
   position: absolute;

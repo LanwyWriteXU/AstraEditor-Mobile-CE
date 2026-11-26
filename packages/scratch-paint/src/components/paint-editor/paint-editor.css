@@ -5,6 +5,7 @@
 .editor-container {
   width: 100%;
   height: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   padding: calc(3 * $grid-unit);
@@ -19,6 +20,10 @@
 .editor-container-top {
   border-bottom: 1px dashed $ui-pane-border;
   padding-bottom: calc(2 * $grid-unit);
+}
+
+.tool-bar {
+  display: contents;
 }
 
 .top-align-row {
@@ -228,50 +233,36 @@ $border-radius: 0.25rem;
 }
 
 /* ==========================================================================
-   Landscape phone (320-430px tall)
+   Landscape phone (596 x 287 of usable screen)
 
-   The two tool rows become one horizontally scrollable strip, the drawing-mode
-   grid moves under the canvas as a horizontal strip, and the canvas takes back
-   all the remaining space. Nothing keeps a desktop minimum width any more.
+   Three fixed rows on top of each other (tools / mode grid / canvas controls)
+   left almost nothing for the canvas and still overflowed sideways. The layout
+   is now: one 40px tool row, the canvas, and one 44px bottom bar that holds the
+   drawing tools plus the colour controls. Canvas controls float over the canvas
+   so they cost no height at all.
    ========================================================================== */
 
 @media (max-height: 420px) {
   .editor-container {
     position: relative;
-    padding: 4px 6px;
+    height: auto;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 3px 6px 0 6px;
+    overflow: hidden;
   }
 
-  /* Colours and stroke width move to the free space at the bottom right, next
-     to the drawing-mode strip. Otherwise they sit past the right edge of a
-     521px wide tool row and are unreachable without scrolling a strip that has
-     no visible scrollbar. */
-  .editor-container > .editor-container-top .mod-dashed-border {
-    position: absolute;
-    right: 6px;
-    bottom: 4px;
-    z-index: 4;
-    height: 2.25rem;
-    padding-right: 0;
-    border-right: none;
-  }
-
+  /* ---- top tool row ---- */
   .editor-container-top {
     display: flex;
     flex-direction: row;
     align-items: center;
     flex-wrap: nowrap;
-    height: 46px;
-    flex-shrink: 0;
+    height: 40px;
+    flex: 0 0 40px;
     padding-bottom: 0;
     border-bottom: none;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  .editor-container-top::-webkit-scrollbar {
-    display: none;
+    overflow: visible;
   }
 
   .editor-container-top > .row {
@@ -280,27 +271,84 @@ $border-radius: 0.25rem;
 
   .editor-container-top .row + .row {
     margin-top: 0;
+    margin-left: 4px;
   }
 
   .mod-labeled-icon-height {
-    height: 2.25rem;
+    height: 2.15rem;
   }
 
-  .top-align-row {
-    min-width: 0;
-    padding-top: 2px;
+  /* Rotation / flip / boolean / copy-paste collapse into one menu button. */
+  .mode-tools-button {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 2.15rem;
+    padding: 0 8px;
+    margin-left: 4px;
+    border: 1px solid $ui-pane-border;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    line-height: 1;
+  }
+
+  .mode-tools-popover {
+    padding: 6px;
+    max-width: min(280px, calc(100vw - 40px));
+  }
+
+  .mode-tools-popover .mode-tools-popover-body {
     flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    min-height: 0;
   }
 
-  /* Drawing modes under the canvas, like every mobile paint app. */
+  /* ---- canvas + bottom bar ---- */
+  .top-align-row {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    padding-top: 0;
+    overflow: hidden;
+  }
+
+  /* One bottom bar: drawing tools on the left, colours on the right. */
+  .tool-bar {
+    order: 2;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    flex: 0 0 auto;
+    margin-top: 3px;
+  }
+
+  .controls-container {
+    order: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    position: relative;
+  }
+
+  .canvas-container {
+    min-width: 0;
+    min-height: 0;
+  }
+
+  /* Tool strip takes the free width, colours sit at its right end. */
   .mode-selector {
     order: 2;
+    flex: 1 1 auto;
     flex-direction: row;
     flex-wrap: nowrap;
     max-width: none;
     width: auto;
-    flex: 0 0 auto;
-    margin-top: 2px;
+    margin-top: 0;
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
@@ -311,24 +359,74 @@ $border-radius: 0.25rem;
     display: none;
   }
 
-  .controls-container {
-    margin: 0;
-    min-width: 0;
+  .color-cluster {
+    order: 3;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex: 0 0 auto;
+    margin-top: 0;
+    margin-left: 6px;
+    padding-left: 6px;
+    border-left: 1px solid $ui-pane-border;
   }
 
-  .canvas-container {
-    min-width: 0;
-  }
-
+  /* Canvas controls are a HUD over the canvas, not a row of their own. */
   .canvas-controls {
-    height: 30px;
-    margin-top: 2px;
+    position: absolute;
+    right: 6px;
+    bottom: 6px;
+    /* Above the tool rows: the addon settings panels live inside this element,
+       so with a lower z-index the top toolbar painted over their upper rows. */
+    z-index: 20;
+    /* Addons inject their own groups here (onion skin, zoom wrapper); a fixed
+       height left them sticking out above and below the HUD. */
+    height: auto;
+    min-height: 26px;
+    margin: 0;
+    padding: 2px 4px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    border-radius: 6px;
+    background-color: rgba(22, 24, 29, 0.55);
+    opacity: 0.92;
+  }
+
+  .canvas-controls button {
+    height: 22px;
+  }
+
+  .canvas-controls:active {
+    opacity: 1;
+  }
+
+  /* Keep the floating HUD small: it covers the artwork. */
+  .canvas-controls [class*='button-group-button_'],
+  .canvas-controls [class*='bitmap-button_'] {
+    height: 22px;
+    padding: 0 4px;
+    font-size: 0.62rem;
+    line-height: 1;
+  }
+
+  .canvas-controls img,
+  .canvas-controls [class*='button-group-button-icon_'] {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* The canvas is panned/zoomed with gestures; native scrollbars only add noise. */
+  [class*='scrollable-canvas'] {
+    scrollbar-width: none;
+  }
+
+  [class*='scrollable-canvas']::-webkit-scrollbar {
+    display: none;
   }
 
   .bitmap-button {
-    padding: 2px 6px;
-    font-size: 0.7rem;
-    line-height: 1.2rem;
+    padding: 1px 4px;
+    line-height: 1.1rem;
   }
-
 }

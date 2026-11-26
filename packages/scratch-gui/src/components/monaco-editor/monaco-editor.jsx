@@ -14,6 +14,11 @@ import styles from './monaco-editor.css';
 
 let monaco = null;
 
+const isCompactViewport = () =>
+  typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(max-height: 420px)').matches;
+
 const FILE_TYPE_COLORS = {
   js: { color: '#f7df1e', name: 'JavaScript' },
   py: { color: '#3776ab', name: 'Python' },
@@ -1068,7 +1073,8 @@ class MonacoEditorComponent extends React.Component {
         language: getFileLanguage(extension),
         theme: this.getEditorTheme(),
         minimap: {
-          enabled: this.state.editorSettings.minimapEnabled,
+          // A minimap eats ~70px of a 596px wide phone editor.
+          enabled: this.state.editorSettings.minimapEnabled && !isCompactViewport(),
           scale: 1,
           showSlider: 'mouseover',
           renderCharacters: true,

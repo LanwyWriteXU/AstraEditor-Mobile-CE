@@ -157,3 +157,10 @@
     transform: translateX(-50%);
   }
 }
+
+@media (max-height: 420px) {
+  .button {
+    min-width: 42px;
+    padding: 0 6px;
+  }
+}

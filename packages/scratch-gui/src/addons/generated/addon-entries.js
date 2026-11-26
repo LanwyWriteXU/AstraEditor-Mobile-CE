@@ -59,8 +59,6 @@ export default {
     ),
   'zebra-striping': () =>
     import(/* webpackChunkName: "addon-entry-zebra-striping" */ '../addons/zebra-striping/_runtime_entry.js'),
-  'editor-compact': () =>
-    import(/* webpackChunkName: "addon-entry-editor-compact" */ '../addons/editor-compact/_runtime_entry.js'),
   'custom-menu-bar': () =>
     import(/* webpackChunkName: "addon-entry-custom-menu-bar" */ '../addons/custom-menu-bar/_runtime_entry.js'),
   'editor-theme3': () =>

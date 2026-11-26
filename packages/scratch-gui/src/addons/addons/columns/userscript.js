@@ -151,7 +151,7 @@ export default async function ({ addon, msg, console }) {
   }
 
   function updateClass() {
-    // Add class to allow editor-compact to handle this addon
+    // Exposes the columns layout to stylesheets (kept for compatibility).
     if (addon.self.disabled) document.body.classList.remove('sa-columns-enabled');
     else document.body.classList.add('sa-columns-enabled');
   }

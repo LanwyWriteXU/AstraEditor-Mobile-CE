@@ -158,10 +158,45 @@ body :global(.Popover) {
      a 320px screen, so it has to be shrunk to fit above the button. zoom() is
      used instead of transform: react-popover positions itself with an inline
      transform, which a CSS transform would fight with. */
-  :global(.Popover-body) {
-    zoom: 0.72;
-    max-height: calc(100dvh - 48px);
+  /* Scoped to the colour picker: this used to zoom every popover body,
+     including the tool dropdowns. */
+  :global(.sa-color-popover) :global(.Popover-body) {
+    zoom: 0.78;
+    max-height: calc(100dvh - 68px);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-height: 420px) {
+  .row-header {
+    margin: 2px 6px 0 6px;
+    font-size: 0.6rem;
+  }
+
+  .divider {
+    margin: 3px 6px;
+  }
+
+  .swatches {
+    margin: 3px 6px;
+  }
+
+  .swatch {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .gradient-picker-row {
+    margin: 3px 6px;
+  }
+
+  .picker-row {
+    margin: 3px 6px;
+    width: auto;
+  }
+
+  .swap-button {
+    margin: 0 4px;
   }
 }

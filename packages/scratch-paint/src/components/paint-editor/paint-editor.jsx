@@ -23,6 +23,7 @@ import FillColorIndicatorComponent from '../../containers/fill-color-indicator.j
 import FillMode from '../../containers/fill-mode.jsx';
 import InputGroup from '../input-group/input-group.jsx';
 import LineMode from '../../containers/line-mode.jsx';
+import MediaQuery from 'react-responsive';
 import Loupe from '../loupe/loupe.jsx';
 import FixedToolsContainer from '../../containers/fixed-tools.jsx';
 import ModeToolsContainer from '../../containers/mode-tools.jsx';
@@ -32,12 +33,14 @@ import ReshapeMode from '../../containers/reshape-mode.jsx';
 import RoundedRectMode from '../../containers/rounded-rect-mode.jsx';
 import SelectMode from '../../containers/select-mode.jsx';
 import ContextMenu from '../context-menu/context-menu.jsx';
+import Dropdown from '../dropdown/dropdown.jsx';
 import StrokeColorIndicatorComponent from '../../containers/stroke-color-indicator.jsx';
 import StrokeWidthIndicatorComponent from '../../containers/stroke-width-indicator.jsx';
 import TextMode from '../../containers/text-mode.jsx';
 
 import Formats, { isBitmap, isVector } from '../../lib/format';
 import { getSelectedLeafItems, getSelectedRootItems } from '../../helper/selection';
+import layout from '../../lib/layout-constants';
 import styles from './paint-editor.css';
 
 import bitmapIcon from './icons/bitmap.svg';
@@ -47,6 +50,11 @@ import zoomResetIcon from './icons/zoom-reset.svg';
 import themeIcon from './icons/theme.svg';
 
 const messages = defineMessages({
+  moreTools: {
+    id: 'paint.paintEditor.moreTools',
+    defaultMessage: 'Tools',
+    description: 'Label for the dropdown that holds rotation, flip and other selection tools'
+  },
   bitmap: {
     defaultMessage: 'Convert to Bitmap',
     description: 'Label for button that converts the paint editor to bitmap mode',
@@ -242,61 +250,122 @@ const PaintEditorComponent = (props) => {
           {/* Second Row */}
           {isVector(props.format) ? (
             <div className={styles.row}>
-              <InputGroup className={classNames(styles.row, styles.modDashedBorder, styles.modLabeledIconHeight)}>
-                {/* fill */}
-                <FillColorIndicatorComponent className={styles.modMarginAfter} onUpdateImage={props.onUpdateImage} />
-                {/* stroke */}
-                <StrokeColorIndicatorComponent onUpdateImage={props.onUpdateImage} />
-                {/* stroke width */}
-                <StrokeWidthIndicatorComponent onUpdateImage={props.onUpdateImage} />
-              </InputGroup>
-              <InputGroup className={styles.modModeTools}>
-                <ModeToolsContainer onUpdateImage={props.onUpdateImage} onManageFonts={props.onManageFonts} />
-              </InputGroup>
+              <MediaQuery minWidth={layout.fullSizeEditorMinWidth}>
+                <InputGroup className={classNames(styles.row, styles.modDashedBorder, styles.modLabeledIconHeight)}>
+                  {/* fill */}
+                  <FillColorIndicatorComponent className={styles.modMarginAfter} onUpdateImage={props.onUpdateImage} />
+                  {/* stroke */}
+                  <StrokeColorIndicatorComponent onUpdateImage={props.onUpdateImage} />
+                  {/* stroke width */}
+                  <StrokeWidthIndicatorComponent onUpdateImage={props.onUpdateImage} />
+                </InputGroup>
+              </MediaQuery>
+              <MediaQuery minWidth={layout.fullSizeEditorMinWidth}>
+                <InputGroup className={styles.modModeTools}>
+                  <ModeToolsContainer onUpdateImage={props.onUpdateImage} onManageFonts={props.onManageFonts} />
+                </InputGroup>
+              </MediaQuery>
+              <MediaQuery maxWidth={layout.fullSizeEditorMinWidth - 1}>
+                <Dropdown
+                  className={styles.modeToolsButton}
+                  enterExitTransitionDurationMs={20}
+                  popoverContent={
+                    <div className={styles.modeToolsPopover}>
+                      <ModeToolsContainer
+                        className={styles.modeToolsPopoverBody}
+                        onManageFonts={props.onManageFonts}
+                        onUpdateImage={props.onUpdateImage}
+                      />
+                    </div>
+                  }
+                  tipSize={0.01}
+                >
+                  {props.intl.formatMessage(messages.moreTools)}
+                </Dropdown>
+              </MediaQuery>
             </div>
           ) : isBitmap(props.format) ? (
             <div className={styles.row}>
-              <InputGroup className={classNames(styles.row, styles.modDashedBorder, styles.modLabeledIconHeight)}>
-                {/* fill */}
-                <FillColorIndicatorComponent className={styles.modMarginAfter} onUpdateImage={props.onUpdateImage} />
-              </InputGroup>
-              <InputGroup className={styles.modModeTools}>
-                <ModeToolsContainer onUpdateImage={props.onUpdateImage} onManageFonts={props.onManageFonts} />
-              </InputGroup>
+              <MediaQuery minWidth={layout.fullSizeEditorMinWidth}>
+                <InputGroup className={classNames(styles.row, styles.modDashedBorder, styles.modLabeledIconHeight)}>
+                  {/* fill */}
+                  <FillColorIndicatorComponent className={styles.modMarginAfter} onUpdateImage={props.onUpdateImage} />
+                </InputGroup>
+              </MediaQuery>
+              <MediaQuery minWidth={layout.fullSizeEditorMinWidth}>
+                <InputGroup className={styles.modModeTools}>
+                  <ModeToolsContainer onUpdateImage={props.onUpdateImage} onManageFonts={props.onManageFonts} />
+                </InputGroup>
+              </MediaQuery>
+              <MediaQuery maxWidth={layout.fullSizeEditorMinWidth - 1}>
+                <Dropdown
+                  className={styles.modeToolsButton}
+                  enterExitTransitionDurationMs={20}
+                  popoverContent={
+                    <div className={styles.modeToolsPopover}>
+                      <ModeToolsContainer
+                        className={styles.modeToolsPopoverBody}
+                        onManageFonts={props.onManageFonts}
+                        onUpdateImage={props.onUpdateImage}
+                      />
+                    </div>
+                  }
+                  tipSize={0.01}
+                >
+                  {props.intl.formatMessage(messages.moreTools)}
+                </Dropdown>
+              </MediaQuery>
             </div>
           ) : null}
         </div>
       ) : null}
 
       <div className={styles.topAlignRow}>
-        {/* Modes */}
-        {props.canvas !== null && isVector(props.format) ? ( // eslint-disable-line no-negated-condition
-          <div className={styles.modeSelector}>
-            <SelectMode onUpdateImage={props.onUpdateImage} />
-            <ReshapeMode onUpdateImage={props.onUpdateImage} />
-            <BrushMode onUpdateImage={props.onUpdateImage} />
-            <EraserMode onUpdateImage={props.onUpdateImage} />
-            <FillMode onUpdateImage={props.onUpdateImage} />
-            <TextMode textArea={props.textArea} onUpdateImage={props.onUpdateImage} />
-            <LineMode onUpdateImage={props.onUpdateImage} />
-            <OvalMode onUpdateImage={props.onUpdateImage} />
-            <RectMode onUpdateImage={props.onUpdateImage} />
-            <RoundedRectMode onUpdateImage={props.onUpdateImage} />
-          </div>
-        ) : null}
+        <div className={styles.toolBar}>
+          {/* Modes */}
+          {props.canvas !== null && isVector(props.format) ? ( // eslint-disable-line no-negated-condition
+            <div className={styles.modeSelector}>
+              <SelectMode onUpdateImage={props.onUpdateImage} />
+              <ReshapeMode onUpdateImage={props.onUpdateImage} />
+              <BrushMode onUpdateImage={props.onUpdateImage} />
+              <EraserMode onUpdateImage={props.onUpdateImage} />
+              <FillMode onUpdateImage={props.onUpdateImage} />
+              <TextMode textArea={props.textArea} onUpdateImage={props.onUpdateImage} />
+              <LineMode onUpdateImage={props.onUpdateImage} />
+              <OvalMode onUpdateImage={props.onUpdateImage} />
+              <RectMode onUpdateImage={props.onUpdateImage} />
+              <RoundedRectMode onUpdateImage={props.onUpdateImage} />
+            </div>
+          ) : null}
 
-        {props.canvas !== null && isBitmap(props.format) ? ( // eslint-disable-line no-negated-condition
-          <div className={styles.modeSelector}>
-            <BitBrushMode onUpdateImage={props.onUpdateImage} />
-            <BitLineMode onUpdateImage={props.onUpdateImage} />
-            <BitOvalMode onUpdateImage={props.onUpdateImage} />
-            <BitRectMode onUpdateImage={props.onUpdateImage} />
-            <TextMode isBitmap textArea={props.textArea} onUpdateImage={props.onUpdateImage} />
-            <BitFillMode onUpdateImage={props.onUpdateImage} />
-            <BitEraserMode onUpdateImage={props.onUpdateImage} />
-            <BitSelectMode onUpdateImage={props.onUpdateImage} />
-          </div>
-        ) : null}
+          {props.canvas !== null && isBitmap(props.format) ? ( // eslint-disable-line no-negated-condition
+            <div className={styles.modeSelector}>
+              <BitBrushMode onUpdateImage={props.onUpdateImage} />
+              <BitLineMode onUpdateImage={props.onUpdateImage} />
+              <BitOvalMode onUpdateImage={props.onUpdateImage} />
+              <BitRectMode onUpdateImage={props.onUpdateImage} />
+              <TextMode isBitmap textArea={props.textArea} onUpdateImage={props.onUpdateImage} />
+              <BitFillMode onUpdateImage={props.onUpdateImage} />
+              <BitEraserMode onUpdateImage={props.onUpdateImage} />
+              <BitSelectMode onUpdateImage={props.onUpdateImage} />
+            </div>
+          ) : null}
+
+          {/* Phone layout: colours live in the bottom bar, right after the tools. */}
+          <MediaQuery maxWidth={layout.fullSizeEditorMinWidth - 1}>
+            {props.canvas !== null && (isVector(props.format) || isBitmap(props.format)) ? (
+              <div className={styles.colorCluster}>
+                <FillColorIndicatorComponent onUpdateImage={props.onUpdateImage} />
+                {isVector(props.format) ? (
+                  <React.Fragment>
+                    <StrokeColorIndicatorComponent onUpdateImage={props.onUpdateImage} />
+                    <StrokeWidthIndicatorComponent onUpdateImage={props.onUpdateImage} />
+                  </React.Fragment>
+                ) : null}
+              </div>
+            ) : null}
+          </MediaQuery>
+        </div>
 
         <div className={styles.controlsContainer}>
           {/* Canvas */}

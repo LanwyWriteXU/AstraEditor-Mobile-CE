@@ -14,20 +14,36 @@ class Dropdown extends React.Component {
     super(props);
     bindAll(this, ['handleClosePopover', 'handleToggleOpenState', 'isOpen']);
     this.state = {
-      isOpen: false
+      isOpen: false,
+      // Keeping the menu mounted for the length of the exit animation: the
+      // popover's own exit timer does not fire, it unmounts on the next tick.
+      closing: false
     };
   }
   handleClosePopover() {
-    this.setState({
-      isOpen: false
-    });
+    if (this.state.closing) return;
+    if (!this.state.isOpen) return;
+    this.setState({ closing: true });
+    clearTimeout(this.exitTimer);
+    this.exitTimer = setTimeout(() => {
+      this.setState({ isOpen: false, closing: false });
+    }, 160);
   }
   handleToggleOpenState() {
-    const newState = !this.state.isOpen;
-    this.setState({
-      isOpen: newState
-    });
-    if (newState && this.props.onOpen) {
+    clearTimeout(this.exitTimer);
+    if (this.state.closing) {
+      // Reopening while the exit animation plays: just cancel the exit.
+      this.setState({ closing: false });
+      return;
+    }
+    if (this.state.isOpen) {
+      // Closing always goes through the animated path, otherwise the menu
+      // disappears on the next frame and the exit animation never plays.
+      this.handleClosePopover();
+      return;
+    }
+    this.setState({ isOpen: true });
+    if (this.props.onOpen) {
       this.props.onOpen();
     }
   }
@@ -35,13 +51,22 @@ class Dropdown extends React.Component {
     return this.state.isOpen;
   }
   render() {
+    // Wrapped so the menu can play a matching exit animation: react-popover
+    // keeps the body mounted for `enterExitTransitionDurationMs` after closing,
+    // which is the window we animate in.
+    const body = (
+      <div className={classNames(styles.menu, { [styles.menuClosing]: !this.state.isOpen })}>
+        {this.props.popoverContent}
+      </div>
+    );
     return (
       <Popover
-        body={this.props.popoverContent}
+        body={body}
         isOpen={this.state.isOpen}
         preferPlace="below"
         onOuterAction={this.props.onOuterAction ? this.props.onOuterAction : this.handleClosePopover}
         {...this.props}
+        enterExitTransitionDurationMs={180}
       >
         <div
           className={classNames(styles.dropdown, this.props.className, {

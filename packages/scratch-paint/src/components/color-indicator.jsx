@@ -23,8 +23,10 @@ const ColorIndicatorComponent = (props) => (
           onSwap={props.onSwap}
         />
       }
+      className="sa-color-popover"
       isOpen={props.colorModalVisible}
       preferPlace="above"
+      tipSize={0.01}
       onOuterAction={props.onCloseColor}
     >
       <Label text={props.label}>

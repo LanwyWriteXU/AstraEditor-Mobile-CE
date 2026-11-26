@@ -1,0 +1,571 @@
+/* =============================================================================
+   Compact editor — phone landscape
+   -----------------------------------------------------------------------------
+   Folded into the core from the "Compact editor" addon. The addon used to be
+   injected after every component stylesheet, which is why its overrides won;
+   this file is imported first, so every rule is scoped with
+   `html body[class*='sa-body-editor']` to win on specificity instead of load order.
+
+   One control spec for the whole asset editor: 30px tall, 30px square icon
+   buttons, 6px radius, content centred, labels hidden (they do not fit in a
+   287px tall screen and were being clipped anyway).
+   ============================================================================= */
+
+@media (max-height: 420px) {
+  /* ---------- add button (add sprite / costume / sound) ---------- */
+  html body[class*='sa-body-editor'] [class*='action-menu_main-button'] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  html body[class*='sa-body-editor'] [class*='action-menu_main-icon_'] {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  /* Keep the fan opening upwards, otherwise it runs off the bottom edge. */
+  html body[class*='sa-body-editor'] [class*='action-menu_more-buttons-outer'] {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 2.25rem;
+    bottom: 2.25rem;
+    padding-bottom: 1.125rem;
+    margin: 0 0 -1.125rem 0;
+    border-top-left-radius: 2.25rem;
+    border-top-right-radius: 2.25rem;
+  }
+
+  html body[class*='sa-body-editor'] button[class*='action-menu_more-button'] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+  }
+
+  /* Mixed box-sizing made a 30px input render 32px tall next to 30px buttons. */
+  html body[class*='sa-body-editor'] [class*='paint-editor_editor-container-top'] *,
+  html body[class*='sa-body-editor'] [class*='paint-editor_tool-bar'] *,
+  html body[class*='sa-body-editor'] [class*='sound-editor_controls-row'] * {
+    box-sizing: border-box;
+  }
+
+  /* Rounded group corners so the undo/redo pair matches the other controls. */
+  html body[class*='sa-body-editor'] [class*='paint-editor_editor-container-top'] [class*='button-group_'] {
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  /* ---------- no text labels inside the asset editors ---------- */
+  html body[class*='sa-body-editor'] [class*='asset-panel_detail-area'] [class*='label_input-label'],
+  html body[class*='sa-body-editor'] [class*='asset-panel_detail-area'] [class*='labeled-icon-button_edit-field-title'],
+  html body[class*='sa-body-editor'] [class*='asset-panel_detail-area'] [class*='icon-button_title_'] {
+    display: none;
+  }
+
+  /* ---------- one size for every control in the paint tool rows ---------- */
+  html body[class*='sa-body-editor'] [class*='paint-editor_editor-container-top'] [class*='button_button_'],
+  html body[class*='sa-body-editor'] [class*='paint-editor_editor-container-top'] [class*='tool-select-base_mod-tool-select_'] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.875rem;
+    height: 1.875rem;
+    padding: 0;
+  }
+
+  html body[class*='sa-body-editor'] [class*='paint-editor_editor-container-top'] [class*='button-group-button_'] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.875rem;
+    height: 1.875rem;
+    padding: 0;
+  }
+
+  html body[class*='sa-body-editor'] [class*='paint-editor_editor-container-top'] [class*='dropdown_dropdown_'] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    height: 1.875rem;
+    padding: 0 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  html body[class*='sa-body-editor'] [class*='paint-editor_editor-container-top'] input[class*='input_input-form'] {
+    height: 1.875rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
+  }
+
+  /* ---------- tool strip ---------- */
+  html body[class*='sa-body-editor'] [class*='paint-editor_mode-selector'] [class*='button_button_'] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.875rem;
+    height: 1.875rem;
+    padding: 0;
+  }
+
+  html body[class*='sa-body-editor'] [class*='paint-editor_mode-selector'] img {
+    width: 1.25rem;
+    height: 1.25rem;
+    object-fit: contain;
+  }
+
+  /* ---------- colour swatches and stroke width ---------- */
+  html body[class*='sa-body-editor'] [class*='paint-editor_color-cluster'] [class*='color-button_color-button_'] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.375rem;
+    height: 1.875rem;
+    padding: 0;
+    border-radius: 6px;
+  }
+
+  /* The caret is only an affordance; the whole swatch opens the picker. */
+  html body[class*='sa-body-editor'] [class*='paint-editor_color-cluster'] [class*='color-button-arrow_'] {
+    display: none;
+  }
+
+  html body[class*='sa-body-editor'] [class*='paint-editor_color-cluster'] [class*='color-button-swatch_'] {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin: 0;
+  }
+
+  html body[class*='sa-body-editor'] [class*='paint-editor_color-cluster'] [class*='stroke-width-indicator_button_'] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-width: 2.5rem;
+    height: 1.875rem;
+    padding: 0 6px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+  }
+
+  /* ---------- canvas HUD ---------- */
+  html body[class*='sa-body-editor'] [class*='paint-editor_canvas-controls'] [class*='button-group-button_'],
+  html body[class*='sa-body-editor'] [class*='paint-editor_canvas-controls'] [class*='bitmap-button_'] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 1.375rem;
+    padding: 0 4px;
+    font-size: 0.62rem;
+    line-height: 1;
+  }
+
+  html body[class*='sa-body-editor'] [class*='paint-editor_canvas-controls'] img {
+    width: 0.875rem;
+    height: 0.875rem;
+    object-fit: contain;
+  }
+
+  /* ---------- sound editor ---------- */
+  html body[class*='sa-body-editor'] [class*='sound-editor_editor-container'] [class*='button_button_'] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.875rem;
+    height: 1.875rem;
+    padding: 0;
+  }
+
+  html body[class*='sa-body-editor'] [class*='sound-editor_editor-container'] [class*='icon-button_container_'] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.875rem;
+    height: 1.875rem;
+    padding: 0;
+    flex-basis: auto;
+  }
+
+  html body[class*='sa-body-editor'] [class*='sound-editor_editor-container'] input[class*='input_input-form'] {
+    height: 1.875rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
+  }
+
+  html body[class*='sa-body-editor'] [class*='sound-editor_round-button_'] {
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0.5rem;
+  }
+
+  html body[class*='sa-body-editor'] [class*='sound-editor_effect-button_'] {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    min-width: 3rem;
+    padding: 2px 4px;
+    font-size: 0.62rem;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  html body[class*='sa-body-editor'] [class*='sound-editor_effect-button_'] img {
+    width: 1rem;
+    height: 1rem;
+    margin: 0 0 2px 0;
+  }
+
+  /* ---------- sound header groups sit flush ---------- */
+  html body[class*='sa-body-editor'] [class*='sound-editor_input-group_'] {
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  html body[class*='sa-body-editor'] [class*='sound-editor_input-group_'] > * {
+    margin: 0;
+  }
+
+  html body[class*='sa-body-editor'] [class*='sound-editor_row-reverse_'] {
+    gap: 2px;
+  }
+
+  html body[class*='sa-body-editor'] [class*='sound-editor_row-reverse_'] > [class*='sound-editor_input-group_'] {
+    margin-right: 0.5rem;
+  }
+
+  /* ---------- dialog header ---------- */
+  html body[class*='sa-body-editor'] [class*='modal_header'] {
+    height: 2rem;
+  }
+
+  /* Icons inside buttons share one size, otherwise a 24px glyph next to a
+     16px glyph reads as two different button sizes. */
+  html body[class*='sa-body-editor'] [class*='paint-editor_editor-container-top'] [class*='button_button_'] img,
+  html body[class*='sa-body-editor'] [class*='sound-editor_controls-row'] img {
+    width: 1rem;
+    height: 1rem;
+    object-fit: contain;
+  }
+
+  /* The colour indicators wrap their swatch in a label + input group, which made
+     the two swatches sit 8px higher than the stroke width button. */
+  /* The label input group pulls itself up by -16px to sit under its caption;
+     with the caption hidden that just lifts the swatch out of the bar. */
+  html body[class*='sa-body-editor'] [class*='paint-editor_color-cluster'] [class*='label_input-group'] {
+    margin-top: 0;
+  }
+
+  html body[class*='sa-body-editor'] [class*='paint-editor_color-cluster'] > * {
+    display: flex;
+    align-items: center;
+    height: 1.875rem;
+  }
+
+  /* ---------- addon settings panels ---------- */
+  /* Both addons open their panel with its left edge at the 31px wide wrapper,
+     so a 222px panel runs off the right edge of a 640px screen. Anchor them to
+     the wrapper's right edge instead. */
+  /* The addons lift the panel 22px off the button and let it grow until it is
+     taller than the space above, so its top got clipped. Pull it closer and
+     clamp the height; rows are tightened so it still fits without scrolling. */
+  html body[class*='sa-body-editor'] [class~='sa-onion-settings'][data-visible='true'],
+  html body[class*='sa-body-editor'] [class~='sa-paint-snap-settings'][data-visible='true'] {
+    bottom: calc(100% + 6px) !important;
+  }
+
+  /* Kept outside the [data-visible] rule: on close the addon drops that
+     attribute, and a clamped height that disappears for one frame makes the
+     panel flash at full size before it animates away. */
+  html body[class*='sa-body-editor'] [class~='sa-onion-settings'],
+  html body[class*='sa-body-editor'] [class~='sa-paint-snap-settings'] {
+    /* Keep the panel below the top tool row (bottom edge sits at 214px): the
+       row paints above this panel whatever z-index we give it, so overlap was
+       not fixable — leave a 54px band for it and let the rest scroll. */
+    max-height: 160px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Rows were tall enough that the longer 吸附 panel overflowed the 208px cap and
+     its last rows were simply cut off. Tighten them so everything fits. */
+  html body[class*='sa-body-editor'] [class*='sa-onion-settings-line'],
+  html body[class*='sa-body-editor'] [class*='sa-paint-snap-settings-line'] {
+    /* flex-shrink: 0 is the important bit: in a column flex box clamped by
+       max-height the rows used to be squeezed instead of overflowing, so the
+       absolutely positioned inputs piled up on top of each other. */
+    position: relative;
+    flex: 0 0 auto;
+    height: 22px;
+    font-size: 0.68rem;
+  }
+
+  html body[class*='sa-body-editor'] [class*='sa-onion-settings-input'],
+  html body[class*='sa-body-editor'] [class*='sa-paint-snap-settings-input'] {
+    height: 100%;
+    font-size: 0.66rem;
+  }
+
+  /* The addons draw their own little pointer triangle; it sits outside the box
+     and added 7px of overflow, clipping the last row. Popovers have no arrows
+     here, so drop these too. */
+  html body[class*='sa-body-editor'] [class*='sa-onion-settings-polygon'],
+  html body[class*='sa-body-editor'] [class*='sa-onion-settings-tip'],
+  html body[class*='sa-body-editor'] [class*='sa-paint-snap-settings-polygon'],
+  html body[class*='sa-body-editor'] [class*='sa-paint-snap-settings-tip'] {
+    display: none !important;
+  }
+
+  html body[class*='sa-body-editor'] [class~='sa-onion-settings'],
+  html body[class*='sa-body-editor'] [class~='sa-paint-snap-settings'] {
+    box-sizing: border-box;
+    /* Let the box grow with its content; the addon leaves a few pixels of
+       content outside the box, which clipped the last row. */
+    height: auto !important;
+    min-width: 200px;
+    gap: 2px;
+    padding: 4px 6px;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  /* The tick/cross pair at the end of each row was 24px wide with no gap. */
+  html body[class*='sa-body-editor'] [class*='-settings-line'] [class*='sa-paint-snap-group'],
+  html body[class*='sa-body-editor'] [class*='-settings-line'] [class*='sa-onion-group'] {
+    gap: 4px;
+    margin-left: 6px;
+  }
+
+  html body[class*='sa-body-editor'] [class*='-settings-line'] [class*='sa-paint-snap-group'] button,
+  html body[class*='sa-body-editor'] [class*='-settings-line'] [class*='sa-onion-group'] button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 20px;
+    padding: 0;
+  }
+
+  /* The snap panel carries a section header and a divider on top of ten rows;
+     tightening these is what gets it under the 208px the screen leaves. */
+  html body[class*='sa-body-editor'] [class*='sa-paint-snap-settings-section'] {
+    flex: 0 0 auto;
+    gap: 2px;
+  }
+
+  html body[class*='sa-body-editor'] [class*='sa-paint-snap-settings-section-title'] {
+    flex: 0 0 auto;
+    font-size: 0.72rem;
+    margin-left: 4px;
+  }
+
+  html body[class*='sa-body-editor'] [class*='sa-paint-snap-settings-separator'] {
+    flex: 0 0 auto;
+    margin: 3px 4px;
+  }
+
+  html body[class*='sa-body-editor'] [class~='sa-onion-settings']::-webkit-scrollbar,
+  html body[class*='sa-body-editor'] [class~='sa-paint-snap-settings']::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  html body[class*='sa-body-editor'] [class~='sa-onion-settings']::-webkit-scrollbar-thumb,
+  html body[class*='sa-body-editor'] [class~='sa-paint-snap-settings']::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.28);
+    border-radius: 2px;
+  }
+
+  html body[class*='sa-body-editor'] [class*='sa-onion-settings-label'],
+  html body[class*='sa-body-editor'] [class*='sa-paint-snap-settings-label'] {
+    font-size: 0.68rem;
+  }
+
+  html body[class*='sa-body-editor'] [class~='sa-onion-settings'],
+  html body[class*='sa-body-editor'] [class~='sa-paint-snap-settings'] {
+    left: auto !important;
+    right: 0 !important;
+    /* The addons use --ui-modal-background, which this shell never defines, so
+       the panel rendered transparent with its text floating over the canvas. */
+    background-color: #1e2028 !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    padding: 6px 8px;
+    max-width: calc(100vw - 12px);
+    /* Height is clamped further down (208px, i.e. the space above the button);
+       a looser clamp here used to win by source order and push the panel off
+       the top of the screen. */
+    overflow-y: auto;
+  }
+
+  /* ---------- addon groups inside the canvas HUD ---------- */
+  html body[class*='sa-body-editor'] [class*='sa-paintEditorZoomControls-wrapper'],
+  html body[class*='sa-body-editor'] [class*='sa-onion-group'],
+  html body[class*='sa-body-editor'] [class*='sa-onion-settings-wrapper'] {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    /* One height for every injected group so they line up with the HUD's own
+       22px buttons instead of poking out above and below. */
+    height: 24px !important;
+  }
+
+  html body[class*='sa-body-editor'] [class*='sa-onion-group'] button,
+  html body[class*='sa-body-editor'] [class*='sa-paintEditorZoomControls-wrapper'] button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+    padding: 0 3px;
+  }
+
+  html body[class*='sa-body-editor'] [class*='sa-onion-group'] img,
+  html body[class*='sa-body-editor'] [class*='sa-paintEditorZoomControls-wrapper'] img {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* ---------- record / sound dialogs ---------- */
+  html body[class*='sa-body-editor'] [class*='close-button_large'] {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  html body[class*='sa-body-editor'] [class*='record-modal_modal-content'] {
+    width: min(calc(100vw - 1rem), 600px);
+  }
+
+  /* The waveform claims width:100%, which squeezed the level meter to 28px and
+     made its fixed-width bars overflow their own box (horizontal scrollbar). */
+  html body[class*='sa-body-editor'] [class*='record-modal_visualization-container'] {
+    gap: 6px;
+  }
+
+  html body[class*='sa-body-editor'] [class*='record-modal_meter-container'] {
+    flex: 0 0 2.5rem;
+    overflow: hidden;
+  }
+
+  html body[class*='sa-body-editor'] [class*='record-modal_waveform-container'] {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+
+  html body[class*='sa-body-editor'] [class*='record-modal_body'] {
+    padding: 0.5rem 0.75rem 0.25rem;
+  }
+
+  html body[class*='sa-body-editor'] [class*='record-modal_help-text'] {
+    margin-top: 4px;
+    font-size: 0.7rem;
+  }
+
+  html body[class*='sa-body-editor'] [class*='record-modal_main-button-row'] {
+    margin-top: 4px;
+  }
+
+  html body[class*='sa-body-editor'] [class*='record-modal_main-button-row'] button {
+    padding: 0.25rem 0.5rem;
+  }
+
+  /* ---------- hide-flyout addon's lock button ---------- */
+  /* The addon paints it with --editorDarkMode-accent, which this shell does not
+     define, so it fell back to pure white in a dark editor. */
+  /* The hide-flyout lock floats on top of the flyout's category header on a
+     narrow screen, covering the title. Nothing to pin in a touch layout. */
+  html body[class*='sa-body-editor'] [class*='sa-lock-object'] {
+    display: none !important;
+  }
+
+  html body[class*='sa-body-editor'] [class*='sa-lock-button'] {
+    background-color: #16181d;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 6px;
+  }
+
+  html body[class*='sa-body-editor'] [class*='sa-lock-button'] img {
+    width: 18px;
+    height: 18px;
+  }
+
+  html body[class*='sa-body-editor'] [class*='sa-lock-object'][class*='locked'] [class*='sa-lock-button'] {
+    background-color: #4c97ff;
+    border-color: #3373cc;
+  }
+  /* ---------- every popover looks and behaves the same ---------- */
+  /* Some popovers show a tip arrow, some don't, and their paddings differ.
+     Unify at the shared react-popover classes: no arrow, one surface, one
+     rise-in animation, and always above the canvas HUD. */
+  html body[class*='sa-body-editor'] [class*='Popover'] {
+    z-index: 2000 !important;
+  }
+
+  html body[class*='sa-body-editor'] [class*='Popover-tip'] {
+    display: none !important;
+  }
+
+  html body[class*='sa-body-editor'] :global(.Popover-body) {
+    max-height: calc(100vh - 56px);
+    overflow-y: auto;
+    background-color: #1e2028;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    padding: 6px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  }
+
+  /* Placement decides the direction, so every popover grows out of the control
+     it belongs to: below the trigger it drops down, above it it rises. */
+  html body[class*='sa-body-editor'] [class*='Popover-below'] :global(.Popover-body) {
+    animation: ae-drop-down 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+
+  html body[class*='sa-body-editor'] [class*='Popover-above'] :global(.Popover-body) {
+    animation: ae-drop-up 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+
+  /* Menu rows were tall enough that a six item menu no longer fitted below
+     its button and flipped above, overlapping it. */
+  html body[class*='sa-body-editor'] [class*='mod-menu-item'] {
+    padding: 5px 10px;
+    font-size: 0.72rem;
+    line-height: 1.2;
+  }
+
+  @keyframes ae-drop-down {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes ae-drop-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
