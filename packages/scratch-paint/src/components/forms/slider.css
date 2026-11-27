@@ -1,4 +1,5 @@
 .container {
+  --handle-size: 26px;
   margin: 8px;
   height: 22px;
   width: 150px;
@@ -14,9 +15,10 @@
 
 .handle {
   left: 100px;
-  width: 26px;
-  height: 26px;
-  margin-top: -2px;
+  width: var(--handle-size);
+  height: var(--handle-size);
+  top: 50%;
+  transform: translateY(-50%);
   position: absolute;
   background-color: white;
   border-radius: 100%;
@@ -24,14 +26,18 @@
   touch-action: none;
 }
 
-/* Landscape phone: the colour picker has four sliders; 16px between them is
-   what pushed the panel past the screen height. */
+/* Landscape phone: four sliders have to share a 320px tall screen, and the track
+   should use the width the panel actually has. The handle stays finger sized
+   after the panel's 0.78 zoom (34 * 0.78 = 26px on screen). */
 @media (max-height: 420px) {
   .container {
-    height: 18px;
-    margin: 3px 6px;
-    margin-bottom: 6px;
-    border-radius: 9px;
+    --handle-size: 30px;
+    height: 20px;
+    width: auto;
+    /* The handle overhangs the 20px track by 5px on each side, so this gap is
+       also what keeps the handles of two neighbouring sliders from colliding. */
+    margin: 1px 6px 4px;
+    border-radius: 10px;
   }
 
   .last {
@@ -39,9 +45,6 @@
   }
 
   .handle {
-    width: 20px;
-    height: 20px;
-    margin-top: -1px;
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.18);
   }
 }

@@ -1,9 +1,10 @@
 @import '../css/colors.css';
 @import '../css/units.css';
 
-/* Single stroke-width control: a tap opens the panel, a long press opens it with
-   the slider already under the finger. Sized for a thumb, not a mouse. */
+/* One control, two gestures: hold to pull the track out in place, tap for the
+   accurate popover. */
 .button {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18,7 +19,9 @@
   font-family: inherit;
   font-size: 0.75rem;
   cursor: pointer;
-  touch-action: manipulation;
+  /* No panning or callouts while the finger scrubs the slider. */
+  touch-action: none;
+  -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
@@ -29,6 +32,24 @@
 
 .button:disabled {
   opacity: 0.4;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.folded {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .preview {
@@ -47,94 +68,248 @@
 }
 
 .value {
-  min-width: 1.1em;
+  min-width: 1.6em;
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
 
-.panel {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 232px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background-color: $popover-background;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  color: $text-primary;
+/* ---------- in-place strip ---------- */
+/* Drawn over the colour swatches to the left of the button, so it has to be
+   opaque; the button itself stays exactly where it was. */
+@keyframes strip-in {
+  from {
+    opacity: 0.4;
+    clip-path: inset(0 0 0 100% round 8px);
+  }
+
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0 round 8px);
+  }
 }
 
-.panel-title {
+.strip {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 30;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-size: 0.75rem;
+  gap: 8px;
+  width: 240px;
+  height: 100%;
+  padding: 0 4px 0 5px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background-color: #1e2028;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  /* Grows out of the button towards the left, like a drawer. */
+  animation: strip-in 160ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
-.panel-value {
+/* Tall enough to hold the knob inside it. */
+.track {
+  /* Knob diameter, and the gap it keeps from either end of the track. */
+  --knob: 16px;
+  --inset: 4px;
+  position: relative;
+  flex: 1 1 auto;
+  height: 20px;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+
+.fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  max-width: 100%;
+  border-radius: 10px;
+  background-color: $looks-secondary;
+}
+
+.thumb {
+  position: absolute;
+  top: 50%;
+  width: var(--knob);
+  height: var(--knob);
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+/* Fixed box, not min-width: the track takes whatever is left, so a value that
+   grows from "4" to "8.91" used to resize the track mid-drag and the whole bar
+   seemed to twitch. Five characters covers every value up to 31.99. */
+.strip-value {
+  flex: 0 0 auto;
+  width: 5ch;
+  text-align: right;
+  font-size: 0.8rem;
   font-weight: bold;
   font-variant-numeric: tabular-nums;
 }
 
-/* 36px tall hit area; the track stays thin. */
-.slider {
-  width: 100%;
-  height: 36px;
-  margin: 0;
-  background: transparent;
-  -webkit-appearance: none;
-  appearance: none;
+/* ---------- accurate popover ---------- */
+/* Anchored to the button from above, like the colour picker: same surface, same
+   radius, same shadow, and the same rise-in animation, so the two read as one
+   family. No scrim — the toolbar behind stays visible while you adjust. */
+.popover {
+  position: fixed;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 264px;
+  padding: 8px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background-color: #1e1e1e;
+  box-shadow: 0 0 8px 1px rgba(0, 0, 0, 0.15);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: $text-primary;
+  animation: stroke-pop-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
-.slider::-webkit-slider-runnable-track {
-  height: 6px;
-  border-radius: 3px;
-  background-color: $ui-pane-border;
+@keyframes stroke-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.slider::-moz-range-track {
-  height: 6px;
-  border-radius: 3px;
-  background-color: $ui-pane-border;
-}
-
-.slider::-webkit-slider-thumb {
-  width: 26px;
-  height: 26px;
-  margin-top: -10px;
-  border: none;
-  border-radius: 50%;
-  background-color: $looks-secondary;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.slider::-moz-range-thumb {
-  width: 26px;
-  height: 26px;
-  border: none;
-  border-radius: 50%;
-  background-color: $looks-secondary;
-}
-
-.panel-row {
+.head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 2px;
+}
+
+.title {
+  font-size: 0.68rem;
+}
+
+.number {
+  width: 5ch;
+  padding: 2px 5px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.06);
+  color: $text-primary;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.number:focus {
+  outline: none;
+  border-color: $looks-secondary;
+}
+
+.slider-wrap {
+  position: relative;
+  height: 34px;
+}
+
+.dialog-track {
+  --knob: 18px;
+  --inset: 0px;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 20px;
+  transform: translateY(-50%);
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+
+.dialog-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  max-width: 100%;
+  border-radius: 12px;
+  background-color: $looks-secondary;
+}
+
+.dialog-thumb {
+  position: absolute;
+  top: 50%;
+  width: var(--knob);
+  height: var(--knob);
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+/* Invisible but fully interactive: the visuals come from the layers above. */
+.range {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.stepper-row {
+  display: flex;
+  gap: 4px;
+}
+
+.stepper {
+  flex: 1 1 0;
+  height: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.06);
+  color: $text-primary;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.stepper:active {
+  background-color: $looks-transparent;
+}
+
+.preset-row {
+  display: flex;
   gap: 4px;
 }
 
 .preset,
 .preset-active {
-  min-width: 34px;
-  height: 34px;
-  padding: 0 6px;
-  border: 1px solid $ui-pane-border;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 6px;
-  background-color: $popover-background;
+  background-color: rgba(255, 255, 255, 0.06);
   color: $text-primary;
   font-family: inherit;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   cursor: pointer;
 }
 
@@ -144,23 +319,24 @@
   font-weight: bold;
 }
 
-/* Landscape phone: the button sits at the bottom right, so the popover would
-   be laid out past the right edge. Pin the panel to the bottom of the screen
-   instead of letting it follow the button. */
-@media (max-height: 420px) {
-  .panel {
-    position: fixed;
-    left: 50%;
-    bottom: 44px;
-    z-index: 600;
-    width: min(260px, calc(100vw - 24px));
-    transform: translateX(-50%);
-  }
-}
-
 @media (max-height: 420px) {
   .button {
     min-width: 42px;
     padding: 0 6px;
+  }
+
+  .strip {
+    width: 236px;
+  }
+
+  .popover {
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .stepper,
+  .preset,
+  .preset-active {
+    height: 26px;
   }
 }

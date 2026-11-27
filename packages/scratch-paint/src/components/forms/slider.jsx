@@ -35,6 +35,13 @@ class SliderComponent extends React.Component {
     this.handleClickOffset = getEventXY(event).x - this.handle.getBoundingClientRect().left;
   }
 
+  // The handle grows with the breakpoint and the popover is zoomed, so the
+  // measured box is the only trustworthy width. The hard coded constant made
+  // the drag math drift whenever either of those changed.
+  _handleWidth() {
+    return this.handle ? this.handle.getBoundingClientRect().width : HANDLE_WIDTH;
+  }
+
   handleMouseUp() {
     document.removeEventListener('mousemove', this.handleMouseMove);
     document.removeEventListener('mouseup', this.handleMouseUp);
@@ -52,7 +59,7 @@ class SliderComponent extends React.Component {
     // when clicked as well. We only want to change the slider value if the user clicked on the background itself.
     if (event.target !== this.background) return;
     // Move slider handle's center to the cursor
-    this.handleClickOffset = HANDLE_WIDTH / 2;
+    this.handleClickOffset = this._handleWidth() / 2;
     this.props.onChange(this.scaleMouseToSliderPosition(event));
   }
 
@@ -60,7 +67,10 @@ class SliderComponent extends React.Component {
     const { x } = getEventXY(event);
     const backgroundBBox = this.background.getBoundingClientRect();
     const scaledX = x - backgroundBBox.left - this.handleClickOffset;
-    return Math.max(0, Math.min(100, (100 * scaledX) / (backgroundBBox.width - HANDLE_WIDTH)));
+    // Both the bounding boxes and the pointer coordinates are in zoomed pixels,
+    // so mixing in the unzoomed HANDLE_WIDTH would skew the ratio.
+    const handleWidth = this._handleWidth();
+    return Math.max(0, Math.min(100, (100 * scaledX) / (backgroundBBox.width - handleWidth)));
   }
 
   setBackground(ref) {
@@ -72,10 +82,10 @@ class SliderComponent extends React.Component {
   }
 
   render() {
-    const halfHandleWidth = HANDLE_WIDTH / 2;
-    const pixelMin = halfHandleWidth;
-    const pixelMax = CONTAINER_WIDTH - halfHandleWidth;
-    const handleOffset = pixelMin + (pixelMax - pixelMin) * (this.props.value / 100) - halfHandleWidth;
+    // Percentage based offset: the track is 150px on desktop but fills the
+    // picker on phones, and the handle size changes with the breakpoint. Doing
+    // the math here would freeze both values at their defaults.
+    const travel = (this.props.value / 100).toFixed(4);
     return (
       <div
         className={classNames({
@@ -92,7 +102,7 @@ class SliderComponent extends React.Component {
           className={styles.handle}
           ref={this.setHandle}
           style={{
-            left: `${handleOffset}px`
+            left: `calc(${this.props.value}% - ${travel} * var(--handle-size, ${HANDLE_WIDTH}px))`
           }}
           onMouseDown={this.handleMouseDown}
           onTouchStart={this.handleMouseDown}

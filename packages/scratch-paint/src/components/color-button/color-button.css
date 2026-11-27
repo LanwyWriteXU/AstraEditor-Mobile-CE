@@ -61,15 +61,22 @@
   z-index: 2;
 }
 
+/* The stroke swatch is the stroke colour with a hole in the middle, so the
+   colour reads as a ring around it. Offsets used to be fixed at 8px/12px, which
+   only centre on the 32px desktop swatch: on the smaller phone swatch the ring
+   was 8px on the left and 4px at the bottom, i.e. not a ring at all. */
 .outline-swatch:after {
   content: '';
   position: absolute;
-  top: calc(0.5rem);
-  left: calc(0.5rem);
-  width: 0.75rem;
-  height: 0.75rem;
+  top: 50%;
+  left: 50%;
+  box-sizing: border-box;
+  width: 54%;
+  height: 54%;
+  transform: translate(-50%, -50%);
   background: white;
   border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 1px;
   /* Make sure it appears below the transparent icon */
   z-index: 1;
 }

@@ -175,7 +175,7 @@ body :global(.Popover) {
   }
 
   .divider {
-    margin: 3px 6px;
+    margin: 2px 6px;
   }
 
   .swatches {
@@ -188,7 +188,7 @@ body :global(.Popover) {
   }
 
   .gradient-picker-row {
-    margin: 3px 6px;
+    margin: 2px 6px;
   }
 
   .picker-row {

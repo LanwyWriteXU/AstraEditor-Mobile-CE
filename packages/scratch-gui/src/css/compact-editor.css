@@ -125,11 +125,24 @@
   }
 
   /* ---------- colour swatches and stroke width ---------- */
+  /* The two swatches and the width button are one row: equal gaps between them,
+     otherwise the pair reads as a separate group. */
+  html body[class*='sa-body-editor'] [class*='paint-editor_color-cluster'] {
+    gap: 8px;
+  }
+
+  /* The base sheet spaces consecutive input groups by 8px on its own, which
+     doubles the cluster gap between the two swatches. */
+  html body[class*='sa-body-editor'] [class*='paint-editor_color-cluster'] [class*='input-group'] + [class*='input-group'] {
+    margin-left: 0;
+  }
+
   html body[class*='sa-body-editor'] [class*='paint-editor_color-cluster'] [class*='color-button_color-button_'] {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 2.375rem;
+    /* Hug the swatch, so the gap on screen is the gap the flex row sets. */
+    width: 1.625rem;
     height: 1.875rem;
     padding: 0;
     border-radius: 6px;
@@ -140,10 +153,18 @@
     display: none;
   }
 
+  /* flex-basis wins over width in a flex row, so it has to be set as well:
+     otherwise the swatch stayed 2rem wide and 1.5rem tall, and the stroke
+     colour could not form an even ring around the hole. */
   html body[class*='sa-body-editor'] [class*='paint-editor_color-cluster'] [class*='color-button-swatch_'] {
-    width: 1.5rem;
-    height: 1.5rem;
+    flex: 0 0 1.625rem;
+    width: 1.625rem;
+    height: 1.625rem;
     margin: 0;
+    /* The base rules round only the left corners, because the caret used to sit
+       on the right. We hide the caret, so square right corners next to rounded
+       neighbouring controls read as a bug. */
+    border-radius: 6px;
   }
 
   html body[class*='sa-body-editor'] [class*='paint-editor_color-cluster'] [class*='stroke-width-indicator_button_'] {
