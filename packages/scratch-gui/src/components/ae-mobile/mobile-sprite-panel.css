@@ -1,30 +1,39 @@
 @import '../../css/units.css';
 @import '../../css/colors.css';
 
-/* Sliding panel: sprite grid, sprite info bar, and a separate stage row at the bottom. */
+/* Sliding panel: sprite grid, sprite info bar, and a separate stage row at the bottom.
+   Same header, surface, width, elevation and motion as the more panel. */
 
 .panel {
   position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
-  z-index: 400;
+  z-index: var(--ae-z-panel);
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
   width: 360px;
   max-width: 100%;
   background-color: $ui-secondary;
   border-left: 1px solid $ui-black-transparent;
-  box-shadow: -4px 0 16px $shadow;
+  box-shadow: var(--ae-shadow-panel);
+  animation: ae-panel-in var(--ae-dur-panel) var(--ae-ease-out) both;
+}
+
+.is-closing {
+  animation: ae-panel-out var(--ae-dur-exit) var(--ae-ease-in) both;
+  pointer-events: none;
 }
 
 .header {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  height: $ae-screen-header-height;
-  padding: 0 6px;
-  gap: 4px;
+  box-sizing: border-box;
+  height: var(--ae-header);
+  padding: 0 var(--ae-pad);
+  gap: 6px;
   border-bottom: 1px solid $ui-black-transparent;
   background-color: $ui-tertiary;
 }
@@ -33,15 +42,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: var(--ae-control-lg);
+  height: var(--ae-control-lg);
   padding: 6px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--ae-radius-m);
   background: none;
   color: $text-primary;
   cursor: pointer;
   touch-action: manipulation;
+  transition: background-color var(--ae-dur-press) var(--ae-ease-standard);
+}
+
+.back-button:active {
+  background-color: $ui-secondary;
 }
 
 .back-icon {
@@ -161,12 +175,14 @@
   cursor: pointer;
   text-align: left;
   touch-action: manipulation;
+  transition: background-color var(--ae-dur-press) var(--ae-ease-standard);
 }
 
 .stage-row:active {
   background-color: $ui-secondary;
 }
 
+/* Same 3px accent bar as the selected row in the more panel's lists. */
 .stage-row-selected {
   box-shadow: inset 3px 0 0 $looks-secondary;
 }
@@ -179,7 +195,7 @@
   width: 64px;
   height: 44px;
   border: 1px solid $ui-black-transparent;
-  border-radius: 6px;
+  border-radius: var(--ae-radius-s);
   background-color: $ui-white;
   overflow: hidden;
 }
@@ -210,4 +226,29 @@
 .stage-count {
   font-size: 11px;
   color: $text-primary-transparent;
+}
+
+/* Slides in from the edge it is anchored to, and retracts the same way. */
+@keyframes ae-panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ae-panel-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(32px);
+  }
 }

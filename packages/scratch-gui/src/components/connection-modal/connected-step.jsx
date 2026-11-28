@@ -9,7 +9,7 @@ import styles from './connection-modal.css';
 import classNames from 'classnames';
 
 const ConnectedStep = (props) => (
-  <Box className={styles.body}>
+  <Box className={`${styles.body} modal-body`}>
     <Box className={styles.activityArea}>
       <Box className={styles.centeredRow}>
         <div className={styles.peripheralActivity}>

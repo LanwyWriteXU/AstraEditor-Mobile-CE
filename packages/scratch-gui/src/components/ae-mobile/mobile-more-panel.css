@@ -1,51 +1,65 @@
 @import '../../css/units.css';
 @import '../../css/colors.css';
 
-/* More panel: project info, four entries, and a second level for each entry. */
+/* More panel: project info, four entries, and a second level for each entry.
+   Same header, surface, width, elevation and motion as the sprite panel. */
 
 .panel {
   position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
-  z-index: 410;
+  z-index: var(--ae-z-panel);
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
   width: 360px;
-  max-width: 65vw;
-  background-color: $ui-modal-background;
+  max-width: 100%;
+  background-color: $ui-secondary;
   border-left: 1px solid $ui-black-transparent;
-  box-shadow: -4px 0 16px $shadow;
+  box-shadow: var(--ae-shadow-panel);
   user-select: none;
   -webkit-user-select: none;
+  animation: ae-panel-in var(--ae-dur-panel) var(--ae-ease-out) both;
+}
+
+.is-closing {
+  animation: ae-panel-out var(--ae-dur-exit) var(--ae-ease-in) both;
+  pointer-events: none;
 }
 
 .header {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  padding: 8px;
+  box-sizing: border-box;
+  height: var(--ae-header);
+  padding: 0 var(--ae-pad);
   gap: 6px;
   border-bottom: 1px solid $ui-black-transparent;
+  background-color: $ui-tertiary;
 }
 
 .header-text {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   flex-grow: 1;
   min-width: 0;
+  gap: 1px;
 }
 
 .project-title-input {
   width: 100%;
   box-sizing: border-box;
-  padding: 2px 4px;
+  padding: 1px 4px;
   border: 1px solid transparent;
-  border-radius: 4px;
+  border-radius: var(--ae-radius-s);
   background-color: transparent;
   color: $text-primary;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 14px;
+  line-height: 1.25;
   font-weight: 500;
 }
 
@@ -68,6 +82,7 @@
 .block-count {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px;
+  line-height: 1.2;
   color: $text-primary-transparent;
 }
 
@@ -82,15 +97,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: var(--ae-control-lg);
+  height: var(--ae-control-lg);
   padding: 6px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--ae-radius-m);
   background: none;
   color: $text-primary;
   cursor: pointer;
   flex-shrink: 0;
+  transition: background-color var(--ae-dur-press) var(--ae-ease-standard);
+}
+
+.back-button:active {
+  background-color: $ui-secondary;
 }
 
 .back-icon {
@@ -101,40 +121,54 @@
 
 .close-button {
   flex-shrink: 0;
-  height: 30px;
+  height: var(--ae-control-lg);
   padding: 0 12px;
   border: 1px solid $ui-black-transparent;
-  border-radius: 8px;
+  border-radius: var(--ae-radius-m);
   background-color: $ui-white;
   color: $text-primary;
   font-family: inherit;
   font-size: 12px;
   cursor: pointer;
+  transition: background-color var(--ae-dur-press) var(--ae-ease-standard);
+}
+
+.close-button:active {
+  background-color: $ui-secondary;
 }
 
 .entries {
   display: flex;
   flex-direction: column;
-  padding: 8px;
+  padding: var(--ae-pad);
   gap: 6px;
   overflow-y: auto;
+  /* Keyed on the entry list / sub-page, so going one level in or out is a
+     transition instead of a hard swap. */
+  animation: ae-page-in var(--ae-dur-pop) var(--ae-ease-out) both;
 }
 
+/* One row spec for the whole shell: --ae-row tall, radius m, 14px label. */
 .entry {
   display: flex;
   align-items: center;
-  height: 48px;
-  padding: 0 14px;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: var(--ae-row);
+  padding: 0 12px;
   gap: 12px;
   border: 1px solid $ui-black-transparent;
-  border-radius: 10px;
+  border-radius: var(--ae-radius-m);
   background-color: $ui-white;
   color: $text-primary;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   text-align: left;
   cursor: pointer;
   touch-action: manipulation;
+  transition:
+    background-color var(--ae-dur-press) var(--ae-ease-standard),
+    border-color var(--ae-dur-press) var(--ae-ease-standard);
 }
 
 .entry:active {
@@ -180,11 +214,50 @@
   flex-direction: column;
   flex-grow: 1;
   min-height: 0;
-  padding: 8px;
+  padding: var(--ae-pad);
   overflow-y: auto;
+  animation: ae-page-in var(--ae-dur-pop) var(--ae-ease-out) both;
 }
 
 /* Contents reused from the desktop menu bar need to fill the panel. */
 .content > * {
   max-width: 100%;
+}
+
+/* Content of the panel: entry list or sub-page. */
+@keyframes ae-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Slides in from the edge it is anchored to, and retracts the same way. */
+@keyframes ae-panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ae-panel-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(32px);
+  }
 }

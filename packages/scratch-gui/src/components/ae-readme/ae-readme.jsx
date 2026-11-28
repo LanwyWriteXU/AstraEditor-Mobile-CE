@@ -267,7 +267,7 @@ const CustomModalComponent = (props) => {
                 ))}
             </div>
           )}
-          <div className={styles.body}>{renderReadmeContent(readMe[nowTab].text, escapeHtml)}</div>
+          <div className={`${styles.body} modal-body`}>{renderReadmeContent(readMe[nowTab].text, escapeHtml)}</div>
         </Box>
       </Modal>
     );

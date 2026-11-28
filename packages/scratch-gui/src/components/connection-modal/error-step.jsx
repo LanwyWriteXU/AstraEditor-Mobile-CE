@@ -11,7 +11,7 @@ import backIcon from './icons/back.svg';
 import styles from './connection-modal.css';
 
 const ErrorStep = (props) => (
-  <Box className={styles.body}>
+  <Box className={`${styles.body} modal-body`}>
     <Box className={styles.activityArea}>
       <Box className={styles.centeredRow}>
         <div className={styles.peripheralActivity}>

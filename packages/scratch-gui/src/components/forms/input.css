@@ -18,7 +18,7 @@
 
   outline: none;
   cursor: text;
-  transition: 0.25s ease-out; /* @todo: standardize with var */
+  transition: all var(--ae-dur-pop, 180ms) var(--ae-ease-standard, ease);
   box-shadow: none;
 
   /*

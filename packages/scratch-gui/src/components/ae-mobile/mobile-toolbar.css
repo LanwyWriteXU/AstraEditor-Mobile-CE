@@ -2,7 +2,8 @@
 @import '../../css/colors.css';
 
 /* Right-hand vertical toolbar: the only chrome the editor has on mobile.
-   Every button is a 36px square so the column reads as one strip. */
+   Every button is a square of $ae-toolbar-button, so the column reads as one
+   strip. Sizes, radius and motion come from css/ae-tokens.css. */
 
 .toolbar {
   display: flex;
@@ -10,10 +11,10 @@
   align-items: center;
   flex-shrink: 0;
   box-sizing: border-box;
-  width: 44px;
+  width: $ae-toolbar-width;
   height: 100%;
-  padding: 5px 0;
-  gap: 4px;
+  padding: var(--ae-toolbar-pad) 0;
+  gap: var(--ae-toolbar-gap);
   background-color: $ui-tertiary;
   border-left: 1px solid $ui-black-transparent;
   user-select: none;
@@ -24,7 +25,7 @@
   /* Above scratch-blocks (workspace and its scrollbars live at z-index 50),
      otherwise the editor switch popup is covered by the workspace scrollbar. */
   position: relative;
-  z-index: 60;
+  z-index: var(--ae-z-toolbar);
 }
 
 .top-group {
@@ -32,7 +33,7 @@
   flex-direction: column;
   align-items: center;
   flex-shrink: 0;
-  gap: 4px;
+  gap: var(--ae-toolbar-gap);
 }
 
 .spacer {
@@ -48,15 +49,18 @@
   justify-content: center;
   flex-shrink: 0;
   box-sizing: border-box;
-  width: 32px;
-  height: 32px;
+  width: $ae-toolbar-button;
+  height: $ae-toolbar-button;
   padding: 6px;
   border: 1px solid $ui-black-transparent;
-  border-radius: 8px;
+  border-radius: var(--ae-radius-m);
   background-color: $ui-white;
   color: $text-primary;
   cursor: pointer;
   touch-action: manipulation;
+  transition:
+    background-color var(--ae-dur-press) var(--ae-ease-standard),
+    border-color var(--ae-dur-press) var(--ae-ease-standard);
 }
 
 .tool-button:active,
@@ -108,34 +112,44 @@
   position: relative;
 }
 
+/* Grows out of the button towards the left, like the add-sprite popup. */
 .switch-popup {
   position: absolute;
   top: 0;
   right: calc(100% + 6px);
-  z-index: 500;
+  z-index: var(--ae-z-popup);
   display: flex;
   flex-direction: row;
-  gap: 4px;
+  gap: var(--ae-gap);
   padding: 4px;
   border: 1px solid $ui-black-transparent;
-  border-radius: 10px;
+  border-radius: var(--ae-radius-l);
   background-color: $ui-white;
-  box-shadow: 0 4px 16px $shadow;
+  box-shadow: var(--ae-shadow-pop);
+  animation: ae-popup-in var(--ae-dur-pop) var(--ae-ease-out) both;
+  transform-origin: right center;
+}
+
+.is-closing {
+  animation: ae-popup-out var(--ae-dur-exit) var(--ae-ease-in) both;
+  /* The node is still in the DOM while it fades; it must not eat the next tap. */
+  pointer-events: none;
 }
 
 .switch-option {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  width: 38px;
+  gap: var(--ae-gap);
+  width: var(--ae-control);
   padding: 8px 0;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--ae-radius-s);
   background-color: transparent;
   color: $text-primary;
   cursor: pointer;
   touch-action: manipulation;
+  transition: background-color var(--ae-dur-press) var(--ae-ease-standard);
 }
 
 .switch-option:active {
@@ -160,7 +174,7 @@
   flex-direction: column;
   align-items: center;
   flex-shrink: 0;
-  gap: 4px;
+  gap: var(--ae-toolbar-gap);
 }
 
 /* Full screen stage: the toolbar floats over the stage so the buttons keep their place. */
@@ -169,7 +183,7 @@
   top: 0;
   right: 0;
   bottom: 0;
-  z-index: 9999;
+  z-index: var(--ae-z-overlay);
   background-color: transparent;
   border-left: none;
 }
@@ -207,4 +221,29 @@
   gap: 6px;
   padding: 4px;
   pointer-events: auto;
+}
+
+/* Opens to the left (towards the editor) and closes back into the button. */
+@keyframes ae-popup-in {
+  from {
+    opacity: 0;
+    transform: translateX(8px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ae-popup-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(8px) scale(0.96);
+  }
 }

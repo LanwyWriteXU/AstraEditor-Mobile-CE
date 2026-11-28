@@ -25,7 +25,7 @@ const WebGlModal = ({ intl, ...props }) => (
     <div dir={props.isRtl ? 'rtl' : 'ltr'}>
       <Box className={styles.illustration} />
 
-      <Box className={styles.body}>
+      <Box className={`${styles.body} modal-body`}>
         <h2>
           <FormattedMessage {...messages.label} />
         </h2>

@@ -36,7 +36,7 @@ const InvalidProjectModal = (props) => (
     contentLabel={props.intl.formatMessage(messages.title)}
     id="invalidProjectModal"
   >
-    <div className={styles.body}>
+    <div className={`${styles.body} modal-body`}>
       <p>
         <FormattedMessage
           defaultMessage="Could not load project:"

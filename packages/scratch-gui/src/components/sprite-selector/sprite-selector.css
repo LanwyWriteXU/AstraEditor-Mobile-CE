@@ -73,7 +73,7 @@
 */
 .dragging .sprite:hover {
   background-color: $drop-highlight;
-  transition: all 0.25s ease;
+  transition: all var(--ae-dur-pop, 180ms) var(--ae-ease-standard, ease);
 }
 
 .items-wrapper {
@@ -104,7 +104,7 @@
 
 .raised {
   background-color: $drop-highlight;
-  transition: all 0.25s ease;
+  transition: all var(--ae-dur-pop, 180ms) var(--ae-ease-standard, ease);
 }
 
 .raised:hover {

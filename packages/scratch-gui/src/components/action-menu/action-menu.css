@@ -8,7 +8,7 @@ $more-button-size: 2.25rem;
 .menu-container {
   display: flex;
   flex-direction: column-reverse;
-  transition: 0.2s;
+  transition: all var(--ae-dur-pop, 180ms) var(--ae-ease-standard, ease);
   position: relative;
 }
 
@@ -22,7 +22,7 @@ $more-button-size: 2.25rem;
   background: $looks-secondary;
   outline: none;
   border: none;
-  transition: background-color 0.2s;
+  transition: background-color var(--ae-dur-pop, 180ms) var(--ae-ease-standard, ease);
 }
 
 button::-moz-focus-inner {
@@ -48,8 +48,8 @@ button::-moz-focus-inner {
   box-shadow: 0 0 0 4px $looks-transparent;
   z-index: $z-index-add-button;
   transition:
-    transform,
-    box-shadow 0.5s;
+    transform var(--ae-dur-press, 120ms) var(--ae-ease-standard, ease),
+    box-shadow var(--ae-dur-press, 120ms) var(--ae-ease-standard, ease);
 }
 
 .main-button:hover {
@@ -90,7 +90,7 @@ button::-moz-focus-inner {
 
 .more-buttons {
   max-height: 0;
-  transition: max-height 1s;
+  transition: max-height var(--ae-dur-panel, 220ms) var(--ae-ease-standard, ease);
   overflow-x: visible;
   display: flex;
   flex-direction: column;

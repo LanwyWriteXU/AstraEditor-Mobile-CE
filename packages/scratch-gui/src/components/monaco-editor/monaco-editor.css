@@ -42,7 +42,7 @@
   cursor: pointer;
   background: $ui-tertiary;
   color: $ui-modal-foreground;
-  transition: all 0.2s ease;
+  transition: all var(--ae-dur-pop, 180ms) var(--ae-ease-standard, ease);
 }
 
 .languageButton:hover {
@@ -76,7 +76,7 @@
   cursor: pointer;
   background: $ui-tertiary;
   color: $ui-modal-foreground;
-  transition: all 0.2s ease;
+  transition: all var(--ae-dur-pop, 180ms) var(--ae-ease-standard, ease);
 }
 
 .toolbarButton:hover {
@@ -160,7 +160,7 @@
   cursor: pointer;
   background-color: transparent;
   border-left: 2px solid transparent;
-  transition: background-color 0.15s;
+  transition: background-color var(--ae-dur-press, 120ms) var(--ae-ease-standard, ease);
 }
 
 .file-item:hover {
@@ -203,7 +203,7 @@
   display: flex;
   gap: 4px;
   opacity: 0;
-  transition: opacity 0.15s;
+  transition: opacity var(--ae-dur-press, 120ms) var(--ae-ease-standard, ease);
 }
 
 .file-item:hover .file-actions {
@@ -291,7 +291,7 @@
   background-color: $ui-secondary;
   color: $text-primary-transparent;
   font-size: 13px;
-  transition: background-color 0.15s;
+  transition: background-color var(--ae-dur-press, 120ms) var(--ae-ease-standard, ease);
   font-family: inherit;
   border: none;
   width: 100%;
@@ -501,7 +501,7 @@
   margin-bottom: 6px;
   border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color var(--ae-dur-press, 120ms) var(--ae-ease-standard, ease);
   border: 1px solid $ui-tertiary;
   background-color: $ui-secondary;
 }
@@ -845,7 +845,7 @@
     width: 240px;
     max-width: 78%;
     transform: translateX(-100%);
-    transition: transform 160ms cubic-bezier(0.2, 0.8, 0.3, 1);
+    transition: transform var(--ae-dur-pop, 180ms) var(--ae-ease-out, cubic-bezier(0.23, 1, 0.32, 1));
     box-shadow: none;
   }
 

@@ -137,7 +137,7 @@ class TelemetryModal extends React.PureComponent {
         <div dir={this.props.isRtl ? 'rtl' : 'ltr'}>
           <Box className={styles.illustration} />
 
-          <Box className={styles.body}>
+          <Box className={`${styles.body} modal-body`}>
             <p>
               <FormattedMessage {...messages.bodyText1} />
             </p>

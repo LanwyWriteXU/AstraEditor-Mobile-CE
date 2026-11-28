@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { useRef } from 'react';
+import classNames from 'classnames';
 import { defineMessages, injectIntl, intlShape } from 'react-intl';
 import { connect } from 'react-redux';
 
@@ -19,6 +20,7 @@ import paintIcon from '../action-menu/icon--paint.svg';
 import surpriseIcon from '../action-menu/icon--surprise.svg';
 import searchIcon from '../action-menu/icon--search.svg';
 import { PlusIcon } from './icons.jsx';
+import usePresence from './use-presence.js';
 
 import styles from './add-sprite-menu.css';
 
@@ -56,6 +58,8 @@ const AddSpriteMenu = ({
   vm
 }) => {
   const fileInputRef = useRef(null);
+  // The popup outlives its flag for one exit animation.
+  const popup = usePresence(open);
 
   const activateBlocksTab = () => onActivateTab(BLOCKS_TAB_INDEX);
   const finish = () => {
@@ -138,8 +142,8 @@ const AddSpriteMenu = ({
       >
         <PlusIcon className={styles.plusIcon} />
       </button>
-      {open ? (
-        <div className={styles.popup}>
+      {popup.mounted ? (
+        <div className={classNames(styles.popup, { [styles.isClosing]: popup.closing })}>
           <button
             className={styles.popupButton}
             title={intl.formatMessage(messages.addSpriteFromFile)}

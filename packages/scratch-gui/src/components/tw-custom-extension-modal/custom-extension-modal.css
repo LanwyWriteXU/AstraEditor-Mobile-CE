@@ -10,8 +10,6 @@
 }
 
 .body {
-  background: $ui-white;
-  padding: 1.5rem 2.25rem;
   display: flex;
   flex-direction: row;
 }

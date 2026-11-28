@@ -20,7 +20,7 @@ const getProjectFilename = (curTitle, defaultTitle) => {
 
 const CrashMessage = ({ eventId, errorMessage, onReload, saveProjectSb3, projectFilename }) => (
   <div className={styles.crashWrapper}>
-    <Box className={styles.body}>
+    <Box className={`${styles.body} modal-body`}>
       <img className={styles.reloadIcon} src={reloadIcon} draggable={false} />
       <p className={styles.header}>
         <FormattedMessage

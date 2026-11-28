@@ -1,0 +1,93 @@
+/* =============================================================================
+   AstraEditor Mobile — design tokens
+   -----------------------------------------------------------------------------
+   One place for the values the mobile shell used to hard-code per component:
+   radius, motion, elevation, layering and control sizes. Imported once from
+   `playground/import-first.js`, so every runtime stylesheet (GUI and paint) can
+   read them with `var(--ae-*, fallback)`.
+
+   Colours are intentionally NOT defined here — they come from the GUI theme
+   (`$ui-*`, `$text-*`, `$popover-background`). A literal colour in a component
+   is a bug: it stops following the theme.
+   ============================================================================= */
+
+:root {
+  /* ---------- radius ---------- */
+  --ae-radius-s: 6px; /* chips, swatches, small icon buttons */
+  --ae-radius-m: 8px; /* every control: toolbar button, input, popup button */
+  --ae-radius-l: 12px; /* floating panel / sheet corner */
+
+  /* ---------- motion ---------- */
+  /* Three tiers, one curve each. Anything animated must use one of these. */
+  --ae-dur-press: 120ms; /* colour feedback under the finger */
+  --ae-dur-pop: 180ms; /* popovers, popups, sheets appearing */
+  --ae-dur-panel: 220ms; /* drawers half a screen wide */
+  --ae-dur-exit: 200ms; /* leaving; slightly slower than a press, faster than a panel */
+  --ae-ease-out: cubic-bezier(0.23, 1, 0.32, 1); /* things arriving: fast then settle */
+  --ae-ease-in: cubic-bezier(0.4, 0, 1, 1); /* things leaving: accelerate away */
+  --ae-ease-standard: cubic-bezier(0.4, 0, 0.2, 1); /* A to B, no origin */
+
+  /* ---------- elevation ---------- */
+  /* `$shadow` used to be the source, but the dark theme never defines it, so
+     every `box-shadow: 0 4px 16px $shadow` silently collapsed to nothing and
+     panels had no edge at all. A literal alpha works on both themes. */
+  --ae-shadow-pop: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --ae-shadow-panel: -4px 0 16px rgba(0, 0, 0, 0.4);
+  --ae-shadow-float: 0 10px 24px rgba(0, 0, 0, 0.45);
+
+  /* ---------- layering ---------- */
+  /* Above the Blockly workspace (50) so panels cover its scrollbars;
+     below the modal layer (510), so a dialog always wins. */
+  --ae-z-toolbar: 60;
+  --ae-z-scrim: 390;
+  --ae-z-panel: 400;
+  --ae-z-popup: 600;
+  /* Fullscreen toolbar: above the stage wrapper (500), below the modal layer
+     (510) — a dialog must never be covered by the run buttons. */
+  --ae-z-overlay: 505;
+  --ae-z-overlay-button: 506;
+  /* "Rotate your device" covers everything on purpose: the editor is unusable. */
+  --ae-z-hint: 10000;
+
+  /* ---------- controls ---------- */
+  /* 36px, not 32: the toolbar is 8 buttons tall on a 320px screen, so a larger
+     square has to come out of the gaps, not out of the layout. */
+  --ae-control: 36px; /* square icon button in the toolbar and popups */
+  --ae-control-lg: 36px; /* back / close buttons inside a panel header */
+  --ae-row: 44px; /* one tappable list row */
+  --ae-header: 3rem; /* panel header, identical on every panel */
+  --ae-gap: 4px; /* rhythm inside popups, lists and headers */
+  --ae-pad: 8px; /* panel padding, header padding */
+
+  /* Dialog body padding. The sticky action bar bleeds by --ae-dialog-pad-x, so
+     these two always agree — change them here, nowhere else. */
+  --ae-dialog-pad-y: 1.5rem;
+  --ae-dialog-pad-x: 2.25rem;
+  --ae-toolbar-gap: 2px; /* tighter than --ae-gap so eight 36px buttons fit a 320px column */
+  --ae-toolbar-pad: 5px;
+}
+
+/* 8 x 36px + 7 gaps + padding must fit the shorter phone viewports. */
+@media (max-height: 340px) {
+  :root {
+    --ae-toolbar-gap: 0px;
+    --ae-toolbar-pad: 2px;
+  }
+}
+
+/* Sheet breakpoint: the same switch modal.css uses for the bottom sheet. */
+@media (max-height: 520px) {
+  :root {
+    --ae-dialog-pad-y: 0.75rem;
+    --ae-dialog-pad-x: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ae-dur-press: 0ms;
+    --ae-dur-pop: 1ms;
+    --ae-dur-panel: 1ms;
+    --ae-dur-exit: 1ms;
+  }
+}

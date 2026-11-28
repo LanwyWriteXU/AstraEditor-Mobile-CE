@@ -11,10 +11,15 @@
   bottom: 0;
   z-index: $z-index-modal;
   background-color: $ui-modal-overlay;
+  /* Same placement as the shared modal: centred when it fits, top-aligned when
+     it does not. */
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
 }
 
 .modal-content {
-  margin: 100px auto;
+  margin: auto;
   outline: none;
   border: 0.25rem solid $ui-white-transparent;
   padding: 0;
@@ -39,8 +44,6 @@
 }
 
 .body {
-  background: $ui-white;
-  padding: 1.5rem 2.25rem;
   text-align: center;
 }
 
@@ -72,4 +75,53 @@
 .faq-link {
   color: $looks-secondary;
   text-decoration: none;
+}
+
+/* ==========================================================================
+   Phone landscape: this dialog does not go through components/modal, so it
+   needs the bottom-sheet layout of its own. A 208px illustration plus a 100px
+   top margin does not fit a 320px-tall screen.
+   ========================================================================== */
+@media (max-height: 520px) {
+  .modal-overlay {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+    border-width: 0;
+    border-radius: var(--ae-radius-l, 12px) var(--ae-radius-l, 12px) 0 0;
+    box-shadow: var(--ae-shadow-float, 0 10px 24px rgba(0, 0, 0, 0.45));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    /* Keyframes live in the file that uses them: CSS Modules scopes the name. */
+    animation: ae-dialog-in var(--ae-dur-panel, 220ms) var(--ae-ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  }
+
+  .illustration {
+    height: 56px;
+  }
+
+  .faq-link-text {
+    margin: 0.75rem 0 0.25rem 0;
+  }
+}
+
+@keyframes ae-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }

@@ -34,7 +34,7 @@ const UnknownPlatformModal = (props) => (
     contentLabel={props.intl.formatMessage(messages.title)}
     id="unknownPlatformModal"
   >
-    <div className={styles.body}>
+    <div className={`${styles.body} modal-body`}>
       <p>
         <FormattedMessage
           defaultMessage="The project was made for a different platform:"

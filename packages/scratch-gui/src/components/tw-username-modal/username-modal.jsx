@@ -23,7 +23,7 @@ const UsernameModalComponent = (props) => (
     contentLabel={props.intl.formatMessage(messages.title)}
     id="usernameModal"
   >
-    <Box className={styles.body}>
+    <Box className={`${styles.body} modal-body`}>
       {props.mustChangeUsername && (
         <React.Fragment>
           <p className={classNames(styles.helpText, styles.mustChange)}>

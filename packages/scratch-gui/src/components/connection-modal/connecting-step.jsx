@@ -12,7 +12,7 @@ import closeIcon from '../close-button/icon--close.svg';
 import styles from './connection-modal.css';
 
 const ConnectingStep = (props) => (
-  <Box className={styles.body}>
+  <Box className={`${styles.body} modal-body`}>
     <Box className={styles.activityArea}>
       <Box className={styles.centeredRow}>
         <div className={styles.peripheralActivity}>

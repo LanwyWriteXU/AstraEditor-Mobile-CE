@@ -23,7 +23,7 @@ const FontModal = (props) => (
     contentLabel={props.intl.formatMessage(messages.title)}
     id="fontModal"
   >
-    <div className={styles.body}>
+    <div className={`${styles.body} modal-body`}>
       {props.screen === '' ? (
         <div className={styles.openButtons}>
           <button className={styles.openButton} onClick={props.onOpenSystemFonts}>

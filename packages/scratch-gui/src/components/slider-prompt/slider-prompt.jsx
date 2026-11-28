@@ -32,7 +32,7 @@ const SliderPromptComponent = (props) => (
     id="sliderPrompt"
     onRequestClose={props.onCancel}
   >
-    <Box className={styles.body}>
+    <Box className={`${styles.body} modal-body`}>
       <Box className={styles.label}>{props.intl.formatMessage(messages.minValue)}</Box>
       <Box>
         <input

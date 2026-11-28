@@ -171,7 +171,7 @@ class UpdatePeripheralStep extends React.Component {
     const showResults = this.state.activity === UPDATE_ACTIVITY.results;
     const showBadResults = showResults && !!this.state.err;
     return (
-      <Box className={styles.body}>
+      <Box className={`${styles.body} modal-body`}>
         {showGetReady && this.renderGetReady()}
         {showSendUpdate && this.renderSendUpdate()}
         {showResults && this.renderResults()}

@@ -13,7 +13,7 @@
   border-radius: calc($space / 2);
   box-shadow: 0px 0px 5px 1px $shadow;
   pointer-events: none;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--ae-dur-pop, 180ms) var(--ae-ease-out, ease);
   z-index: $z-index-context-menu;
 }
 
@@ -21,7 +21,7 @@
   padding: 8px 12px;
   white-space: nowrap;
   cursor: pointer;
-  transition: 0.1s ease;
+  transition: all var(--ae-dur-press, 120ms) var(--ae-ease-standard, ease);
 }
 
 .menu-item:hover {

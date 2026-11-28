@@ -44,7 +44,7 @@ const BrowserModal = ({ intl, ...props }) => {
           <img src={unhappyBrowser} draggable={false} />
         </Box>
 
-        <Box className={styles.body}>
+        <Box className={`${styles.body} modal-body`}>
           <h2 className={styles.title}>
             <FormattedMessage {...title} />
           </h2>

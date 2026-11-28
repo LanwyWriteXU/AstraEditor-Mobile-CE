@@ -18,7 +18,7 @@ import styles from './connection-modal.css';
 const ScanningStep = (props) => {
   const showUpdate = !!(props.onUpdatePeripheral && !props.scanning);
   return (
-    <Box className={styles.body}>
+    <Box className={`${styles.body} modal-body`}>
       <Box className={styles.activityArea}>
         {props.scanning ? (
           props.peripheralList.length === 0 ? (

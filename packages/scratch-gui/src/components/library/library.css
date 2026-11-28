@@ -44,7 +44,7 @@
 
 .filter-input {
   width: 11.5rem;
-  transition: 0.2s;
+  transition: all var(--ae-dur-pop, 180ms) var(--ae-ease-standard, ease);
 }
 
 .filter-input:focus,

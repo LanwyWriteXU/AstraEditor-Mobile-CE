@@ -70,7 +70,7 @@ const RestorePointModal = (props) => (
     contentLabel={props.intl.formatMessage(messages.title)}
     id="restorePointModal"
   >
-    <div className={styles.body}>
+    <div className={`${styles.body} modal-body`}>
       <p>
         <FormattedMessage
           // eslint-disable-next-line max-len

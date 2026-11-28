@@ -12,7 +12,7 @@
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   user-select: none;
   cursor: pointer;
-  transition: all 0.15s ease-out;
+  transition: all var(--ae-dur-press, 120ms) var(--ae-ease-standard, ease-out);
 }
 
 .close-button.large:hover {

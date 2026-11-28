@@ -42,10 +42,12 @@ $arrow-border-width: 14px;
 }
 
 /* The menu is placed below its button, so it should grow downwards out of the
-   button and retract upwards back into it. */
+   button and retract upwards back into it. Duration and curve come from the
+   mobile shell's tokens so a dropdown and a panel leave at the same speed. */
 .menu-closing {
   animation-name: dropOutUp;
-  animation-duration: 160ms;
+  animation-duration: var(--ae-dur-exit, 200ms);
+  animation-timing-function: var(--ae-ease-in, cubic-bezier(0.4, 0, 1, 1));
   animation-fill-mode: forwards;
   pointer-events: none;
 }

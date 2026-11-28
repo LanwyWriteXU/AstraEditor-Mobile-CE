@@ -20,7 +20,7 @@ $header-height: calc($stage-menu-height - 2px);
   border-style: solid;
   border-bottom: 0;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all var(--ae-dur-pop, 180ms) var(--ae-ease-standard, ease);
 }
 
 .stage-selector.is-selected {
@@ -48,7 +48,7 @@ $header-height: calc($stage-menu-height - 2px);
     disable */
   border-bottom: 1px solid $ui-black-transparent;
   width: 100%;
-  transition: background-color 0.25s ease;
+  transition: background-color var(--ae-dur-pop, 180ms) var(--ae-ease-standard, ease);
 }
 
 .header-title {
@@ -58,7 +58,7 @@ $header-height: calc($stage-menu-height - 2px);
 
   /* @todo: make this a mixin for all UI text labels */
   user-select: none;
-  transition: color 0.25s ease;
+  transition: color var(--ae-dur-pop, 180ms) var(--ae-ease-standard, ease);
 }
 
 .stage-selector.is-selected .header {
@@ -104,7 +104,7 @@ $header-height: calc($stage-menu-height - 2px);
 .raised,
 .raised .header {
   background-color: $drop-highlight;
-  transition: all 0.25s ease;
+  transition: all var(--ae-dur-pop, 180ms) var(--ae-ease-standard, ease);
 }
 
 .raised:hover {

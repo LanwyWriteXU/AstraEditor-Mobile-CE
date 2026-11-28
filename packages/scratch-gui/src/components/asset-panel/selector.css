@@ -90,5 +90,5 @@ $fade-out-distance: 100px;
   flex: 0 0 0;
   overflow: hidden;
   border: none;
-  transition: width 160ms ease;
+  transition: width var(--ae-dur-pop, 180ms) var(--ae-ease-standard, ease);
 }

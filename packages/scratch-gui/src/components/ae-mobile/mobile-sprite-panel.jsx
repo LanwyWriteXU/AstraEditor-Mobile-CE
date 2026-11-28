@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import { defineMessages, injectIntl, intlShape } from 'react-intl';
 
 import getCostumeUrl from '../../lib/get-costume-url';
@@ -21,7 +22,7 @@ const messages = defineMessages({
  * with the stage pulled out into its own row at the bottom so backdrops read as
  * a different kind of target.
  */
-const MobileSpritePanel = ({ editingTarget, intl, onClose, onOpenCode, stage, vm }) => {
+const MobileSpritePanel = ({ editingTarget, intl, isClosing, onClose, onOpenCode, stage, vm }) => {
   const stageAsset = stage && stage.costume && stage.costume.asset;
   const isStageSelected = Boolean(stage && stage.id && stage.id === editingTarget);
 
@@ -33,12 +34,12 @@ const MobileSpritePanel = ({ editingTarget, intl, onClose, onOpenCode, stage, vm
   };
 
   return (
-    <div className={styles.panel} data-ae-sprite-panel="true">
+    <div className={classNames(styles.panel, { [styles.isClosing]: isClosing })} data-ae-sprite-panel="true">
       <div className={styles.content}>
         <TargetPane hideSpriteLibrary onBlockDropComplete={onClose} stageSize={STAGE_DISPLAY_SIZES.large} vm={vm} />
       </div>
       <button
-        className={[styles.stageRow, isStageSelected ? styles.stageRowSelected : ''].join(' ').trim()}
+        className={classNames(styles.stageRow, { [styles.stageRowSelected]: isStageSelected })}
         onClick={handleStageClick}
       >
         <span className={styles.stageThumbWrapper}>
@@ -58,6 +59,7 @@ const MobileSpritePanel = ({ editingTarget, intl, onClose, onOpenCode, stage, vm
 MobileSpritePanel.propTypes = {
   editingTarget: PropTypes.string,
   intl: intlShape.isRequired,
+  isClosing: PropTypes.bool,
   onClose: PropTypes.func,
   onOpenCode: PropTypes.func,
   stage: PropTypes.shape({

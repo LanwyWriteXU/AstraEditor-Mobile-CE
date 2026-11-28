@@ -35,7 +35,9 @@ const ModalComponent = (props) => (
         ) : null}
         <div className={classNames(styles.headerItem, styles.headerItemTitle)}>
           {props.headerImage ? <img className={styles.headerImage} src={props.headerImage} draggable={false} /> : null}
-          {props.contentLabel}
+          {/* The text sits in its own box so it can ellipsis without the flex
+              container swallowing the overflow. */}
+          <span className={styles.headerTitleText}>{props.contentLabel}</span>
         </div>
         <div className={classNames(styles.headerItem, styles.headerItemClose)}>
           {props.fullScreen ? (

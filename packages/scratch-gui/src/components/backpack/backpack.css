@@ -17,7 +17,7 @@
   text-align: center;
   font-size: 0.85rem;
   color: $text-primary;
-  transition: 0.2s;
+  transition: all var(--ae-dur-pop, 180ms) var(--ae-ease-standard, ease);
   cursor: pointer;
   user-select: none;
 }
@@ -61,7 +61,7 @@ disable */
   height: 100%;
   opacity: 0.75;
   background-color: $drop-highlight;
-  transition: all 0.25s ease;
+  transition: all var(--ae-dur-pop, 180ms) var(--ae-ease-standard, ease);
 }
 
 .status-message {

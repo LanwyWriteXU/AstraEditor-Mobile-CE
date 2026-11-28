@@ -1,6 +1,10 @@
 @import '../../css/units.css';
 @import '../../css/colors.css';
 
+/* Full-page container for the costume and sound editors. It used to carry a
+   header of its own, which made three different header specs in one shell;
+   the toolbar's editor switch is the way back, so the header is gone. */
+
 .screen {
   display: flex;
   flex-direction: column;
@@ -17,43 +21,20 @@
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  /* Same entrance as the other editor screens, so switching never snaps. */
+  animation: ae-screen-in var(--ae-dur-pop, 180ms) var(--ae-ease-out, cubic-bezier(0.23, 1, 0.32, 1)) both;
 }
 
-.header {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  height: $ae-screen-header-height;
-  padding: 0 8px;
-  gap: 6px;
-  border-bottom: 1px solid $ui-black-transparent;
-  background-color: $ui-tertiary;
-}
+@keyframes ae-screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
 
-.back-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  padding: 6px;
-  border: none;
-  border-radius: 8px;
-  background: none;
-  color: $text-primary;
-  cursor: pointer;
-}
-
-.back-icon {
-  width: 100%;
-  height: 100%;
-}
-
-.title {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  color: $text-primary;
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .content {

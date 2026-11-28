@@ -1,0 +1,27 @@
+/* =============================================================================
+   Dialog body
+   -----------------------------------------------------------------------------
+   One spec for the body of every dialog in the shell, so that padding and
+   surface are not re-decided in twenty different stylesheets.
+
+   The class is global (not hashed) so any component can use the literal string:
+
+       <Box className={`${styles.body} modal-body`}>
+
+   A component stylesheet must NOT set padding, background, max-height or
+   overflow on its body — those live here. The padding values themselves are in
+   css/ae-tokens.css (--ae-dialog-pad-x/-y), because the sticky action bar
+   bleeds by exactly --ae-dialog-pad-x.
+   ============================================================================= */
+
+@import './colors.css';
+
+:global(.modal-body) {
+  padding: var(--ae-dialog-pad-y, 1.5rem) var(--ae-dialog-pad-x, 2.25rem);
+  background-color: $ui-modal-background;
+  /* The dialog body is already the scroll container (see modal.css); a second
+     cap or overflow here would create a nested scrollbar and trap sticky
+     action bars. */
+  max-height: none;
+  overflow: visible;
+}

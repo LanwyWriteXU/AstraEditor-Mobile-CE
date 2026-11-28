@@ -136,7 +136,7 @@ const CustomModalComponent = (props) => (
     contentLabel={props.intl.formatMessage(messages.title)}
     id="customtheme"
   >
-    <Box className={styles.body}>
+    <Box className={`${styles.body} modal-body`}>
       <div className={styles.content}>
         <FormattedMessage
           defaultMessage="You can customize the theme colors for the interface. Enter your preferred color below and click 'Apply' to update your theme."

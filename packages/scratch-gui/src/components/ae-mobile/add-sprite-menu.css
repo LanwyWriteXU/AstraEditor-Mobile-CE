@@ -1,3 +1,4 @@
+@import '../../css/units.css';
 @import '../../css/colors.css';
 
 .wrapper {
@@ -24,15 +25,16 @@
   justify-content: center;
   flex-shrink: 0;
   box-sizing: border-box;
-  width: 32px;
-  height: 32px;
+  width: $ae-toolbar-button;
+  height: $ae-toolbar-button;
   padding: 6px;
   border: 1px solid $ui-black-transparent;
-  border-radius: 8px;
+  border-radius: var(--ae-radius-m);
   background-color: $ui-white;
   color: $text-primary;
   cursor: pointer;
   touch-action: manipulation;
+  transition: background-color var(--ae-dur-press) var(--ae-ease-standard);
 }
 
 .main-button:active {
@@ -51,29 +53,37 @@
   position: absolute;
   top: 0;
   right: calc(100% + 6px);
-  z-index: 620;
+  z-index: var(--ae-z-popup);
   display: flex;
   flex-direction: row;
-  gap: 4px;
+  gap: var(--ae-gap);
   padding: 4px;
   border: 1px solid $ui-black-transparent;
-  border-radius: 10px;
+  border-radius: var(--ae-radius-l);
   background-color: $ui-white;
-  box-shadow: 0 4px 16px $shadow;
+  box-shadow: var(--ae-shadow-pop);
+  animation: ae-popup-in var(--ae-dur-pop) var(--ae-ease-out) both;
+  transform-origin: right center;
+}
+
+.is-closing {
+  animation: ae-popup-out var(--ae-dur-exit) var(--ae-ease-in) both;
+  pointer-events: none;
 }
 
 .popup-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: $ae-toolbar-button;
+  height: $ae-toolbar-button;
   padding: 6px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--ae-radius-s);
   background-color: transparent;
   cursor: pointer;
   touch-action: manipulation;
+  transition: background-color var(--ae-dur-press) var(--ae-ease-standard);
 }
 
 .popup-button:active {
@@ -89,4 +99,29 @@
 
 .file-input {
   display: none;
+}
+
+/* Opens to the left, out of the plus button, and closes back into it. */
+@keyframes ae-popup-in {
+  from {
+    opacity: 0;
+    transform: translateX(8px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ae-popup-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(8px) scale(0.96);
+  }
 }

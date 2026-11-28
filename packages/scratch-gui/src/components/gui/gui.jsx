@@ -19,6 +19,7 @@ import MobileToolbar from '../ae-mobile/mobile-toolbar.jsx';
 import MobileSpritePanel from '../ae-mobile/mobile-sprite-panel.jsx';
 import MobileMorePanel from '../ae-mobile/mobile-more-panel.jsx';
 import MobileScreen from '../ae-mobile/mobile-screen.jsx';
+import usePresence from '../ae-mobile/use-presence.js';
 import { RotateStageIcon } from '../ae-mobile/icons.jsx';
 import LanguageMenu from '../menu-bar/language-menu.jsx';
 import TWGuiThemeMenu from '../menu-bar/tw-theme-gui.jsx';
@@ -247,6 +248,10 @@ const GUIComponent = (props) => {
   const [spritePanelOpen, setSpritePanelOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [morePage, setMorePage] = useState(null);
+  // The drawers keep their open flag for logic, but stay mounted for one exit
+  // animation so they can slide away instead of disappearing in a frame.
+  const spritePanel = usePresence(spritePanelOpen);
+  const morePanel = usePresence(moreOpen);
   const [isRunning, setIsRunning] = useState(false);
   const [backpackExpanded, setBackpackExpanded] = useState(false);
   // Fullscreen only: presents the stage rotated 90 degrees so a 4:3 project can
@@ -651,9 +656,11 @@ const GUIComponent = (props) => {
     </React.Fragment>
   );
 
+  // Closing only flips the flag: the page is deliberately left alone so the
+  // panel slides out showing what the user was looking at, not the entry list.
+  // It is reset when the panel is opened again.
   const closeMorePanel = () => {
     setMoreOpen(false);
-    setMorePage(null);
   };
 
   const morePageContent =
@@ -839,7 +846,6 @@ const GUIComponent = (props) => {
                   onClick={() => {
                     setSpritePanelOpen(false);
                     setMoreOpen(false);
-                    setMorePage(null);
                   }}
                 />
               ) : null}
@@ -856,9 +862,10 @@ const GUIComponent = (props) => {
                 </div>
               ) : null}
 
-              {spritePanelOpen ? (
+              {spritePanel.mounted ? (
                 <MobileSpritePanel
                   editingTarget={editingTarget}
+                  isClosing={spritePanel.closing}
                   stage={stage}
                   vm={vm}
                   onClose={() => setSpritePanelOpen(false)}
@@ -866,8 +873,9 @@ const GUIComponent = (props) => {
                 />
               ) : null}
 
-              {moreOpen ? (
+              {morePanel.mounted ? (
                 <MobileMorePanel
+                  isClosing={morePanel.closing}
                   page={morePage}
                   projectTitle={projectTitle}
                   vm={vm}
@@ -894,7 +902,9 @@ const GUIComponent = (props) => {
             isStageOpen={isFullScreen}
             onMore={() => {
               setSpritePanelOpen(false);
-              if (moreOpen) {
+              // Reset the sub-page when opening, never when closing: the panel
+              // animates out and must keep showing the page it was on.
+              if (!moreOpen) {
                 setMorePage(null);
               }
               setMoreOpen(!moreOpen);
@@ -902,7 +912,6 @@ const GUIComponent = (props) => {
             onPause={handlePause}
             onSprites={() => {
               setMoreOpen(false);
-              setMorePage(null);
               setSpritePanelOpen(!spritePanelOpen);
             }}
             onStage={() => dispatch(setFullScreen(!isFullScreen))}

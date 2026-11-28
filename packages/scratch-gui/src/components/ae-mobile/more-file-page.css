@@ -8,7 +8,7 @@
 }
 
 .with-divider {
-  margin-top: 4px;
+  margin-top: var(--ae-gap);
   border-top: 1px solid $ui-black-transparent;
 }
 
@@ -16,18 +16,20 @@
   display: flex;
   flex-direction: column;
   margin: 0;
-  padding: 4px 0;
+  padding: var(--ae-gap) 0;
   list-style: none;
 }
 
+/* One row spec for the whole shell: --ae-row tall, radius m, 14px label. */
 .item {
   display: flex;
   align-items: center;
   width: 100%;
-  min-height: 44px;
+  box-sizing: border-box;
+  min-height: var(--ae-row);
   padding: 0 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--ae-radius-m);
   background-color: transparent;
   color: $text-primary;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -35,6 +37,7 @@
   text-align: left;
   cursor: pointer;
   touch-action: manipulation;
+  transition: background-color var(--ae-dur-press) var(--ae-ease-standard);
 }
 
 .item:active {

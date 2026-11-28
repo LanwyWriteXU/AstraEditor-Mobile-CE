@@ -13,7 +13,7 @@ import scratchLinkIcon from './icons/scratchlink.svg';
 import styles from './connection-modal.css';
 
 const UnavailableStep = (props) => (
-  <Box className={styles.body}>
+  <Box className={`${styles.body} modal-body`}>
     <Box className={styles.activityArea}>
       <div className={styles.scratchLinkHelp}>
         <div className={styles.scratchLinkHelpStep}>

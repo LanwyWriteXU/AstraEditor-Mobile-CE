@@ -17,10 +17,15 @@ $ui-gray: hsla(0, 0%, 95%, 1);
   bottom: 0;
   z-index: $z-index-modal;
   background-color: $ui-modal-overlay;
+  /* Same placement as the shared modal: centred when it fits, top-aligned when
+     it does not. */
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
 }
 
 .modal-content {
-  margin: 100px auto;
+  margin: auto;
   outline: none;
   border: 0.25rem solid $ui-white-transparent;
   padding: 0;
@@ -41,8 +46,7 @@ $ui-gray: hsla(0, 0%, 95%, 1);
 }
 
 .body {
-  background: $ui-white;
-  padding: 1.5rem 2.25rem;
+  /* padding / surface / height / overflow: shared .modal-body */
 }
 
 .privacy-policy-link {
@@ -163,5 +167,58 @@ $ui-gray: hsla(0, 0%, 95%, 1);
 @media screen and (max-height: 540px) {
   .illustration {
     display: none;
+  }
+}
+
+/* ==========================================================================
+   Phone landscape: same bottom-sheet layout as the shared modal. The rules
+   above only widen the dialog; it still sat 100px from the top and could not
+   scroll, so the buttons were off screen.
+   ========================================================================== */
+@media (max-height: 520px) {
+  .modal-overlay {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+    border-width: 0;
+    border-radius: var(--ae-radius-l, 12px) var(--ae-radius-l, 12px) 0 0;
+    box-shadow: var(--ae-shadow-float, 0 10px 24px rgba(0, 0, 0, 0.45));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    /* Keyframes live in the file that uses them: CSS Modules scopes the name. */
+    animation: ae-dialog-in var(--ae-dur-panel, 220ms) var(--ae-ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  }
+
+  /* Same sticky action row as the shared sheet: keep the choice buttons on
+     screen while the explanation scrolls. */
+  .button-row {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin-inline: calc(-1 * var(--ae-dialog-pad-x, 1rem));
+    padding: 0.5rem var(--ae-dialog-pad-x, 1rem) max(0.5rem, env(safe-area-inset-bottom));
+    background-color: $ui-modal-background;
+    box-shadow: 0 -8px 12px -8px rgba(0, 0, 0, 0.45);
+  }
+}
+
+@keyframes ae-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
   }
 }

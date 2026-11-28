@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { useEffect, useRef, useState } from 'react';
+import classNames from 'classnames';
 import { defineMessages, injectIntl, intlShape } from 'react-intl';
 
 import getProjectStats from '../../lib/project-stats';
@@ -65,7 +66,7 @@ const ENTRIES = [
   { id: 'about', label: messages.about, icon: aboutIcon }
 ];
 
-const MobileMorePanel = ({ children, intl, onSelectEntry, onUpdateTitle, page, projectTitle, vm }) => {
+const MobileMorePanel = ({ children, intl, isClosing, onSelectEntry, onUpdateTitle, page, projectTitle, vm }) => {
   const [blockCount, setBlockCount] = useState(0);
   const [titleDraft, setTitleDraft] = useState(projectTitle || '');
   const timeoutRef = useRef(null);
@@ -105,7 +106,7 @@ const MobileMorePanel = ({ children, intl, onSelectEntry, onUpdateTitle, page, p
   const activeEntry = page ? ENTRIES.find((entry) => entry.id === page) : null;
 
   return (
-    <div className={styles.panel}>
+    <div className={classNames(styles.panel, { [styles.isClosing]: isClosing })}>
       <div className={styles.header}>
         {activeEntry ? (
           <button className={styles.backButton} onClick={() => onSelectEntry(null)}>
@@ -133,9 +134,11 @@ const MobileMorePanel = ({ children, intl, onSelectEntry, onUpdateTitle, page, p
       </div>
 
       {activeEntry ? (
-        <div className={styles.content}>{children}</div>
+        <div className={styles.content} key={`page-${page}`}>
+          {children}
+        </div>
       ) : (
-        <div className={styles.entries}>
+        <div className={styles.entries} key="root">
           {ENTRIES.map(({ id, label, icon, image }) => (
             <button className={styles.entry} key={id} onClick={() => onSelectEntry(id)}>
               {image ? (
@@ -155,6 +158,7 @@ const MobileMorePanel = ({ children, intl, onSelectEntry, onUpdateTitle, page, p
 MobileMorePanel.propTypes = {
   children: PropTypes.node,
   intl: intlShape.isRequired,
+  isClosing: PropTypes.bool,
   onClose: PropTypes.func,
   onSelectEntry: PropTypes.func,
   onUpdateTitle: PropTypes.func,

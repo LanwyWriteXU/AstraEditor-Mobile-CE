@@ -26,7 +26,12 @@ const CustomExtensionModal = (props) => {
       contentLabel={props.intl.formatMessage(messages.title)}
       id="customExtensionModal"
     >
-      <Box className={styles.body} onDragOver={props.onDragOver} onDragLeave={props.onDragLeave} onDrop={props.onDrop}>
+      <Box
+        className={`${styles.body} modal-body`}
+        onDragOver={props.onDragOver}
+        onDragLeave={props.onDragLeave}
+        onDrop={props.onDrop}
+      >
         <div className={styles.loadUI}>
           <div className={styles.typeSelectorContainer}>
             <div

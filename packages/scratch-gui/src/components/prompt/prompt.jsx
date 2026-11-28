@@ -52,7 +52,7 @@ const Packager = () => (
 
 const PromptComponent = (props) => (
   <Modal className={styles.modalContent} contentLabel={props.title} onRequestClose={props.onCancel} id="promptModal">
-    <Box className={styles.body}>
+    <Box className={`${styles.body} modal-body`}>
       <Box className={styles.label}>{props.label}</Box>
       <Box>
         <input

@@ -33,7 +33,7 @@ const AutoScanningStep = (props) => {
     (props.phase === PHASES.pressbutton || props.phase === PHASES.notfound)
   );
   return (
-    <Box className={styles.body}>
+    <Box className={`${styles.body} modal-body`}>
       <Box className={styles.activityArea}>
         <div className={styles.activityAreaInfo}>
           <div className={styles.centeredRow}>

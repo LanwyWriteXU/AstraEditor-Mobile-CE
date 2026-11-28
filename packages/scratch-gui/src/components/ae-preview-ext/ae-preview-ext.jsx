@@ -58,7 +58,7 @@ const PreviewExtComponent = (props) => {
       id="previewExt"
     >
       {/* Modal 内容 */}
-      <div className={styles.body}>
+      <div className={`${styles.body} modal-body`}>
             <div
               className={styles.Modaltab}
               style={{

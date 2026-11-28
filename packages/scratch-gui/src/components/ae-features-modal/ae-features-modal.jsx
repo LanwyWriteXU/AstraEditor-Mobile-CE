@@ -222,7 +222,7 @@ const AeFeaturesComponent = (props) => {
       contentLabel={props.intl.formatMessage(mainMessages.title)}
       id="aeFeaturesModal"
     >
-      <Box className={styles.body}>
+      <Box className={`${styles.body} modal-body`}>
         {nowPage === 'init' && (
           <InitializeUI
             value={props.value}

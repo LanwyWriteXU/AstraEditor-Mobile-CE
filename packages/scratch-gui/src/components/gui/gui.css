@@ -533,6 +533,20 @@ $fade-out-distance: 15px;
   flex-grow: 1;
   min-height: 0;
   background-color: $ui-white;
+  /* Switching editors is a display:none toggle, which restarts this animation
+     every time the workspace comes back. Opacity only: a transform here would
+     become the containing block for Blockly's drag layer. */
+  animation: ae-workspace-in var(--ae-dur-pop, 180ms) var(--ae-ease-out, cubic-bezier(0.23, 1, 0.32, 1)) both;
+}
+
+@keyframes ae-workspace-in {
+  from {
+    opacity: 0.35;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .viewport-menu {
@@ -553,7 +567,7 @@ $fade-out-distance: 15px;
     right: 0;
     bottom: 0;
     left: 0;
-    z-index: 9999;
+    z-index: var(--ae-z-hint);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -562,7 +576,7 @@ $fade-out-distance: 15px;
 
   .rotate-hint-text {
     padding: 16px 24px;
-    border-radius: 12px;
+    border-radius: var(--ae-radius-l);
     background-color: $ui-modal-background;
     color: $text-primary;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -693,16 +707,16 @@ $fade-out-distance: 15px;
   position: fixed;
   top: calc(6px + env(safe-area-inset-top, 0px));
   right: calc(6px + env(safe-area-inset-right, 0px));
-  z-index: 10000;
+  z-index: var(--ae-z-overlay-button);
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: 32px;
-  height: 32px;
+  width: var(--ae-control);
+  height: var(--ae-control);
   padding: 6px;
   border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 8px;
+  border-radius: var(--ae-radius-m);
   background-color: rgba(255, 255, 255, 0.92);
   /* Literal colour, not $text-primary: that variable flips to white in dark
      mode and the icon vanished against the white button. */
@@ -745,7 +759,7 @@ $fade-out-distance: 15px;
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: 390;
+  z-index: var(--ae-z-scrim);
   background-color: transparent;
 }
 
@@ -758,7 +772,7 @@ $fade-out-distance: 15px;
   display: flex;
   flex-direction: column;
   /* Above the panel scrim so it stays a live drop target while a panel is open. */
-  z-index: 395;
+  z-index: calc(var(--ae-z-scrim) + 5);
 }
 
 .backpack-dock > div {

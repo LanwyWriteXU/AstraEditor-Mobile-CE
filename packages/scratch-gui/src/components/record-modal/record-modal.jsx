@@ -21,7 +21,7 @@ const RecordModal = (props) => (
     contentLabel={props.intl.formatMessage(messages.title)}
     onRequestClose={props.onCancel}
   >
-    <Box className={styles.body}>
+    <Box className={`${styles.body} modal-body`}>
       {props.samples ? (
         <PlaybackStep
           encoding={props.encoding}

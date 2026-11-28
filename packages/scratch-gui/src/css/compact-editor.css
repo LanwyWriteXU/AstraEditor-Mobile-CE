@@ -269,9 +269,10 @@
   }
 
   /* ---------- dialog header ---------- */
-  html body[class*='sa-body-editor'] [class*='modal_header'] {
-    height: 2rem;
-  }
+  /* The header height used to be pinned to 2rem here, which beat the sheet's
+     rule in modal.css on specificity and made the header 32px at <=420 while
+     being 44px at 430-520. The sheet owns its own chrome now, so the override
+     is gone. */
 
   /* Icons inside buttons share one size, otherwise a 24px glyph next to a
      16px glyph reads as two different button sizes. */
@@ -421,10 +422,10 @@
     right: 0 !important;
     /* The addons use --ui-modal-background, which this shell never defines, so
        the panel rendered transparent with its text floating over the canvas. */
-    background-color: #1e2028 !important;
-    border: 1px solid rgba(255, 255, 255, 0.14) !important;
-    border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    background-color: var(--popover-background, #1e1e1e) !important;
+    border: 1px solid var(--ui-black-transparent, rgba(255, 255, 255, 0.14)) !important;
+    border-radius: var(--ae-radius-m, 8px);
+    box-shadow: var(--ae-shadow-float, 0 8px 24px rgba(0, 0, 0, 0.45));
     padding: 6px 8px;
     max-width: calc(100vw - 12px);
     /* Height is clamped further down (208px, i.e. the space above the button);
@@ -461,14 +462,8 @@
   }
 
   /* ---------- record / sound dialogs ---------- */
-  html body[class*='sa-body-editor'] [class*='close-button_large'] {
-    width: 1.5rem;
-    height: 1.5rem;
-  }
-
-  html body[class*='sa-body-editor'] [class*='record-modal_modal-content'] {
-    width: min(calc(100vw - 1rem), 600px);
-  }
+  /* The dialog close button is left at its own 2rem size: at 1.5rem it was the
+     smallest tap target in the shell, and the sheet header is 44px tall now. */
 
   /* The waveform claims width:100%, which squeezed the level meter to 28px and
      made its fixed-width bars overflow their own box (horizontal scrollbar). */
@@ -514,8 +509,8 @@
   }
 
   html body[class*='sa-body-editor'] [class*='sa-lock-button'] {
-    background-color: #16181d;
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    background-color: var(--popover-background, #1e1e1e);
+    border: 1px solid var(--ui-black-transparent, rgba(255, 255, 255, 0.16));
     border-radius: 6px;
   }
 
@@ -543,21 +538,21 @@
   html body[class*='sa-body-editor'] :global(.Popover-body) {
     max-height: calc(100vh - 56px);
     overflow-y: auto;
-    background-color: #1e2028;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 8px;
+    background-color: var(--popover-background, #1e1e1e);
+    border: 1px solid var(--ui-black-transparent, rgba(255, 255, 255, 0.14));
+    border-radius: var(--ae-radius-m, 8px);
     padding: 6px;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+    box-shadow: var(--ae-shadow-float, 0 10px 28px rgba(0, 0, 0, 0.45));
   }
 
   /* Placement decides the direction, so every popover grows out of the control
      it belongs to: below the trigger it drops down, above it it rises. */
   html body[class*='sa-body-editor'] [class*='Popover-below'] :global(.Popover-body) {
-    animation: ae-drop-down 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+    animation: ae-drop-down var(--ae-dur-pop, 180ms) var(--ae-ease-out, cubic-bezier(0.23, 1, 0.32, 1)) both;
   }
 
   html body[class*='sa-body-editor'] [class*='Popover-above'] :global(.Popover-body) {
-    animation: ae-drop-up 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+    animation: ae-drop-up var(--ae-dur-pop, 180ms) var(--ae-ease-out, cubic-bezier(0.23, 1, 0.32, 1)) both;
   }
 
   /* Menu rows were tall enough that a six item menu no longer fitted below

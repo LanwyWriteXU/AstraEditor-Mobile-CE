@@ -7,10 +7,8 @@
 }
 
 .body {
-  background: $ui-modal-background;
   height: calc(100vh - 250px);
   height: calc(100dvh - 250px);
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
@@ -40,17 +38,7 @@
   filter: brightness(0.5);
 }
 
-/* For small screens, such as in the embed */
-@media (max-height: 600px) {
-  .modal-content {
-    margin: 50px auto;
-  }
-
-  .body {
-    max-height: calc(100vh - 150px);
-    max-height: calc(100dvh - 150px);
-  }
-}
+/* Placement, height and padding are owned by modal.css / ae-dialog.css. */
 
 .setting {
   display: flex;

@@ -11,7 +11,7 @@
 }
 
 .body {
-  background: $ui-modal-background;
+  /* padding / surface / height / overflow: shared .modal-body */
 }
 
 .label {

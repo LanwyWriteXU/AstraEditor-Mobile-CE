@@ -34,7 +34,7 @@ const ConnectionModalComponent = (props) => (
     onHelp={props.onHelp}
     onRequestClose={props.onCancel}
   >
-    <Box className={styles.body}>
+    <Box className={`${styles.body} modal-body`}>
       {props.phase === PHASES.scanning && !props.useAutoScan && <ScanningStep {...props} />}
       {props.phase === PHASES.scanning && props.useAutoScan && <AutoScanningStep {...props} />}
       {props.phase === PHASES.connecting && <ConnectingStep {...props} />}

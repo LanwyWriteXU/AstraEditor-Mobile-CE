@@ -570,7 +570,7 @@ const SettingsModalComponent = (props) => {
         </div>
       )}
 
-      <Box className={styles.body}>
+      <Box className={`${styles.body} modal-body`}>
         {settingsTab === 'settings' && (
           <>
             <Header>

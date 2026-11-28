@@ -6,8 +6,7 @@
 }
 
 .body {
-  background: $ui-modal-background;
-  padding: 1.5rem 2.25rem;
+  /* padding / surface / height / overflow: shared .modal-body */
 }
 
 .body input[type='checkbox'],

@@ -26,7 +26,7 @@ const CustomProcedures = (props) => (
     id="customProceduresModal"
   >
     <Box className={styles.workspace} componentRef={props.componentRef} />
-    <Box className={styles.body}>
+    <Box className={`${styles.body} modal-body`}>
       <div className={styles.optionsRow}>
         <div className={styles.optionCard} role="button" tabIndex="0" onClick={props.onAddTextNumber}>
           <img className={styles.optionIcon} src={textInputIcon} draggable={false} />

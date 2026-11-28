@@ -15,6 +15,7 @@ import greenFlagIcon from '../green-flag/icon--green-flag.svg';
 import pauseIcon from './icons/icon--pause.svg';
 import playIcon from './icons/icon--play.svg';
 import AddSpriteMenu from './add-sprite-menu.jsx';
+import usePresence from './use-presence.js';
 import { CloseIcon, MoreIcon } from './icons.jsx';
 
 import styles from './mobile-toolbar.css';
@@ -115,6 +116,8 @@ const MobileToolbar = ({
 }) => {
   const [addOpen, setAddOpen] = useState(false);
   const [switchOpen, setSwitchOpen] = useState(false);
+  // The popup outlives its flag for one exit animation.
+  const switchPopup = usePresence(switchOpen);
 
   const handleSwitchScreen = (screen) => {
     setSwitchOpen(false);
@@ -174,8 +177,8 @@ const MobileToolbar = ({
             >
               <ScreenIcon icon={activeScreenConfig.icon} />
             </button>
-            {switchOpen ? (
-              <div className={styles.switchPopup}>
+            {switchPopup.mounted ? (
+              <div className={classNames(styles.switchPopup, { [styles.isClosing]: switchPopup.closing })}>
                 {SCREENS.filter((screen) => screen.id !== activeScreen).map(({ id, label, icon }) => (
                   <button className={styles.switchOption} key={id} onClick={() => handleSwitchScreen(id)}>
                     <ScreenIcon className={styles.switchOptionIcon} icon={icon} />

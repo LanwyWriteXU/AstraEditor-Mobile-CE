@@ -37,7 +37,7 @@ const SecurityManagerModalComponent = (props) => (
     contentLabel={props.intl.formatMessage(messages.title)}
     id="securitymanagermodal"
   >
-    <Box className={styles.body}>
+    <Box className={`${styles.body} modal-body`}>
       {props.type === SecurityModals.LoadExtension ? (
         <LoadExtensionModal {...props.data} onSkip={() => get('skipExtWarn')} />
       ) : props.type === SecurityModals.Fetch ? (

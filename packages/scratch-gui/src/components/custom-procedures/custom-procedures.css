@@ -7,8 +7,7 @@
 }
 
 .body {
-  background: $ui-modal-background;
-  padding: 1.5rem 2.25rem;
+  /* padding / surface / height / overflow: shared .modal-body */
 }
 
 .body input[type='checkbox'],
@@ -104,4 +103,28 @@
 
 [dir='rtl'] .button-row button + button {
   margin-right: 0.5rem;
+}
+
+/* ==========================================================================
+   Phone landscape: the Blockly workspace claimed 200px of a ~250px dialog body,
+   so the input cards and the OK/Cancel row always sat below the fold. Trim the
+   workspace and the padding; the dialog body scrolls for whatever is left.
+   ========================================================================== */
+@media (max-height: 520px) {
+  .workspace {
+    min-height: 140px;
+  }
+
+  .option-card {
+    padding: 0.75rem;
+  }
+
+  .option-icon {
+    max-height: 36px;
+    margin-bottom: 0.25rem;
+  }
+
+  .button-row {
+    margin-top: 0.75rem;
+  }
 }

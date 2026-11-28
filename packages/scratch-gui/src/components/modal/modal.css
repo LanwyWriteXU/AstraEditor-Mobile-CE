@@ -12,6 +12,13 @@
   background-color: $ui-modal-overlay;
   color: $ui-modal-foreground;
   margin-top: var(--stage-fullscreen-top, 0px);
+  /* One placement rule for every dialog. `align-items: flex-start` plus an
+     `auto` margin on the dialog centres it when it fits and top-aligns it when
+     it does not — true centring with flex would clip the top of a tall dialog. */
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 .modal-content * {
@@ -24,7 +31,7 @@
 
 .modal-content {
   position: relative;
-  margin: 16px auto;
+  margin: auto;
   outline: none;
   border: 4px solid $ui-white-transparent;
   padding: 0;
@@ -41,8 +48,43 @@
   flex-direction: column;
 }
 
+/* Dialogs each carried their own top margin (100px, 50px, 25px…). Two classes
+   so this outranks the single-class override in each component's stylesheet. */
+.modal-content.modal-content {
+  margin: auto;
+}
+
 .modal-content > div {
   min-height: 0;
+}
+
+/*
+ * `Box` is a plain block element (components/box/box.css is empty), so the
+ * inline `flexDirection: column` it receives does nothing. The column has to be
+ * set here: without it the body grows past the dialog, the card's
+ * overflow: hidden clips it, and nothing can be scrolled to.
+ */
+.modal-content:not(.full-screen) > div {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/*
+ * The dialog body is the single scroll container.
+ *
+ * Each modal used to cap its own body with its own max-height (the settings
+ * dialog uses calc(100dvh - 250px), which is 70px on a 320px-tall phone) or
+ * nothing at all. With .modal-content on overflow: hidden, anything taller than
+ * the dialog was clipped and could not be reached at all. Full-screen dialogs
+ * are excluded: they already scroll as a whole page.
+ */
+.modal-content:not(.full-screen) :global(.modal_content) {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .modal-content.full-screen {
@@ -66,19 +108,26 @@
 }
 
 /*
-    Modal header has 3 items:
-    |filter     title       x|
+    Modal header has 3 slots:  |filter  title  close|
 
-    Use the same width for both side item containers,
-    so that title remains centered
+    The title used to be centred by giving both wings a fixed 20rem basis and
+    pulling the title back with a -20rem margin. That only works while both
+    wings exist and are exactly that wide — the moment a dialog has no filter
+    (custom procedures, settings, every mobile sheet) the title drifted left or
+    right of the real centre.
+
+    Now the title is taken out of the flow and centred on the header box itself:
+    the wings can be any width, or missing entirely, and the title still lands
+    on the middle of the dialog.
 */
-$sides: 20rem;
 
 .header {
+  position: relative;
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  justify-content: flex-start;
+  align-items: center;
+  justify-content: space-between;
   height: $library-header-height;
   flex-shrink: 0;
 
@@ -110,37 +159,44 @@ $sides: 20rem;
 
 .header-item-filter {
   display: flex;
-  flex-basis: $sides;
   justify-content: flex-start;
+  min-width: 0;
 }
 
+/* Absolute, so it is centred on the header instead of on whatever space the
+   other two slots leave over. */
 .header-item-title {
-  flex-grow: 1;
-  flex-shrink: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 0;
+  display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 0.5rem;
+  max-width: calc(100% - 8rem);
+  padding: 0;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
   user-select: none;
   letter-spacing: 0.4px;
   cursor: default;
 }
 
-[dir='ltr'] .header-item-title {
-  margin: 0 -$sides 0 0;
+/* The ellipsis has to live on a text node, not on the flex container. */
+.header-title-text {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-[dir='rtl'] .header-item-title {
-  margin: 0 0 0 -$sides;
-}
-
-.full-screen [dir='ltr'] .header-item-title {
-  margin: 0 0 0 -$sides;
-}
-
-.full-screen [dir='rtl'] .header-item-title {
-  margin: 0 -$sides 0 0;
-}
-
+/* With the title out of the flow there is only one right-hand slot left, so it
+   has to be pushed across explicitly. */
 .header-item-close {
-  flex-basis: $sides;
+  margin-left: auto;
   justify-content: flex-end;
   z-index: 1;
 }
@@ -148,6 +204,8 @@ $sides: 20rem;
 .full-screen .header-item-close {
   order: -1;
   justify-content: flex-start;
+  margin-right: auto;
+  margin-left: 0;
 }
 
 .back-button {
@@ -162,18 +220,12 @@ $sides: 20rem;
   transform: scaleX(-1);
 }
 
+/* The help button used to be pulled out of the header with a negative margin so
+   it would not push the title. The title is centred independently now. */
 .header-item-help {
   padding: 0;
   z-index: 1;
   -webkit-filter:;
-}
-
-[dir='ltr'] .header-item-help {
-  margin-right: -4.75rem;
-}
-
-[dir='rtl'] .header-item-help {
-  margin-left: -4.75rem;
 }
 
 .help-button {
@@ -190,9 +242,13 @@ $sides: 20rem;
   padding-left: 0;
 }
 
-:global(.file-selection-modal) {
-  width: min(420px, 92vw) !important;
-  max-width: min(420px, 92vw) !important;
+/* A 420px card inside a full-width sheet reads as a second dialog on top of the
+   first, so the cap only applies above the sheet breakpoint. */
+@media (min-height: 521px) {
+  :global(.file-selection-modal) {
+    width: min(420px, 92vw) !important;
+    max-width: min(420px, 92vw) !important;
+  }
 }
 
 /* ==========================================================================
@@ -201,24 +257,94 @@ $sides: 20rem;
    The header used to reserve a fixed 20rem (320px) on both sides so the title
    would stay optically centred. On a 568-640px wide screen that left the title
    with zero width, so the two wings shrink and the title is allowed to ellipsis.
+
+   The sheet keeps a strip of backdrop visible above it (so it reads as a sheet
+   and not as a page swap), and rises over --ae-dur-panel with the shell's curve.
+
+   There is deliberately no grabber bar: this sheet cannot be dragged down, and
+   a handle that does nothing is worse than no handle. Dismiss via the close
+   button, the backdrop, or the platform back gesture.
    ========================================================================== */
 
-@media (max-height: 420px) {
+@keyframes ae-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ae-sheet-backdrop-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* 520px, not 420: a 932x430 phone would otherwise still get the desktop
+   centred dialog while the editor itself is already in its compact layout. */
+@media (max-height: 520px) {
   .modal-overlay {
     display: flex;
     align-items: flex-end;
     justify-content: center;
+    animation: ae-sheet-backdrop-in var(--ae-dur-pop, 180ms) var(--ae-ease-out, cubic-bezier(0.23, 1, 0.32, 1));
   }
 
+  /*
+   * Every dialog becomes the same sheet: full width, one radius, one max height.
+   *
+   * Each modal used to decide its own size (700px, 600px, 500px, 440px, … and
+   * max-width 750/550/480/990), which is why some sheets spanned the screen and
+   * some sat in the middle like a card. `max-width` is the one that survived the
+   * old `width: 100%` rule, so it has to be reset here as well.
+   */
   .modal-content:not(.full-screen) {
     width: 100%;
+    max-width: 100%;
     margin: 0;
-    max-height: calc(100vh - 8px);
-    max-height: calc(100dvh - 8px);
+    /* Leave a strip of dimmed backdrop visible: a sheet that fills the whole
+       screen is indistinguishable from a page change. */
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
     border-width: 0;
-    border-radius: 16px 16px 0 0;
-    animation: ae-sheet-in 180ms cubic-bezier(0.2, 0.8, 0.3, 1);
+    border-radius: var(--ae-radius-l, 12px) var(--ae-radius-l, 12px) 0 0;
+    box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.45);
+    animation: ae-sheet-in var(--ae-dur-panel, 220ms) var(--ae-ease-out, cubic-bezier(0.23, 1, 0.32, 1));
     padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /*
+   * Sticky action bar.
+   *
+   * A dialog whose content is taller than the sheet used to hide its OK/Cancel
+   * row below the fold — you had to know to scroll to find the button that
+   * closes the thing. Any bottom action row is now pinned to the bottom of the
+   * scrolling body. The negative inline margin bleeds it over the body padding
+   * so the bar reads as part of the sheet; the card clips the overhang.
+   */
+  .modal-content:not(.full-screen) [class*='button-row'],
+  .modal-content:not(.full-screen) [class*='bottom-area'] {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    background-color: $ui-modal-background;
+    box-shadow: 0 -8px 12px -8px rgba(0, 0, 0, 0.45);
+  }
+
+  /* Only the button rows get the full-bleed padding: an existing bottom area
+     already has its own. The bleed matches the body padding token, so the bar
+     always reaches the sheet edge. */
+  .modal-content:not(.full-screen) [class*='button-row'] {
+    margin-inline: calc(-1 * var(--ae-dialog-pad-x, 1rem));
+    padding: 0.5rem var(--ae-dialog-pad-x, 1rem) max(0.5rem, env(safe-area-inset-bottom));
   }
 
   .header {
@@ -229,76 +355,20 @@ $sides: 20rem;
     padding: 0.5rem;
   }
 
-  .header-item-filter {
-    flex-basis: 2.75rem;
-  }
-
-  [dir='ltr'] .header-item-title {
-    margin: 0 -2.75rem 0 0;
-  }
-
-  [dir='rtl'] .header-item-title {
-    margin: 0 0 0 -2.75rem;
-  }
-
   .header-item-title {
-    min-width: 0;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    max-width: calc(100% - 6rem);
     font-size: 0.9rem;
   }
-
-  [dir='ltr'] .header-item-help {
-    margin-left: 0;
-  }
-
-  [dir='rtl'] .header-item-help {
-    margin-right: 0;
-  }
-
-  .modal-content:not(.full-screen) > div > div {
-    min-height: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-  }
 }
 
-@keyframes ae-sheet-in {
-  from {
-    transform: translateY(100%);
-  }
-
-  to {
-    transform: translateY(0);
-  }
-}
-
-/* Narrow screens in portrait still use the desktop header, where both wings
-   reserve 20rem and leave the title no room. Shrink the wings instead. */
+/* Portrait phones: the header only has to lose a little padding now; the title
+   centres itself. */
 @media (max-width: 720px) {
   .header-item {
     padding: 0.75rem;
   }
 
-  .header-item-filter,
-  .header-item-close {
-    flex-basis: 2.75rem;
-  }
-
-  [dir='ltr'] .header-item-title {
-    margin: 0 -2.75rem 0 0;
-  }
-
-  [dir='rtl'] .header-item-title {
-    margin: 0 0 0 -2.75rem;
-  }
-
   .header-item-title {
-    min-width: 0;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    max-width: calc(100% - 7rem);
   }
 }
